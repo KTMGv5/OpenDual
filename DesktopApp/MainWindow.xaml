@@ -631,6 +631,74 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Audio-Reactive Haptic Bass Rumble Card -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,0,18">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="AUDIO-REACTIVE HAPTIC BASS RUMBLE (WASAPI LOOPBACK)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
+                                        <TextBlock Text="Captures Windows system and game audio in real time, isolates low-frequency explosions, footsteps, engine revs, and gunshots, and routes them directly to the controller's voice-coil haptic motors." TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkAudioHaptics" Grid.Column="1" Content="Enable Haptics" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
+                                </Grid>
+
+                                <!-- Haptic Intensity Slider -->
+                                <Grid Margin="0,12,0,8">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Vibration Intensity" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.1" Maximum="2.0" Value="1.0" ValueChanged="AudioHaptics_Changed"/>
+                                    <TextBlock x:Name="TxtHapticIntensityVal" Grid.Column="2" Text="100%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Low-Pass Bass Cutoff Slider -->
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Bass Cutoff Filter" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="60" Maximum="200" Value="100" ValueChanged="AudioHaptics_Changed"/>
+                                    <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="100 Hz" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Stereo Mode & Live Tactile Meters -->
+                                <Grid Margin="0,4,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <RadioButton x:Name="RadioHapticStereo" Content="Directional Stereo (L / R)" GroupName="HapticMode" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Checked="AudioHaptics_Changed" Margin="0,0,0,4"/>
+                                        <RadioButton x:Name="RadioHapticMono" Content="Combined Mono" GroupName="HapticMode" Foreground="{DynamicResource TextPrimary}" Checked="AudioHaptics_Changed"/>
+                                    </StackPanel>
+
+                                    <!-- Live Tactile Meters (Left & Right) -->
+                                    <Grid Grid.Column="1" Margin="20,0,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="40"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Left Grip -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Left Grip:" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ProgressBar x:Name="BarHapticL" Grid.Row="0" Grid.Column="1" Height="10" Minimum="0" Maximum="255" Value="0" Foreground="{DynamicResource AccentSignature}" Background="{DynamicResource SlotBg}" BorderThickness="0" Margin="0,3"/>
+                                        <TextBlock x:Name="TxtHapticL" Grid.Row="0" Grid.Column="2" Text="0" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                                        <!-- Right Grip -->
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Right Grip:" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ProgressBar x:Name="BarHapticR" Grid.Row="1" Grid.Column="1" Height="10" Minimum="0" Maximum="255" Value="0" Foreground="{DynamicResource HeaderAccent}" Background="{DynamicResource SlotBg}" BorderThickness="0" Margin="0,3"/>
+                                        <TextBlock x:Name="TxtHapticR" Grid.Row="1" Grid.Column="2" Text="0" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18">
                             <StackPanel>
                                 <TextBlock Text="DETECTED AUDIO ENDPOINTS" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,10"/>

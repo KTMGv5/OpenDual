@@ -75,6 +75,9 @@ struct ControllerConfig {
     // Audio & Mic Mute Sync
     bool syncMicMute = true;
     bool audioHapticsEnabled = false;
+    float hapticIntensity = 1.0f;       // 0.0 to 2.0 (0% to 200%)
+    int hapticCutoffHz = 100;           // 60 to 200 Hz low-pass
+    bool hapticStereo = true;           // True = directional stereo, False = combined mono
 
     // Output Mode
     bool emulateXbox360 = true; // ViGEmBus XInput emulation
@@ -134,6 +137,10 @@ struct ControllerState {
 
     // Mic hardware status
     bool micMuted = false;
+
+    // Audio-Reactive Haptics live output levels (0..255)
+    uint8_t hapticMotorL = 0;
+    uint8_t hapticMotorR = 0;
 };
 
 } // namespace DualDriver

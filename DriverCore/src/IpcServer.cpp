@@ -162,13 +162,20 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getInt("playerLeds", playerLeds)) { cfg.playerLeds = (uint8_t)playerLeds; changed = true; }
     if (getFloat("effectSpeed", effSpeed)) { cfg.effectSpeed = effSpeed; changed = true; }
 
-    float mouseSens = 0.0f, scrollSens = 0.0f;
-    bool mouseEn = false, tapClick = false, syncMic = false;
+    float mouseSens = 0.0f, scrollSens = 0.0f, hapIntensity = 1.0f;
+    bool mouseEn = false, tapClick = false, syncMic = false, hapEn = false, hapStereo = true;
+    int hapCutoff = 100;
     if (getFloat("mouseSens", mouseSens)) { cfg.mouseSensitivity = mouseSens; changed = true; }
     if (getFloat("scrollSens", scrollSens)) { cfg.scrollSensitivity = scrollSens; changed = true; }
     if (getBool("mouseEnabled", mouseEn)) { cfg.mouseEnabled = mouseEn; changed = true; }
     if (getBool("tapToClick", tapClick)) { cfg.tapToClick = tapClick; changed = true; }
     if (getBool("syncMicMute", syncMic)) { cfg.syncMicMute = syncMic; changed = true; }
+
+    // Audio-Reactive Haptics
+    if (getBool("audioHaptics", hapEn)) { cfg.audioHapticsEnabled = hapEn; changed = true; }
+    if (getFloat("hapticIntensity", hapIntensity)) { cfg.hapticIntensity = hapIntensity; changed = true; }
+    if (getInt("hapticCutoff", hapCutoff)) { cfg.hapticCutoffHz = hapCutoff; changed = true; }
+    if (getBool("hapticStereo", hapStereo)) { cfg.hapticStereo = hapStereo; changed = true; }
 
     // Adaptive Triggers
     int lMode = 0, lStart = 0, lForce = 0, lFreq = 0;
@@ -225,6 +232,8 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
        << "\"padBtn\":" << (s.touchpadBtn ? "true" : "false") << ","
        << "\"micBtn\":" << (s.micBtn ? "true" : "false") << ","
        << "\"micMuted\":" << (s.micMuted ? "true" : "false") << ","
+       << "\"hapticL\":" << (int)s.hapticMotorL << ","
+       << "\"hapticR\":" << (int)s.hapticMotorR << ","
        << "\"t1\":{\"on\":" << (s.touch1.active ? "true" : "false") << ",\"x\":" << s.touch1.x << ",\"y\":" << s.touch1.y << "},"
        << "\"t2\":{\"on\":" << (s.touch2.active ? "true" : "false") << ",\"x\":" << s.touch2.x << ",\"y\":" << s.touch2.y << "},"
        << "\"cfg\":{"
@@ -233,6 +242,10 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"speed\":" << c.effectSpeed << ","
            << "\"mouse\":" << (c.mouseEnabled ? "true" : "false") << ","
            << "\"syncMic\":" << (c.syncMicMute ? "true" : "false") << ","
+           << "\"haptic\":" << (c.audioHapticsEnabled ? "true" : "false") << ","
+           << "\"hapticIntensity\":" << c.hapticIntensity << ","
+           << "\"hapticCutoff\":" << c.hapticCutoffHz << ","
+           << "\"hapticStereo\":" << (c.hapticStereo ? "true" : "false") << ","
            << "\"ltMode\":" << (int)c.leftTrigger.mode << ","
            << "\"rtMode\":" << (int)c.rightTrigger.mode
        << "}"

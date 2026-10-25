@@ -313,6 +313,12 @@ namespace OpenDualHub
                         string t1Str = t.Touch1.On ? $"({t.Touch1.X}, {t.Touch1.Y})" : "Inactive";
                         string t2Str = t.Touch2.On ? $"({t.Touch2.X}, {t.Touch2.Y})" : "Inactive";
                         if (TxtTouchCoords != null) TxtTouchCoords.Text = $"Touch 1: {t1Str} | Touch 2: {t2Str}";
+
+                        // Live Audio-Reactive Haptics Tactile Meters
+                        if (BarHapticL != null) BarHapticL.Value = t.HapticL;
+                        if (TxtHapticL != null) TxtHapticL.Text = t.HapticL.ToString();
+                        if (BarHapticR != null) BarHapticR.Value = t.HapticR;
+                        if (TxtHapticR != null) TxtHapticR.Text = t.HapticR.ToString();
                     }
                     else
                     {
@@ -517,6 +523,21 @@ namespace OpenDualHub
             if (!_isInitialized || _isUpdatingUi || ChkSyncMic == null) return;
             bool sync = ChkSyncMic.IsChecked == true;
             _ipc.SetMicSync(sync);
+        }
+
+        private void AudioHaptics_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized || _isUpdatingUi || ChkAudioHaptics == null || SliderHapticIntensity == null || SliderHapticCutoff == null) return;
+
+            bool enabled = ChkAudioHaptics.IsChecked == true;
+            float intensity = (float)SliderHapticIntensity.Value;
+            int cutoff = (int)SliderHapticCutoff.Value;
+            bool stereo = RadioHapticStereo?.IsChecked == true;
+
+            if (TxtHapticIntensityVal != null) TxtHapticIntensityVal.Text = $"{(int)(intensity * 100)}%";
+            if (TxtHapticCutoffVal != null) TxtHapticCutoffVal.Text = $"{cutoff} Hz";
+
+            _ipc.SetAudioHaptics(enabled, intensity, cutoff, stereo);
         }
         #endregion
 

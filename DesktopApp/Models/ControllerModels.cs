@@ -43,6 +43,18 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("rtMode")]
         public int RtMode { get; set; } = 0;
+
+        [JsonPropertyName("haptic")]
+        public bool Haptic { get; set; } = false;
+
+        [JsonPropertyName("hapticIntensity")]
+        public float HapticIntensity { get; set; } = 1.0f;
+
+        [JsonPropertyName("hapticCutoff")]
+        public int HapticCutoff { get; set; } = 100;
+
+        [JsonPropertyName("hapticStereo")]
+        public bool HapticStereo { get; set; } = true;
     }
 
     public class ControllerTelemetry
@@ -142,6 +154,12 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("micMuted")]
         public bool MicMuted { get; set; }
+
+        [JsonPropertyName("hapticL")]
+        public int HapticL { get; set; }
+
+        [JsonPropertyName("hapticR")]
+        public int HapticR { get; set; }
 
         // Touchpad
         [JsonPropertyName("t1")]

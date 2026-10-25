@@ -362,6 +362,17 @@ void ControllerEngine::OutputThread() {
             uint8_t rRumble = m_rightRumble;
             bool micMuted = state.micMuted;
 
+            // Audio-Reactive Haptics (WASAPI Loopback to controller voice-coil motors)
+            uint8_t audioHapticL = 0;
+            uint8_t audioHapticR = 0;
+            if (config.audioHapticsEnabled) {
+                m_audio.GetHapticRumble(audioHapticL, audioHapticR, config.hapticIntensity, config.hapticCutoffHz, config.hapticStereo);
+                lRumble = (uint8_t)std::clamp((int)lRumble + (int)audioHapticL, 0, 255);
+                rRumble = (uint8_t)std::clamp((int)rRumble + (int)audioHapticR, 0, 255);
+            }
+            state.hapticMotorL = audioHapticL;
+            state.hapticMotorR = audioHapticR;
+
             if (state.model == ControllerModel::DualSense || state.model == ControllerModel::DualSenseEdge) {
                 if (state.connection == ConnectionType::USB) {
                     DualSenseProtocol::BuildOutputReportUSB(outBuf, sizeof(outBuf), activeCfg, lRumble, rRumble, micMuted);
