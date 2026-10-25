@@ -1,0 +1,83 @@
+name: Code Analysis & Build Verification
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  static-analysis:
+    name: Static Code Analysis (C++ & C#)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            9.0.x
+
+      - name: Setup MSVC Environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Analyze C++ Driver Core (MSVC Native /analyze)
+        shell: cmd
+        run: |
+          cmake -B build_core -S DriverCore
+          cmake --build build_core --config Release -- /p:RunCodeAnalysis=true
+
+      - name: Analyze C# Desktop Hub (Roslyn Static Analyzers)
+        shell: cmd
+        run: |
+          dotnet build DesktopApp/OpenDualHub.csproj -c Release /p:EnableNETAnalyzers=true /p:AnalysisLevel=latest-recommended
+
+      - name: Analyze C# Installer & Uninstaller (Roslyn Static Analyzers)
+        shell: cmd
+        run: |
+          dotnet build Installer/OpenDualSetup.csproj -c Release /p:EnableNETAnalyzers=true /p:AnalysisLevel=latest-recommended
+
+  build-and-package:
+    name: Build, Package & Verify Release
+    needs: static-analysis
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            9.0.x
+
+      - name: Setup MSVC Environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Execute Full Build & Package
+        shell: cmd
+        run: |
+          call build_all.bat
+
+      - name: Archive Signed Distribution Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenDual-Release-Binaries
+          path: |
+            dist/OpenDualHub.exe
+            dist/OpenDualDriver.exe
+            dist/OpenDualSetup.exe
+            dist/OpenDualUninstaller.exe
+            dist/OpenDual-*.zip
+          retention-days: 14
