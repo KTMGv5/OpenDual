@@ -94,6 +94,10 @@ namespace OpenDualHub
             itemRestart.Click += (s, e) => BtnRestartEngine_Click(this, new RoutedEventArgs());
             menu.Items.Add(itemRestart);
 
+            var itemHud = new MenuItem { Header = "Preview Quick HUD (PS Button Overlay)" };
+            itemHud.Click += (s, e) => _quickHud?.ToggleOrRefresh();
+            menu.Items.Add(itemHud);
+
             var itemMute = new MenuItem { Header = "Toggle Microphone Mute" };
             itemMute.Click += (s, e) => ToggleMicMute();
             menu.Items.Add(itemMute);
@@ -702,6 +706,11 @@ namespace OpenDualHub
             BtnInstallViGEm.IsEnabled = true;
             TxtDriverLog.Text = success ? "ViGEmBus Driver installed successfully!" : "ViGEmBus installation cancelled or failed.";
             RefreshDriverStatus();
+        }
+
+        private void BtnPreviewQuickHud_Click(object sender, RoutedEventArgs e)
+        {
+            _quickHud?.ToggleOrRefresh();
         }
         #endregion
     }

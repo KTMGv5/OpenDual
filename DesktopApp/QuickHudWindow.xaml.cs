@@ -22,9 +22,11 @@ namespace OpenDualHub
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
         [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
-        private const int SW_SHOWNOACTIVATE = 4;
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint SWP_SHOWWINDOW = 0x0040;
 
         private readonly DispatcherTimer _hideTimer;
         private bool _isVisibleToUser = false;
@@ -32,6 +34,13 @@ namespace OpenDualHub
         public QuickHudWindow()
         {
             InitializeComponent();
+
+            // Force handle creation and configure non-activating topmost toolwindow
+            var helper = new WindowInteropHelper(this);
+            helper.EnsureHandle();
+
+            int exStyle = GetWindowLong(helper.Handle, GWL_EXSTYLE);
+            SetWindowLong(helper.Handle, GWL_EXSTYLE, exStyle | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW);
 
             _hideTimer = new DispatcherTimer
             {
@@ -133,8 +142,14 @@ namespace OpenDualHub
             Left = (screenWidth - Width) / 2.0;
             Top = screenHeight - Height - 55.0; // 55px above bottom edge / taskbar
 
+            // Ensure window is in WPF visual tree composition without activating
+            if (!IsVisible)
+            {
+                Show();
+            }
+
             var helper = new WindowInteropHelper(this);
-            ShowWindow(helper.Handle, SW_SHOWNOACTIVATE);
+            SetWindowPos(helper.Handle, HWND_TOPMOST, (int)Left, (int)Top, (int)Width, (int)Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
 
             // Smooth fade-in
             var fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(180))
@@ -158,7 +173,7 @@ namespace OpenDualHub
             {
                 if (!_isVisibleToUser)
                 {
-                    Visibility = Visibility.Hidden;
+                    Hide();
                 }
             };
             HudRoot.BeginAnimation(UIElement.OpacityProperty, fadeOut);

@@ -463,16 +463,17 @@ void AudioSubsystem::GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float 
     m_peakR *= 0.955f;
 
     // Musical noise gate: eliminates low-level room noise and fan hum
-    const float noiseGate = 0.015f;
+    const float noiseGate = 0.008f;
+    const float nominalMax = 0.18f;
 
-    auto mapAmp = [noiseGate, intensity](float peak) -> uint8_t {
-        if (peak <= noiseGate) return 0;
-        float norm = (peak - noiseGate) / (0.60f - noiseGate);
+    auto mapAmp = [noiseGate, nominalMax, intensity](float peak) -> uint8_t {
+        if (peak <= noiseGate || intensity <= 0.005f) return 0;
+        float norm = (peak - noiseGate) / (nominalMax - noiseGate);
         if (norm > 1.0f) norm = 1.0f;
-        // Progressive power curve: suppresses quiet voice bleed while keeping explosions hard-hitting
-        float punch = std::pow(norm, 1.30f);
-        int val = (int)(punch * 255.0f * intensity);
-        return (uint8_t)std::clamp(val, 0, 255);
+        // Direct linear scaling with slider intensity multiplier
+        float scaled = norm * intensity;
+        if (scaled > 1.0f) scaled = 1.0f;
+        return (uint8_t)std::clamp((int)(scaled * 255.0f), 0, 255);
     };
 
     uint8_t rL = mapAmp(m_peakL);

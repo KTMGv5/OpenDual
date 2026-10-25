@@ -74,7 +74,7 @@ struct ControllerConfig {
 
     // Audio & Mic Mute Sync
     bool syncMicMute = true;
-    bool audioHapticsEnabled = false;
+    bool audioHapticsEnabled = true;
     float hapticIntensity = 1.0f;       // 0.0 to 2.0 (0% to 200%)
     int hapticCutoffHz = 100;           // 60 to 200 Hz low-pass
     bool hapticStereo = true;           // True = directional stereo, False = combined mono

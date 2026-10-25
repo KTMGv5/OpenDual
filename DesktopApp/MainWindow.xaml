@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="OpenDual — PlayStation Controller Suite"
         Icon="Assets/app.ico"
-        Height="840" Width="1240"
-        MinHeight="720" MinWidth="1080"
+        Height="820" Width="1200"
+        MinHeight="560" MinWidth="860"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgPrimary}"
         Foreground="{DynamicResource TextPrimary}"
@@ -182,6 +182,45 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Sleek Dark ScrollBar Style -->
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid x:Name="Bg" SnapsToDevicePixels="true" Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="true">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.LineUpCommand}" Opacity="0" Focusable="false"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                                <Border Background="#33FFFFFF" CornerRadius="4" Margin="1,0"/>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource AccentSignature}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsDragging" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource HeaderAccent}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.LineDownCommand}" Opacity="0" Focusable="false"/>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -235,8 +274,9 @@
             </Grid>
         </Border>
 
-        <!-- MAIN CONTENT AREA -->
-        <Grid Grid.Row="1" Margin="28,20">
+        <!-- MAIN CONTENT AREA WITH AUTO SCROLLING -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+            <Grid Margin="28,16,28,24">
             
             <!-- 1. CONTROLLER DASHBOARD VIEW -->
             <Grid x:Name="ViewDashboard" Visibility="Visible">
@@ -640,24 +680,24 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
+                                    <StackPanel Grid.Column="0" Margin="0,0,24,0">
                                         <TextBlock Text="AUDIO-REACTIVE HAPTIC BASS RUMBLE (WASAPI LOOPBACK)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
                                         <TextBlock Text="Captures Windows system and game audio in real time, isolates low-frequency explosions, footsteps, engine revs, and gunshots, and routes them directly to the controller's voice-coil haptic motors." TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                                     </StackPanel>
-                                    <CheckBox x:Name="ChkAudioHaptics" Grid.Column="1" Content="Enable Haptics" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
+                                    <CheckBox x:Name="ChkAudioHaptics" Grid.Column="1" Content="Enable Haptics" FontSize="13" FontWeight="Bold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
                                 </Grid>
 
                                 <!-- Haptic Intensity Slider -->
                                 <Grid Margin="0,12,0,8">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="60"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Vibration Intensity" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                    <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.1" Maximum="2.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
+                                    <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.0" Maximum="2.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
                                     <TextBlock x:Name="TxtHapticIntensityVal" Grid.Column="2" Text="100%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
 
                                 <!-- Low-Pass Bass Cutoff Slider (4th-Order 24dB/oct Surgical Filter) -->
                                 <Grid Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="140"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Bass Cutoff Filter" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="40" Maximum="250" Value="100" IsSnapToTickEnabled="True" TickFrequency="10" SmallChange="10" LargeChange="20" ValueChanged="AudioHaptics_Changed"/>
                                     <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="100 Hz (Punchy)" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -803,7 +843,10 @@
                                         <TextBlock Text="In-Game PS Button Quick HUD Overlay" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                         <TextBlock Text="Displays a sleek PS5-style floating status card (battery %, volume, mic mute, triggers) whenever you press the PS button." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                     </StackPanel>
-                                    <CheckBox x:Name="ChkEnableQuickHud" Grid.Column="1" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="Preview HUD" Style="{StaticResource PrimaryBtnStyle}" Background="#222B3F" Padding="12,6" Margin="0,0,12,0" Click="BtnPreviewQuickHud_Click"/>
+                                        <CheckBox x:Name="ChkEnableQuickHud" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
 
                                 <Grid Margin="0,0,0,8">
@@ -822,7 +865,8 @@
                 </Border>
             </Grid>
 
-        </Grid>
+            </Grid>
+        </ScrollViewer>
 
         <!-- FOOTER STATUS BAR -->
         <Border Grid.Row="2" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0" Padding="24,0">
