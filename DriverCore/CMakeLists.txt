@@ -9,6 +9,7 @@ include_directories(include)
 set(SOURCES
     src/HidDevice.cpp
     src/TouchpadEngine.cpp
+    src/GyroEngine.cpp
     src/AudioSubsystem.cpp
     src/VirtualGamepad.cpp
     src/IpcServer.cpp
@@ -22,6 +23,7 @@ set(HEADERS
     include/DS4Protocol.hpp
     include/HidDevice.hpp
     include/TouchpadEngine.hpp
+    include/GyroEngine.hpp
     include/AudioSubsystem.hpp
     include/VirtualGamepad.hpp
     include/IpcServer.hpp

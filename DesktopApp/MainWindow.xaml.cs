@@ -22,6 +22,14 @@ namespace OpenDualHub
         private DispatcherTimer? _hapticDebounceTimer;
         private DateTime _lastHapticSendTime = DateTime.MinValue;
 
+        private readonly ProfileManager _profileManager = new();
+        private GameDetector? _gameDetector;
+        private readonly UpdateChecker _updateChecker = new();
+        private UpdateInfo? _latestUpdateInfo;
+        private GameProfile _currentProfile = new();
+        private bool _lowBatteryWarned = false;
+        private bool _isProfileApplying = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -74,6 +82,16 @@ namespace OpenDualHub
 
             _quickHud = new QuickHudWindow();
             UpdateResponsiveLayout(ActualWidth);
+
+            // Game-Specific Auto Profile Switching
+            _gameDetector = new GameDetector(_profileManager);
+            _gameDetector.OnGameChanged += GameDetector_OnGameChanged;
+            _gameDetector.Start();
+
+            PopulateProfilesList();
+
+            // Background update check (non-blocking)
+            _ = CheckForUpdatesSilentlyAsync();
         }
 
         private void RestoreFromTray()
@@ -124,6 +142,7 @@ namespace OpenDualHub
 
         private void ExitApplication()
         {
+            _gameDetector?.Dispose();
             _trayManager.Dispose();
             _quickHud?.Close();
             Application.Current.Shutdown();
@@ -263,6 +282,7 @@ namespace OpenDualHub
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             _clockTimer.Stop();
+            _gameDetector?.Dispose();
             _ipc.Dispose();
             _trayManager.Dispose();
             _quickHud?.Close();
@@ -318,8 +338,10 @@ namespace OpenDualHub
             ViewDashboard.Visibility = Visibility.Collapsed;
             ViewRgb.Visibility = Visibility.Collapsed;
             ViewTriggers.Visibility = Visibility.Collapsed;
+            if (ViewGyro != null) ViewGyro.Visibility = Visibility.Collapsed;
             ViewTouchpad.Visibility = Visibility.Collapsed;
             ViewAudio.Visibility = Visibility.Collapsed;
+            if (ViewProfiles != null) ViewProfiles.Visibility = Visibility.Collapsed;
             ViewDriver.Visibility = Visibility.Collapsed;
         }
 
@@ -344,6 +366,13 @@ namespace OpenDualHub
             EnsureNavTabVisible(TabTriggers);
         }
 
+        private void Nav_Gyro_Checked(object sender, RoutedEventArgs e)
+        {
+            HideAllViews();
+            if (ViewGyro != null) ViewGyro.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabGyro);
+        }
+
         private void Nav_Touchpad_Checked(object sender, RoutedEventArgs e)
         {
             HideAllViews();
@@ -356,6 +385,13 @@ namespace OpenDualHub
             HideAllViews();
             if (ViewAudio != null) ViewAudio.Visibility = Visibility.Visible;
             EnsureNavTabVisible(TabAudio);
+        }
+
+        private void Nav_Profiles_Checked(object sender, RoutedEventArgs e)
+        {
+            HideAllViews();
+            if (ViewProfiles != null) ViewProfiles.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabProfiles);
         }
 
         private void Nav_Driver_Checked(object sender, RoutedEventArgs e)
@@ -463,6 +499,40 @@ namespace OpenDualHub
                         if (PillL3 != null) HighlightPill(PillL3, t.L3);
                         if (PillR3 != null) HighlightPill(PillR3, t.R3);
                         if (PillMic != null) HighlightPill(PillMic, t.MicBtn);
+                        if (PillFnL != null) HighlightPill(PillFnL, t.FnLeft);
+                        if (PillFnR != null) HighlightPill(PillFnR, t.FnRight);
+                        if (PillPadL != null) HighlightPill(PillPadL, t.PaddleLeft);
+                        if (PillPadR != null) HighlightPill(PillPadR, t.PaddleRight);
+
+                        // Live Gyro IMU Telemetry
+                        if (BadgeGyroAiming != null)
+                        {
+                            BadgeGyroAiming.Visibility = t.GyroActive ? Visibility.Visible : Visibility.Collapsed;
+                        }
+                        if (BarGyroZ != null) BarGyroZ.Value = Math.Clamp(Math.Abs((int)t.GyroZ), 0, 500);
+                        if (BarGyroX != null) BarGyroX.Value = Math.Clamp(Math.Abs((int)t.GyroX), 0, 500);
+                        if (BarGyroY != null) BarGyroY.Value = Math.Clamp(Math.Abs((int)t.GyroY), 0, 500);
+                        if (TxtGyroYaw != null) TxtGyroYaw.Text = $"Yaw: {t.GyroZ:+0000;-0000;0}";
+                        if (TxtGyroPitch != null) TxtGyroPitch.Text = $"Pitch: {t.GyroX:+0000;-0000;0}";
+                        if (TxtGyroRoll != null) TxtGyroRoll.Text = $"Roll: {t.GyroY:+0000;-0000;0}";
+
+                        // Battery Low Alert & Visual Badge
+                        if (t.Battery <= 15 && !t.Charging)
+                        {
+                            if (DashBatteryLowBadge != null) DashBatteryLowBadge.Visibility = Visibility.Visible;
+                            if (TxtBatteryHeader != null) TxtBatteryHeader.Foreground = (SolidColorBrush)FindResource("AccentRed");
+                            if (!_lowBatteryWarned)
+                            {
+                                _lowBatteryWarned = true;
+                                _trayManager.ShowNotification("OpenDual Battery Warning", $"DualSense battery is critical ({t.Battery}%). Please connect USB charging cable.");
+                            }
+                        }
+                        else
+                        {
+                            if (DashBatteryLowBadge != null) DashBatteryLowBadge.Visibility = Visibility.Collapsed;
+                            if (TxtBatteryHeader != null) TxtBatteryHeader.Foreground = (SolidColorBrush)FindResource("TextPrimary");
+                            if (t.Battery > 20 || t.Charging) _lowBatteryWarned = false;
+                        }
 
                         if (BtnTriangle != null) HighlightButton(BtnTriangle, t.Triangle, "#00E676");
                         if (BtnSquare != null) HighlightButton(BtnSquare, t.Square, "#FF3377");
@@ -814,6 +884,474 @@ namespace OpenDualHub
         private void BtnPreviewQuickHud_Click(object sender, RoutedEventArgs e)
         {
             _quickHud?.ToggleOrRefresh();
+        }
+        #endregion
+
+        #region Gyro Motion Aiming
+        private void Gyro_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized || _isUpdatingUi || _isProfileApplying) return;
+
+            bool enabled = ChkEnableGyro?.IsChecked == true;
+            int mode = CmbGyroMode?.SelectedIndex ?? 1;
+            float sensX = (float)(SliderGyroSensX?.Value ?? 1.0);
+            float sensY = (float)(SliderGyroSensY?.Value ?? 1.0);
+            bool invX = ChkGyroInvertX?.IsChecked == true;
+            bool invY = ChkGyroInvertY?.IsChecked == true;
+            int deadzone = (int)(SliderGyroDeadzone?.Value ?? 20);
+            float smooth = (float)(SliderGyroSmooth?.Value ?? 0.25);
+
+            if (TxtGyroSensXVal != null) TxtGyroSensXVal.Text = $"{sensX:F1}x";
+            if (TxtGyroSensYVal != null) TxtGyroSensYVal.Text = $"{sensY:F1}x";
+            if (TxtGyroDeadzoneVal != null) TxtGyroDeadzoneVal.Text = $"{deadzone}";
+            if (TxtGyroSmoothVal != null) TxtGyroSmoothVal.Text = $"{(int)(smooth * 100)}%";
+
+            _ipc.SetGyro(enabled, mode, sensX, sensY, invX, invY, deadzone, smooth);
+        }
+
+        private void BtnResetGyroDrift_Click(object sender, RoutedEventArgs e)
+        {
+            Gyro_Changed(sender, e);
+            if (FooterStatus != null) FooterStatus.Text = "Gyro resting baseline recalibrated. Keep controller still for 1 second.";
+        }
+        #endregion
+
+        #region Game Profiles & Presets
+        private void PopulateProfilesList()
+        {
+            if (CmbProfiles == null) return;
+            CmbProfiles.Items.Clear();
+
+            foreach (var profile in _profileManager.Profiles)
+            {
+                var item = new ComboBoxItem
+                {
+                    Content = profile.Name + (profile.IsBuiltIn ? " (Built-in)" : ""),
+                    Tag = profile.Id
+                };
+                CmbProfiles.Items.Add(item);
+            }
+
+            if (CmbProfiles.Items.Count > 0)
+            {
+                CmbProfiles.SelectedIndex = 0;
+            }
+        }
+
+        private void CmbProfiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbProfiles.SelectedItem is ComboBoxItem item && item.Tag is string id)
+            {
+                var prof = _profileManager.Profiles.FirstOrDefault(p => p.Id == id);
+                if (prof != null)
+                {
+                    if (TxtProfileName != null) TxtProfileName.Text = prof.Name;
+                    if (TxtProfileDesc != null) TxtProfileDesc.Text = prof.Description;
+                    if (TxtProfileProcesses != null) TxtProfileProcesses.Text = prof.ProcessNames;
+                    if (BtnDeleteProfile != null) BtnDeleteProfile.IsEnabled = !prof.IsBuiltIn;
+
+                    if (TxtSummaryTriggers != null)
+                        TxtSummaryTriggers.Text = $"L2: {FormatTriggerModeName(prof.Config.LtMode)} • R2: {FormatTriggerModeName(prof.Config.RtMode)}";
+                    if (TxtSummaryHaptics != null)
+                        TxtSummaryHaptics.Text = $"RGB: #{prof.Config.R:X2}{prof.Config.G:X2}{prof.Config.B:X2} • Haptics: {(int)(prof.Config.HapticIntensity * 100)}% {(prof.Config.AudioTriggerKick ? "• Recoil Kick" : "")}";
+                    if (TxtSummaryGyro != null)
+                        TxtSummaryGyro.Text = $"Gyro: {(prof.Config.Gyro ? "Enabled" : "Disabled")} • Touchpad Mouse: {(prof.Config.Mouse ? "On" : "Off")}";
+                }
+            }
+        }
+
+        private static string FormatTriggerModeName(int mode) => mode switch
+        {
+            1 => "Rigid Resistance",
+            2 => "Pulse Vibration",
+            5 => "Bow Draw Curve",
+            6 => "TriggerStop (Hair)",
+            _ => "Standard (Off)"
+        };
+
+        private void BtnApplyProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (CmbProfiles.SelectedItem is ComboBoxItem item && item.Tag is string id)
+            {
+                var prof = _profileManager.Profiles.FirstOrDefault(p => p.Id == id);
+                if (prof != null)
+                {
+                    ApplyProfile(prof);
+                }
+            }
+        }
+
+        private void ApplyProfile(GameProfile prof)
+        {
+            _currentProfile = prof;
+            _isProfileApplying = true;
+            try
+            {
+                // Send full config to driver
+                _ipc.SendConfig(prof.Config);
+
+                // Update UI controls to match profile
+                if (TxtDashProfileName != null) TxtDashProfileName.Text = prof.Name;
+                if (ChkEnableGyro != null) ChkEnableGyro.IsChecked = prof.Config.Gyro;
+                if (CmbGyroMode != null) CmbGyroMode.SelectedIndex = prof.Config.GyroMode;
+                if (SliderGyroSensX != null) SliderGyroSensX.Value = prof.Config.GyroSensX;
+                if (SliderGyroSensY != null) SliderGyroSensY.Value = prof.Config.GyroSensY;
+                if (ChkGyroInvertX != null) ChkGyroInvertX.IsChecked = prof.Config.GyroInvertX;
+                if (ChkGyroInvertY != null) ChkGyroInvertY.IsChecked = prof.Config.GyroInvertY;
+                if (SliderGyroDeadzone != null) SliderGyroDeadzone.Value = prof.Config.GyroDeadzone;
+                if (SliderGyroSmooth != null) SliderGyroSmooth.Value = prof.Config.GyroSmooth;
+
+                if (ChkAudioHaptics != null) ChkAudioHaptics.IsChecked = prof.Config.Haptic;
+                if (SliderHapticIntensity != null) SliderHapticIntensity.Value = prof.Config.HapticIntensity;
+                if (SliderHapticCutoff != null) SliderHapticCutoff.Value = prof.Config.HapticCutoff;
+                if (ChkTriggerKick != null) ChkTriggerKick.IsChecked = prof.Config.AudioTriggerKick;
+                if (SliderTriggerThreshold != null) SliderTriggerThreshold.Value = prof.Config.AudioTriggerThreshold;
+
+                static int UnmapTriggerIndex(int triggerMode) => triggerMode switch
+                {
+                    6 => 1, // Hair Trigger
+                    1 => 2, // Rigid Stop
+                    2 => 3, // Pulse
+                    5 => 4, // Bow
+                    _ => 0  // Off
+                };
+
+                if (ComboLTMode != null) ComboLTMode.SelectedIndex = UnmapTriggerIndex(prof.Config.LtMode);
+                if (ComboRTMode != null) ComboRTMode.SelectedIndex = UnmapTriggerIndex(prof.Config.RtMode);
+                if (SliderR != null) SliderR.Value = prof.Config.R;
+                if (SliderG != null) SliderG.Value = prof.Config.G;
+                if (SliderB != null) SliderB.Value = prof.Config.B;
+                if (ComboEffect != null) ComboEffect.SelectedIndex = Math.Clamp(prof.Config.Effect, 0, 3);
+
+                if (FooterStatus != null) FooterStatus.Text = $"Active Profile: {prof.Name}";
+            }
+            finally
+            {
+                _isProfileApplying = false;
+            }
+        }
+
+        private void BtnSaveProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (CmbProfiles.SelectedItem is ComboBoxItem item && item.Tag is string id)
+            {
+                var prof = _profileManager.Profiles.FirstOrDefault(p => p.Id == id);
+                if (prof != null)
+                {
+                    if (prof.IsBuiltIn)
+                    {
+                        var copy = prof.Clone((TxtProfileName?.Text.Trim() ?? "Custom") + " (Custom)");
+                        if (TxtProfileDesc != null) copy.Description = TxtProfileDesc.Text.Trim();
+                        if (TxtProfileProcesses != null) copy.ProcessNames = TxtProfileProcesses.Text.Trim();
+                        CaptureCurrentConfig(copy.Config);
+                        _profileManager.SaveProfile(copy);
+                        PopulateProfilesList();
+                        SelectProfileInCombo(copy.Id);
+                        MessageBox.Show($"Built-in preset saved as new custom profile: '{copy.Name}'", "Profile Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        if (TxtProfileName != null) prof.Name = TxtProfileName.Text.Trim();
+                        if (TxtProfileDesc != null) prof.Description = TxtProfileDesc.Text.Trim();
+                        if (TxtProfileProcesses != null) prof.ProcessNames = TxtProfileProcesses.Text.Trim();
+                        CaptureCurrentConfig(prof.Config);
+                        _profileManager.SaveProfile(prof);
+                        PopulateProfilesList();
+                        SelectProfileInCombo(prof.Id);
+                        MessageBox.Show($"Profile '{prof.Name}' updated successfully.", "Profile Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+        }
+
+        private void CaptureCurrentConfig(ConfigDto cfg)
+        {
+            cfg.R = (int)(SliderR?.Value ?? 0);
+            cfg.G = (int)(SliderG?.Value ?? 120);
+            cfg.B = (int)(SliderB?.Value ?? 255);
+            cfg.Effect = ComboEffect?.SelectedIndex ?? 0;
+
+            static int MapTriggerMode(int idx) => idx switch
+            {
+                1 => 6, // Hair Trigger
+                2 => 1, // Rigid Stop
+                3 => 2, // Pulse
+                4 => 5, // Bow
+                _ => 0  // Off
+            };
+
+            cfg.LtMode = MapTriggerMode(ComboLTMode?.SelectedIndex ?? 0);
+            cfg.RtMode = MapTriggerMode(ComboRTMode?.SelectedIndex ?? 0);
+            cfg.Haptic = ChkAudioHaptics?.IsChecked == true;
+            cfg.HapticIntensity = (float)(SliderHapticIntensity?.Value ?? 1.0);
+            cfg.HapticCutoff = (int)(SliderHapticCutoff?.Value ?? 100);
+            cfg.AudioTriggerKick = ChkTriggerKick?.IsChecked == true;
+            cfg.AudioTriggerThreshold = (float)(SliderTriggerThreshold?.Value ?? 0.45);
+            cfg.Gyro = ChkEnableGyro?.IsChecked == true;
+            cfg.GyroMode = CmbGyroMode?.SelectedIndex ?? 1;
+            cfg.GyroSensX = (float)(SliderGyroSensX?.Value ?? 1.0);
+            cfg.GyroSensY = (float)(SliderGyroSensY?.Value ?? 1.0);
+            cfg.GyroInvertX = ChkGyroInvertX?.IsChecked == true;
+            cfg.GyroInvertY = ChkGyroInvertY?.IsChecked == true;
+            cfg.GyroDeadzone = (int)(SliderGyroDeadzone?.Value ?? 20);
+            cfg.GyroSmooth = (float)(SliderGyroSmooth?.Value ?? 0.25);
+            cfg.IdleTimeout = CmbIdleTimeout?.SelectedIndex switch { 1 => 5, 2 => 10, 3 => 15, 4 => 30, _ => 0 };
+            cfg.LowBatWarn = ChkLowBatteryWarn?.IsChecked == true;
+        }
+
+        private void SelectProfileInCombo(string id)
+        {
+            for (int i = 0; i < CmbProfiles.Items.Count; i++)
+            {
+                if (CmbProfiles.Items[i] is ComboBoxItem ci && ci.Tag as string == id)
+                {
+                    CmbProfiles.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        private void BtnDuplicateProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (CmbProfiles.SelectedItem is ComboBoxItem item && item.Tag is string id)
+            {
+                var prof = _profileManager.Profiles.FirstOrDefault(p => p.Id == id);
+                if (prof != null)
+                {
+                    var copy = prof.Clone(prof.Name + " (Copy)");
+                    _profileManager.SaveProfile(copy);
+                    PopulateProfilesList();
+                    SelectProfileInCombo(copy.Id);
+                }
+            }
+        }
+
+        private void BtnDeleteProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (CmbProfiles.SelectedItem is ComboBoxItem item && item.Tag is string id)
+            {
+                var prof = _profileManager.Profiles.FirstOrDefault(p => p.Id == id);
+                if (prof != null && !prof.IsBuiltIn)
+                {
+                    if (MessageBox.Show($"Are you sure you want to delete profile '{prof.Name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        _profileManager.DeleteProfile(id);
+                        PopulateProfilesList();
+                    }
+                }
+            }
+        }
+
+        private void BtnExportProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (CmbProfiles.SelectedItem is ComboBoxItem item && item.Tag is string id)
+            {
+                var prof = _profileManager.Profiles.FirstOrDefault(p => p.Id == id);
+                if (prof != null)
+                {
+                    var sfd = new Microsoft.Win32.SaveFileDialog
+                    {
+                        Filter = "OpenDual Profile (*.json)|*.json",
+                        FileName = $"{prof.Name.Replace(" ", "_")}.json"
+                    };
+                    if (sfd.ShowDialog() == true)
+                    {
+                        string json = _profileManager.ExportProfile(prof);
+                        System.IO.File.WriteAllText(sfd.FileName, json);
+                        MessageBox.Show("Profile exported successfully!", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+        }
+
+        private void BtnImportProfile_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "OpenDual Profile (*.json)|*.json"
+            };
+            if (ofd.ShowDialog() == true)
+            {
+                try
+                {
+                    string json = System.IO.File.ReadAllText(ofd.FileName);
+                    var imported = _profileManager.ImportProfile(json);
+                    PopulateProfilesList();
+                    SelectProfileInCombo(imported.Id);
+                    MessageBox.Show($"Profile '{imported.Name}' imported successfully!", "Import", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to import profile: {ex.Message}", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void ChkAutoSwitchProfile_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_gameDetector != null)
+            {
+                _gameDetector.AutoSwitchEnabled = ChkAutoSwitchProfile?.IsChecked == true;
+            }
+        }
+
+        private void GameDetector_OnGameChanged(string exeName, GameProfile? matchedProfile)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (matchedProfile != null)
+                {
+                    ApplyProfile(matchedProfile);
+                    SelectProfileInCombo(matchedProfile.Id);
+                    _quickHud?.ShowNotification($"Profile: {matchedProfile.Name}", $"Linked Executable: {exeName}");
+                    if (FooterStatus != null) FooterStatus.Text = $"Auto-Switched to {matchedProfile.Name} ({exeName})";
+                }
+                else
+                {
+                    var def = _profileManager.Profiles.FirstOrDefault(p => p.Id == "builtin-default");
+                    if (def != null)
+                    {
+                        ApplyProfile(def);
+                        SelectProfileInCombo(def.Id);
+                        if (FooterStatus != null) FooterStatus.Text = $"Restored Default Profile ({exeName})";
+                    }
+                }
+            });
+        }
+        #endregion
+
+        #region Power Management
+        private void PowerSettings_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized || _isUpdatingUi || _isProfileApplying) return;
+
+            int timeoutIdx = CmbIdleTimeout?.SelectedIndex ?? 2;
+            int idleMins = timeoutIdx switch
+            {
+                0 => 0,
+                1 => 5,
+                2 => 10,
+                3 => 15,
+                4 => 30,
+                _ => 10
+            };
+            bool lowBatWarn = ChkLowBatteryWarn?.IsChecked == true;
+
+            _ipc.SetPowerManagement(idleMins, lowBatWarn);
+        }
+        #endregion
+
+        #region In-App Automatic Updater
+        private async Task CheckForUpdatesSilentlyAsync()
+        {
+            try
+            {
+                _latestUpdateInfo = await _updateChecker.CheckForUpdateAsync();
+                Dispatcher.Invoke(() =>
+                {
+                    if (_latestUpdateInfo != null && _latestUpdateInfo.UpdateAvailable)
+                    {
+                        if (TxtUpdateStatus != null)
+                        {
+                            TxtUpdateStatus.Text = $"New version v{_latestUpdateInfo.LatestVersion} is available!";
+                            TxtUpdateStatus.Foreground = (SolidColorBrush)FindResource("AccentGreen");
+                        }
+                        if (TxtNewVersionTitle != null) TxtNewVersionTitle.Text = $"Update Available: OpenDual v{_latestUpdateInfo.LatestVersion}";
+                        if (TxtNewVersionNotes != null) TxtNewVersionNotes.Text = string.IsNullOrWhiteSpace(_latestUpdateInfo.ReleaseNotes) ? "Includes enhanced controller performance, gyro aiming, and bug fixes." : _latestUpdateInfo.ReleaseNotes;
+                        if (PanelUpdateAvailable != null) PanelUpdateAvailable.Visibility = Visibility.Visible;
+                    }
+                });
+            }
+            catch { }
+        }
+
+        private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            if (BtnCheckUpdates != null) BtnCheckUpdates.IsEnabled = false;
+            if (TxtUpdateStatus != null) TxtUpdateStatus.Text = "Checking GitHub repository for latest releases...";
+            try
+            {
+                _latestUpdateInfo = await _updateChecker.CheckForUpdateAsync();
+                if (_latestUpdateInfo != null && _latestUpdateInfo.UpdateAvailable)
+                {
+                    if (TxtUpdateStatus != null)
+                    {
+                        TxtUpdateStatus.Text = $"New version v{_latestUpdateInfo.LatestVersion} is available!";
+                        TxtUpdateStatus.Foreground = (SolidColorBrush)FindResource("AccentGreen");
+                    }
+                    if (TxtNewVersionTitle != null) TxtNewVersionTitle.Text = $"Update Available: OpenDual v{_latestUpdateInfo.LatestVersion}";
+                    if (TxtNewVersionNotes != null) TxtNewVersionNotes.Text = string.IsNullOrWhiteSpace(_latestUpdateInfo.ReleaseNotes) ? "Includes enhanced controller performance, gyro aiming, and bug fixes." : _latestUpdateInfo.ReleaseNotes;
+                    if (PanelUpdateAvailable != null) PanelUpdateAvailable.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    if (TxtUpdateStatus != null)
+                    {
+                        TxtUpdateStatus.Text = $"You are on the latest release (v{UpdateChecker.CurrentAppVersion}).";
+                        TxtUpdateStatus.Foreground = (SolidColorBrush)FindResource("AccentSignature");
+                    }
+                    if (PanelUpdateAvailable != null) PanelUpdateAvailable.Visibility = Visibility.Collapsed;
+                    MessageBox.Show($"OpenDual Suite is fully up to date!\n\nCurrent Version: v{UpdateChecker.CurrentAppVersion}", "Up to Date", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (TxtUpdateStatus != null) TxtUpdateStatus.Text = $"Failed to check updates: {ex.Message}";
+            }
+            finally
+            {
+                if (BtnCheckUpdates != null) BtnCheckUpdates.IsEnabled = true;
+            }
+        }
+
+        private async void BtnInstallUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            if (_latestUpdateInfo == null || string.IsNullOrWhiteSpace(_latestUpdateInfo.DownloadUrl))
+            {
+                if (!string.IsNullOrWhiteSpace(_latestUpdateInfo?.ReleaseUrl))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = _latestUpdateInfo.ReleaseUrl,
+                        UseShellExecute = true
+                    });
+                }
+                return;
+            }
+
+            if (BtnInstallUpdate != null) BtnInstallUpdate.IsEnabled = false;
+            if (ProgressUpdate != null)
+            {
+                ProgressUpdate.Visibility = Visibility.Visible;
+                ProgressUpdate.Value = 0;
+            }
+
+            var progress = new Progress<int>(pct =>
+            {
+                if (ProgressUpdate != null) ProgressUpdate.Value = pct;
+                if (TxtNewVersionTitle != null) TxtNewVersionTitle.Text = $"Downloading update... {pct}%";
+            });
+
+            string? downloadedSetup = await _updateChecker.DownloadInstallerAsync(_latestUpdateInfo.DownloadUrl, progress);
+            if (!string.IsNullOrEmpty(downloadedSetup) && System.IO.File.Exists(downloadedSetup))
+            {
+                if (TxtNewVersionTitle != null) TxtNewVersionTitle.Text = "Update downloaded. Launching installer...";
+                UpdateChecker.LaunchInstallerAndExit(downloadedSetup, silent: false);
+            }
+            else
+            {
+                if (BtnInstallUpdate != null) BtnInstallUpdate.IsEnabled = true;
+                if (ProgressUpdate != null) ProgressUpdate.Visibility = Visibility.Collapsed;
+                MessageBox.Show("Failed to download installer package. Opening release webpage.", "Download Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (!string.IsNullOrWhiteSpace(_latestUpdateInfo?.ReleaseUrl))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = _latestUpdateInfo.ReleaseUrl,
+                        UseShellExecute = true
+                    });
+                }
+            }
         }
         #endregion
     }

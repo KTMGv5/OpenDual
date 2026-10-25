@@ -81,6 +81,20 @@ struct ControllerConfig {
     bool audioTriggerKick = false;      // Audio-to-trigger mechanical recoil kick
     float audioTriggerThreshold = 0.45f;// Transient spike threshold (0.1 to 1.0)
 
+    // 6-Axis Gyro Motion Aiming
+    bool gyroEnabled = false;
+    int gyroTriggerMode = 1;            // 0 = Always On, 1 = Hold L2 (ADS), 2 = Touchpad Touch, 3 = Hold R2
+    float gyroSensX = 1.0f;             // 0.1 to 5.0
+    float gyroSensY = 1.0f;             // 0.1 to 5.0
+    bool gyroInvertX = false;
+    bool gyroInvertY = false;
+    int gyroDeadzone = 20;              // Sensor deadzone (0..100)
+    float gyroSmooth = 0.25f;           // Smoothing factor (0.0 to 0.9)
+
+    // Power Management & Battery
+    int idleTimeoutMinutes = 10;        // 0 = Never, 5, 10, 15, 30 min
+    bool lowBatteryWarning = true;      // Flash red pulse when battery <= 15%
+
     // Output Mode
     bool emulateXbox360 = true; // ViGEmBus XInput emulation
 };
@@ -120,6 +134,10 @@ struct ControllerState {
     bool ps = false, touchpadBtn = false;
     bool micBtn = false;
 
+    // DualSense Edge Extra Buttons & Back Paddles
+    bool fnLeft = false, fnRight = false;
+    bool paddleLeft = false, paddleRight = false;
+
     // Touchpad
     TouchPoint touch1;
     TouchPoint touch2;
@@ -127,6 +145,10 @@ struct ControllerState {
     // Motion Sensors (int16_t raw)
     int16_t gyroX = 0, gyroY = 0, gyroZ = 0;
     int16_t accelX = 0, accelY = 0, accelZ = 0;
+
+    // Gyro & Activity status
+    bool gyroActive = false;
+    bool isIdle = false;
 
     // Battery
     uint8_t batteryPercent = 100;

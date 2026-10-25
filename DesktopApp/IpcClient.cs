@@ -151,6 +151,39 @@ namespace OpenDualHub
             SendCommand(json);
         }
 
+        public void SetGyro(bool enabled, int mode, float sensX, float sensY, bool invertX, bool invertY, int deadzone, float smooth)
+        {
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            var json = $"{{\"gyroEnabled\":{(enabled ? "true" : "false")}," +
+                       $"\"gyroMode\":{mode}," +
+                       $"\"gyroSensX\":{sensX.ToString(inv)}," +
+                       $"\"gyroSensY\":{sensY.ToString(inv)}," +
+                       $"\"gyroInvertX\":{(invertX ? "true" : "false")}," +
+                       $"\"gyroInvertY\":{(invertY ? "true" : "false")}," +
+                       $"\"gyroDeadzone\":{deadzone}," +
+                       $"\"gyroSmooth\":{smooth.ToString(inv)}}}";
+            SendCommand(json);
+        }
+
+        public void SetPowerManagement(int idleTimeoutMinutes, bool lowBatteryWarning)
+        {
+            var json = $"{{\"idleTimeout\":{idleTimeoutMinutes},\"lowBatteryWarning\":{(lowBatteryWarning ? "true" : "false")}}}";
+            SendCommand(json);
+        }
+
+        public void SendConfig(ConfigDto cfg)
+        {
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            var json = $"{{\"ledR\":{cfg.R},\"ledG\":{cfg.G},\"ledB\":{cfg.B},\"rgbEffect\":{cfg.Effect},\"effectSpeed\":{cfg.Speed.ToString(inv)}," +
+                       $"\"mouseEnabled\":{(cfg.Mouse ? "true" : "false")},\"syncMicMute\":{(cfg.SyncMic ? "true" : "false")}," +
+                       $"\"ltMode\":{cfg.LtMode},\"rtMode\":{cfg.RtMode}," +
+                       $"\"audioHaptics\":{(cfg.Haptic ? "true" : "false")},\"hapticIntensity\":{cfg.HapticIntensity.ToString(inv)},\"hapticCutoff\":{cfg.HapticCutoff},\"hapticStereo\":{(cfg.HapticStereo ? "true" : "false")}," +
+                       $"\"audioTriggerKick\":{(cfg.AudioTriggerKick ? "true" : "false")},\"audioTriggerThreshold\":{cfg.AudioTriggerThreshold.ToString(inv)}," +
+                       $"\"gyroEnabled\":{(cfg.Gyro ? "true" : "false")},\"gyroMode\":{cfg.GyroMode},\"gyroSensX\":{cfg.GyroSensX.ToString(inv)},\"gyroSensY\":{cfg.GyroSensY.ToString(inv)},\"gyroInvertX\":{(cfg.GyroInvertX ? "true" : "false")},\"gyroInvertY\":{(cfg.GyroInvertY ? "true" : "false")},\"gyroDeadzone\":{cfg.GyroDeadzone},\"gyroSmooth\":{cfg.GyroSmooth.ToString(inv)}," +
+                       $"\"idleTimeout\":{cfg.IdleTimeout},\"lowBatteryWarning\":{(cfg.LowBatWarn ? "true" : "false")}}}";
+            SendCommand(json);
+        }
+
         public void Dispose()
         {
             Stop();

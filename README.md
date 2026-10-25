@@ -1,7 +1,7 @@
 # OpenDual — PlayStation Controller Driver & Desktop Suite
 
 [![Code Analysis & Build Verification](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml/badge.svg)](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml)
-[![Release v1.3.0](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.3.0)
+[![Release v1.4.0](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.4.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Open-source, ultra-low-latency Windows driver service and desktop suite for PlayStation DualShock 4 and DualSense (PS5) controllers on Windows 10 & 11.**
@@ -11,10 +11,26 @@
 ## Highlights & Key Features
 
 * **True 1000Hz (1ms) Polling Engine**: High-priority multimedia scheduled C++20 engine using raw Windows HID asynchronous overlapped I/O (`AvSetMmThreadCharacteristicsW` + `timeBeginPeriod(1)`), achieving sub-millisecond input pipeline latency.
+* **6-Axis Gyro Motion Aiming Engine**:
+  * Reads DualSense and DS4 high-rate IMU angular velocities (Yaw, Pitch, Roll) and gravitational acceleration at 1000Hz.
+  * Sub-pixel mouse injection (`SendInput`) with floating-point accumulation for buttery smooth micro-aiming.
+  * Intelligent activation modes: **Hold L2 (ADS - Aim Down Sights)**, **Always On**, **Touchpad Touch**, or **Hold R2**.
+  * Dynamic resting baseline auto-calibration eliminates resting gyro drift and jitter.
+* **Game-Specific Auto-Profile Switching & Preset Library**:
+  * Background Win32 foreground process monitor detects active games (`GetForegroundWindow` + `QueryFullProcessImageName`) with <0.001% CPU usage.
+  * Instantly auto-switches adaptive trigger modes, RGB themes, audio haptics, and gyro settings per game, and smoothly restores defaults upon exit.
+  * Curated built-in profiles: **Competitive Shooter (FPS)** with hair triggers and ADS gyro, **Sim Racing & ABS Brakes** with progressive pedal curves, **Action/RPG Bow & Combat**, and **Flight/Space Simulator**.
+  * Full JSON export and community profile import (`.json`).
+* **Bluetooth Power Management & Low-Battery Warnings**:
+  * Configurable inactivity timer (5/10/15/30 min) powers down LEDs and motor loopbacks during idle periods.
+  * Critical battery alert (<15%) pulses the DualSense lightbar with a gentle red indicator and delivers non-intrusive Windows / Quick HUD notifications.
+* **In-App Automatic Suite Updater**:
+  * Asynchronously queries the GitHub Releases API for `KTMGv5/OpenDual`, compares semantic versioning, and provides 1-click silent background downloading, in-place reinstallation, and relaunch.
+* **DualSense Edge Extra Back Paddles & Function Buttons**:
+  * Fully decodes and visualizes DualSense Edge hardware reports: Left Fn, Right Fn, Back Paddle LB, and Back Paddle RB.
 * **Native Audio & Hardware Mic Mute Sync**:
   * Seamlessly detects DualSense built-in DAC, 3.5mm headphone jack, and microphone.
   * Synchronizes the controller's **hardware Mic Mute button** directly with Windows CoreAudio (`IAudioEndpointVolume`). Pressing the button on the controller mutes/unmutes the Windows system microphone in real time and toggles the physical amber LED.
-  * Audio volume fix ensures headphone jack playback remains active without manual Windows volume slider adjustments.
 * **Dynamic Windows System Theme & Accent Color**:
   * Automatically follows Windows 10/11 system Dark and Light modes.
   * Dynamically extracts and adapts to your **Windows Accent Color** (Blue, Red, Green, Purple, Cyan, Orange, etc.) in real time via Win32 message hooks (`WM_SETTINGCHANGE`, `WM_DWMCOLORIZATIONCOLORCHANGED`).
@@ -37,12 +53,26 @@
   * Two-way force feedback: routes game rumble events directly into the controller's physical motors.
 * **Audio-Reactive Haptic Bass Rumble (WASAPI Loopback)**:
   * Captures Windows system and game audio in real time via low-latency WASAPI loopback.
-  * Isolates low-frequency explosions, footsteps, engine revs, and gunshots using an adjustable biquad low-pass filter (60Hz to 200Hz).
-  * Direct stereo voice-coil tactile motor routing with soft-knee punch curve and debounced, non-jittery sliders.
+  * Isolates low-frequency explosions, footsteps, engine revs, and gunshots using an adjustable 4th-order low-pass filter (40Hz to 250Hz).
+  * Direct stereo voice-coil tactile motor routing with soft-knee punch curve and fast musical release envelope (zero static buzz).
 * **Audio-to-Trigger Mechanical Recoil Kick**:
   * Real-time audio transient spike detection tracks explosive gunshots, cannon fire, and grenade detonations.
   * Instantly pulses the DualSense adaptive trigger stepper motors for ~90-120ms with physical mechanical kickback.
 * **In-Game Virtual Quick HUD (PS Button Overlay)**:
+  * Floating, translucent, non-focus-stealing PS5 Control Center-inspired HUD overlay.
+  * Pops up when pressing the controller's **PS button** without minimizing or interrupting full-screen games.
+  * Displays live battery %, charging state, master audio volume, hardware mic status, and adaptive trigger profiles. Auto-fades after 3.5s or toggles off on next press.
+* **Windows System Tray & Background Residency**:
+  * Minimizing OpenDual automatically docks it cleanly to the Windows notification area / system tray.
+  * System tray context menu: Open Hub, Restart Driver Engine, Toggle Mic Mute, or Exit.
+* **Automated Authenticode Code Signing Suite**:
+  * Includes automated scripts (`tools\sign_binaries.bat` and `tools\create_codesign_cert.ps1`) to stamp binaries with SHA-256 digital signatures and RFC 3161 timestamps.
+  * Complete [Code Signing & SmartScreen Guide](docs/CODE_SIGNING_GUIDE.md) explaining local trust and commercial CA distribution.
+* **Clean Windows Setup & Uninstaller Suite**:
+  * Registered in Windows Registry (`HKCU\...\Uninstall\OpenDual`) and Windows Settings (Installed Apps / Add or Remove Programs).
+  * App Paths registration for quick launch via `Win + R` -> `opendual`.
+  * Start Menu and Desktop shortcuts.
+  * Clean uninstaller (`OpenDualUninstaller.exe` / `uninstall.bat`) that safely stops processes, removes registry entries, removes shortcuts, and cleans up files.
   * Floating, translucent, non-focus-stealing PS5 Control Center-inspired HUD overlay.
   * Pops up when pressing the controller's **PS button** without minimizing or interrupting full-screen games.
   * Displays live battery %, charging state, master audio volume, hardware mic status, and adaptive trigger profiles. Auto-fades after 3.5s or toggles off on next press.

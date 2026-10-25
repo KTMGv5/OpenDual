@@ -72,6 +72,12 @@ public:
         state.touchpadBtn = (p[10] & 0x02) != 0;
         state.micBtn      = (p[10] & 0x04) != 0;
 
+        // DualSense Edge Function Buttons & Back Paddles
+        state.fnLeft      = (p[10] & 0x10) != 0;
+        state.fnRight     = (p[10] & 0x20) != 0;
+        state.paddleLeft  = (p[11] & 0x01) != 0;
+        state.paddleRight = (p[11] & 0x02) != 0;
+
         // Gyro & Accel
         state.gyroX  = (int16_t)(p[16] | (p[17] << 8));
         state.gyroY  = (int16_t)(p[18] | (p[19] << 8));

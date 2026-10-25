@@ -61,6 +61,38 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("audioTriggerThreshold")]
         public float AudioTriggerThreshold { get; set; } = 0.45f;
+
+        // 6-Axis Gyro Aiming
+        [JsonPropertyName("gyro")]
+        public bool Gyro { get; set; } = false;
+
+        [JsonPropertyName("gyroMode")]
+        public int GyroMode { get; set; } = 1;
+
+        [JsonPropertyName("gyroSensX")]
+        public float GyroSensX { get; set; } = 1.0f;
+
+        [JsonPropertyName("gyroSensY")]
+        public float GyroSensY { get; set; } = 1.0f;
+
+        [JsonPropertyName("gyroInvertX")]
+        public bool GyroInvertX { get; set; } = false;
+
+        [JsonPropertyName("gyroInvertY")]
+        public bool GyroInvertY { get; set; } = false;
+
+        [JsonPropertyName("gyroDeadzone")]
+        public int GyroDeadzone { get; set; } = 20;
+
+        [JsonPropertyName("gyroSmooth")]
+        public float GyroSmooth { get; set; } = 0.25f;
+
+        // Power Management & Battery
+        [JsonPropertyName("idleTimeout")]
+        public int IdleTimeout { get; set; } = 10;
+
+        [JsonPropertyName("lowBatWarn")]
+        public bool LowBatWarn { get; set; } = true;
     }
 
     public class ControllerTelemetry
@@ -160,6 +192,42 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("micMuted")]
         public bool MicMuted { get; set; }
+
+        [JsonPropertyName("fnL")]
+        public bool FnLeft { get; set; }
+
+        [JsonPropertyName("fnR")]
+        public bool FnRight { get; set; }
+
+        [JsonPropertyName("padL")]
+        public bool PaddleLeft { get; set; }
+
+        [JsonPropertyName("padR")]
+        public bool PaddleRight { get; set; }
+
+        [JsonPropertyName("gyroActive")]
+        public bool GyroActive { get; set; }
+
+        [JsonPropertyName("isIdle")]
+        public bool IsIdle { get; set; }
+
+        [JsonPropertyName("gyroX")]
+        public short GyroX { get; set; }
+
+        [JsonPropertyName("gyroY")]
+        public short GyroY { get; set; }
+
+        [JsonPropertyName("gyroZ")]
+        public short GyroZ { get; set; }
+
+        [JsonPropertyName("accelX")]
+        public short AccelX { get; set; }
+
+        [JsonPropertyName("accelY")]
+        public short AccelY { get; set; }
+
+        [JsonPropertyName("accelZ")]
+        public short AccelZ { get; set; }
 
         [JsonPropertyName("hapticL")]
         public int HapticL { get; set; }

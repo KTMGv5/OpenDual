@@ -255,8 +255,10 @@
                         <RadioButton x:Name="TabController" Content="CONTROLLER" Style="{StaticResource PS5NavTabStyle}" IsChecked="True" Checked="Nav_Dashboard_Checked"/>
                         <RadioButton x:Name="TabLightbar" Content="LIGHTBAR" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Rgb_Checked"/>
                         <RadioButton x:Name="TabTriggers" Content="TRIGGERS" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Triggers_Checked"/>
+                        <RadioButton x:Name="TabGyro" Content="GYRO AIM" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Gyro_Checked"/>
                         <RadioButton x:Name="TabTouchpad" Content="TOUCHPAD" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Touchpad_Checked"/>
                         <RadioButton x:Name="TabAudio" Content="AUDIO" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Audio_Checked"/>
+                        <RadioButton x:Name="TabProfiles" Content="PROFILES" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Profiles_Checked"/>
                         <RadioButton x:Name="TabSystem" Content="SYSTEM" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Driver_Checked"/>
                     </StackPanel>
                 </ScrollViewer>
@@ -296,12 +298,18 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="DashModelTitle" Text="PlayStation 5 DualSense Wireless Controller" FontSize="19" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}"/>
-                                <Border x:Name="DashMicBadge" Background="#33FF9800" CornerRadius="4" Padding="6,2" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="Collapsed">
+                            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock x:Name="DashModelTitle" Text="PlayStation 5 DualSense Wireless Controller" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <Border x:Name="DashProfileBadge" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource HeaderAccent}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="10,2,0,2" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtDashProfileName" Text="PlayStation 5 Balanced" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
+                                </Border>
+                                <Border x:Name="DashBatteryLowBadge" Background="#33FF334B" BorderBrush="{StaticResource AccentRed}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
+                                    <TextBlock Text="CRITICAL BATTERY (&lt;15%)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentRed}"/>
+                                </Border>
+                                <Border x:Name="DashMicBadge" Background="#33FF9800" CornerRadius="4" Padding="6,2" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
                                     <TextBlock Text="MIC MUTED" FontSize="10" FontWeight="Bold" Foreground="#FFA726"/>
                                 </Border>
-                            </StackPanel>
+                            </WrapPanel>
                             <TextBlock x:Name="DashConnInfo" Text="Active USB Connection • Direct Win32 Overlapped High-Priority Driver" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                         </StackPanel>
                         
@@ -411,6 +419,10 @@
                                     <Border x:Name="PillL3" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="L3" FontSize="11" FontWeight="Bold"/></Border>
                                     <Border x:Name="PillR3" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="R3" FontSize="11" FontWeight="Bold"/></Border>
                                     <Border x:Name="PillMic" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="Mute" FontSize="11" FontWeight="Bold"/></Border>
+                                    <Border x:Name="PillFnL" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="Fn L" FontSize="11" FontWeight="Bold"/></Border>
+                                    <Border x:Name="PillFnR" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="Fn R" FontSize="11" FontWeight="Bold"/></Border>
+                                    <Border x:Name="PillPadL" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="Back LB" FontSize="11" FontWeight="Bold"/></Border>
+                                    <Border x:Name="PillPadR" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="Back RB" FontSize="11" FontWeight="Bold"/></Border>
                                 </WrapPanel>
                             </StackPanel>
                         </StackPanel>
@@ -634,6 +646,129 @@
                 </Border>
             </Grid>
 
+            <!-- 3.5. 6-AXIS GYRO MOTION AIMING VIEW -->
+            <Grid x:Name="ViewGyro" Visibility="Collapsed">
+                <Border Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="28">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="6-Axis Gyro Motion Aiming" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="High-precision 1000Hz DualSense IMU gyro aiming with sub-pixel ballistics and intelligent ADS activation." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="BadgeGyroAiming" Background="#3300E676" BorderBrush="{StaticResource AccentGreen}" BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,12,0" Visibility="Collapsed">
+                                    <TextBlock Text="AIMING ACTIVE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                                </Border>
+                                <CheckBox x:Name="ChkEnableGyro" Content="Enable Gyro Aiming" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="Gyro_Changed" Unchecked="Gyro_Changed"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Gyro Aiming Setup & Live Meters (2-Column Grid) -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: Mode & Sensitivity Tuning -->
+                            <Border Grid.Column="0" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="MOTION AIMING TUNING" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+
+                                    <!-- Activation Mode -->
+                                    <TextBlock Text="Activation Condition" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <ComboBox x:Name="CmbGyroMode" SelectionChanged="Gyro_Changed" Margin="0,0,0,18">
+                                        <ComboBoxItem Content="Hold L2 (Aim Down Sights - ADS)" IsSelected="True"/>
+                                        <ComboBoxItem Content="Always On (Continuous Aiming)"/>
+                                        <ComboBoxItem Content="Touchpad Touch (Aim while resting thumb)"/>
+                                        <ComboBoxItem Content="Hold R2 (Fire Aim)"/>
+                                    </ComboBox>
+
+                                    <!-- Sensitivity X -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Yaw Sensitivity (X)" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Slider x:Name="SliderGyroSensX" Grid.Column="1" Minimum="0.2" Maximum="4.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.2" ValueChanged="Gyro_Changed"/>
+                                        <TextBlock x:Name="TxtGyroSensXVal" Grid.Column="2" Text="1.0x" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Sensitivity Y -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Pitch Sensitivity (Y)" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Slider x:Name="SliderGyroSensY" Grid.Column="1" Minimum="0.2" Maximum="4.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.2" ValueChanged="Gyro_Changed"/>
+                                        <TextBlock x:Name="TxtGyroSensYVal" Grid.Column="2" Text="1.0x" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Invert Axes -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                        <CheckBox x:Name="ChkGyroInvertX" Content="Invert Horizontal (X)" Foreground="{DynamicResource TextPrimary}" Margin="0,0,20,0" Checked="Gyro_Changed" Unchecked="Gyro_Changed"/>
+                                        <CheckBox x:Name="ChkGyroInvertY" Content="Invert Vertical (Y)" Foreground="{DynamicResource TextPrimary}" Checked="Gyro_Changed" Unchecked="Gyro_Changed"/>
+                                    </StackPanel>
+
+                                    <!-- Deadzone & Smoothing -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Sensor Deadzone" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Slider x:Name="SliderGyroDeadzone" Grid.Column="1" Minimum="0" Maximum="60" Value="20" IsSnapToTickEnabled="True" TickFrequency="2" ValueChanged="Gyro_Changed"/>
+                                        <TextBlock x:Name="TxtGyroDeadzoneVal" Grid.Column="2" Text="20" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Motion Smoothing" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Slider x:Name="SliderGyroSmooth" Grid.Column="1" Minimum="0.0" Maximum="0.80" Value="0.25" IsSnapToTickEnabled="True" TickFrequency="0.05" ValueChanged="Gyro_Changed"/>
+                                        <TextBlock x:Name="TxtGyroSmoothVal" Grid.Column="2" Text="25%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Right: Live IMU Sensor Telemetry -->
+                            <Border Grid.Column="1" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="LIVE DUALSENSE IMU TELEMETRY" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+
+                                    <!-- Yaw Progress -->
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="80"/><ColumnDefinition Width="*"/><ColumnDefinition Width="100"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Yaw (Z):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ProgressBar x:Name="BarGyroZ" Grid.Column="1" Height="10" Minimum="0" Maximum="500" Value="0" Foreground="{DynamicResource AccentSignature}" Background="#1F283B" BorderThickness="0" Margin="4,0"/>
+                                        <TextBlock x:Name="TxtGyroYaw" Grid.Column="2" Text="Yaw: +0000" FontSize="11" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Pitch Progress -->
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="80"/><ColumnDefinition Width="*"/><ColumnDefinition Width="100"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Pitch (X):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ProgressBar x:Name="BarGyroX" Grid.Column="1" Height="10" Minimum="0" Maximum="500" Value="0" Foreground="{DynamicResource HeaderAccent}" Background="#1F283B" BorderThickness="0" Margin="4,0"/>
+                                        <TextBlock x:Name="TxtGyroPitch" Grid.Column="2" Text="Pitch: +0000" FontSize="11" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Roll Progress -->
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="80"/><ColumnDefinition Width="*"/><ColumnDefinition Width="100"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Roll (Y):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ProgressBar x:Name="BarGyroY" Grid.Column="1" Height="10" Minimum="0" Maximum="500" Value="0" Foreground="{StaticResource AccentMagenta}" Background="#1F283B" BorderThickness="0" Margin="4,0"/>
+                                        <TextBlock x:Name="TxtGyroRoll" Grid.Column="2" Text="Roll: +0000" FontSize="11" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+
+                                    <!-- Calibration info -->
+                                    <Border Background="{DynamicResource BgCardHover}" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+                                        <TextBlock Text="• Auto-calibrates resting sensor drift in real time when placed still on flat surfaces.&#x0a;• High-precision sub-pixel mouse translation ensures seamless tracking in competitive shooters." FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
+                                    </Border>
+
+                                    <Button x:Name="BtnResetGyroDrift" Content="Recalibrate Gyro Baseline" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" HorizontalAlignment="Left" Click="BtnResetGyroDrift_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
             <!-- 4. TOUCHPAD & MOUSE VIEW -->
             <Grid x:Name="ViewTouchpad" Visibility="Collapsed">
                 <Border Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="28">
@@ -809,6 +944,98 @@
                 </Border>
             </Grid>
 
+            <!-- 5.5. GAME PROFILES & PRESETS VIEW -->
+            <Grid x:Name="ViewProfiles" Visibility="Collapsed">
+                <Border Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="28">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Game-Specific Profiles &amp; Preset Library" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Seamless automatic switching when games enter foreground, plus community sharing and tuned presets." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <CheckBox x:Name="ChkAutoSwitchProfile" Grid.Column="1" Content="Auto-Switch per Game" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" IsChecked="True" Checked="ChkAutoSwitchProfile_Changed" Unchecked="ChkAutoSwitchProfile_Changed"/>
+                        </Grid>
+
+                        <!-- Profile Selection Bar -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,18">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="Select Profile: " FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ComboBox x:Name="CmbProfiles" MinWidth="260" SelectionChanged="CmbProfiles_SelectionChanged"/>
+                                </StackPanel>
+                                <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <Button Content="Apply Profile" Style="{StaticResource PrimaryBtnStyle}" Background="{StaticResource AccentGreen}" Margin="0,0,8,4" Click="BtnApplyProfile_Click"/>
+                                    <Button Content="Save Current" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" Margin="0,0,8,4" Click="BtnSaveProfile_Click"/>
+                                    <Button Content="Duplicate" Style="{StaticResource PrimaryBtnStyle}" Background="#243046" Margin="0,0,8,4" Click="BtnDuplicateProfile_Click"/>
+                                    <Button Content="Export (.json)" Style="{StaticResource PrimaryBtnStyle}" Background="#243046" Margin="0,0,8,4" Click="BtnExportProfile_Click"/>
+                                    <Button Content="Import" Style="{StaticResource PrimaryBtnStyle}" Background="#243046" Margin="0,0,8,4" Click="BtnImportProfile_Click"/>
+                                    <Button x:Name="BtnDeleteProfile" Content="Delete" Style="{StaticResource PrimaryBtnStyle}" Background="{StaticResource AccentRed}" Margin="0,0,0,4" Click="BtnDeleteProfile_Click"/>
+                                </WrapPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Profile Configuration Details -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="ACTIVE PROFILE DETAILS" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,14"/>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Profile Name:" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="TxtProfileName" Grid.Column="1" Background="{DynamicResource InputBg}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderColor}" Padding="8,5"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="Description:" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="TxtProfileDesc" Grid.Column="1" Background="{DynamicResource InputBg}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderColor}" Padding="8,5"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Game Executables:" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="(Comma-separated .exe)" FontSize="10" Foreground="{DynamicResource TextSecondary}"/>
+                                    </StackPanel>
+                                    <TextBox x:Name="TxtProfileProcesses" Grid.Column="1" Background="{DynamicResource InputBg}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderColor}" Padding="8,5"/>
+                                </Grid>
+
+                                <!-- Config Summary Matrix -->
+                                <Border Background="{DynamicResource BgCardHover}" CornerRadius="8" Padding="16,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                            <ColumnDefinition Width="1*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                            <TextBlock Text="Adaptive Triggers" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}" Margin="0,0,0,4"/>
+                                            <TextBlock x:Name="TxtSummaryTriggers" Text="L2: TriggerStop (Hair) • R2: TriggerStop (Hair)" FontSize="11" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                            <TextBlock Text="Lightbar &amp; Audio Haptics" FontWeight="Bold" Foreground="{DynamicResource HeaderAccent}" Margin="0,0,0,4"/>
+                                            <TextBlock x:Name="TxtSummaryHaptics" Text="RGB: #00D2FF • Haptics: 120% Stereo • Recoil Kick On" FontSize="11" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="6-Axis Gyro &amp; Touchpad" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" Margin="0,0,0,4"/>
+                                            <TextBlock x:Name="TxtSummaryGyro" Text="Gyro: Enabled (ADS L2 Hold) • Touchpad Mouse: On" FontSize="11" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
             <!-- 6. DRIVER & BUS SETUP VIEW -->
             <Grid x:Name="ViewDriver" Visibility="Collapsed">
                 <Border Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="28">
@@ -887,6 +1114,68 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Power Management & Battery Preferences -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,18,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Bluetooth Power Management &amp; Battery Health" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Automate low-power standby during controller inactivity and preserve battery life." Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,16"/>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Inactivity Sleep Standby Timer" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Automatically powers down LEDs and motor loopbacks after periods of zero user movement." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <ComboBox x:Name="CmbIdleTimeout" Grid.Column="1" Width="180" SelectionChanged="PowerSettings_Changed">
+                                        <ComboBoxItem Content="Disabled (Never Sleep)"/>
+                                        <ComboBoxItem Content="5 Minutes"/>
+                                        <ComboBoxItem Content="10 Minutes (Default)" IsSelected="True"/>
+                                        <ComboBoxItem Content="15 Minutes"/>
+                                        <ComboBoxItem Content="30 Minutes"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Critical Low-Battery Lightbar Pulse Alert" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Flashes the DualSense lightbar with a gentle red pulse when battery level falls below 15%." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkLowBatteryWarn" Grid.Column="1" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="PowerSettings_Changed" Unchecked="PowerSettings_Changed"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- In-App Automatic Updater -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,18,0,0">
+                            <StackPanel>
+                                <TextBlock Text="In-App Automatic Suite Updater" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Check and seamlessly install updates directly from the official GitHub releases repository." Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,16"/>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Installed Version: " Foreground="{DynamicResource TextSecondary}"/>
+                                            <TextBlock Text="v1.4.0 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="TxtUpdateStatus" Text="Up to date." FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnCheckUpdates" Grid.Column="1" Content="Check for Updates" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" Click="BtnCheckUpdates_Click"/>
+                                </Grid>
+
+                                <!-- Available Update Card -->
+                                <Border x:Name="PanelUpdateAvailable" Background="{DynamicResource BgCardHover}" CornerRadius="8" Padding="14,12" Margin="0,6,0,0" Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtNewVersionTitle" Text="New Update Available: v1.4.x" FontWeight="Bold" FontSize="13" Foreground="{StaticResource AccentGreen}"/>
+                                        <TextBlock x:Name="TxtNewVersionNotes" Text="Release highlights..." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,10" TextWrapping="Wrap"/>
+                                        <ProgressBar x:Name="ProgressUpdate" Height="8" Minimum="0" Maximum="100" Value="0" Background="#1F283B" Foreground="{StaticResource AccentGreen}" BorderThickness="0" Margin="0,0,0,10" Visibility="Collapsed"/>
+                                        <Button x:Name="BtnInstallUpdate" Content="Download &amp; Install Update (Relaunch)" Style="{StaticResource PrimaryBtnStyle}" Background="{StaticResource AccentGreen}" HorizontalAlignment="Left" Click="BtnInstallUpdate_Click"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
                         <TextBlock x:Name="TxtDriverLog" Text="" Foreground="{DynamicResource AccentSignature}" Margin="0,16,0,0"/>
                     </StackPanel>
                 </Border>
@@ -907,7 +1196,7 @@
                     <TextBlock Text="  •  " FontSize="11" Foreground="{DynamicResource BorderColor}"/>
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="OpenDual Suite v1.3.0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock Grid.Column="1" Text="OpenDual Suite v1.4.0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>

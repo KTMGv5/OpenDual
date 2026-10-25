@@ -181,6 +181,25 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getBool("audioTriggerKick", trigKick)) { cfg.audioTriggerKick = trigKick; changed = true; }
     if (getFloat("audioTriggerThreshold", trigThresh)) { cfg.audioTriggerThreshold = trigThresh; changed = true; }
 
+    // 6-Axis Gyro Motion Aiming
+    bool gyroEn = false, gyroInvX = false, gyroInvY = false;
+    int gyroMode = 1, gyroDzone = 20;
+    float gSensX = 1.0f, gSensY = 1.0f, gSmooth = 0.25f;
+    if (getBool("gyroEnabled", gyroEn)) { cfg.gyroEnabled = gyroEn; changed = true; }
+    if (getInt("gyroMode", gyroMode)) { cfg.gyroTriggerMode = gyroMode; changed = true; }
+    if (getFloat("gyroSensX", gSensX)) { cfg.gyroSensX = gSensX; changed = true; }
+    if (getFloat("gyroSensY", gSensY)) { cfg.gyroSensY = gSensY; changed = true; }
+    if (getBool("gyroInvertX", gyroInvX)) { cfg.gyroInvertX = gyroInvX; changed = true; }
+    if (getBool("gyroInvertY", gyroInvY)) { cfg.gyroInvertY = gyroInvY; changed = true; }
+    if (getInt("gyroDeadzone", gyroDzone)) { cfg.gyroDeadzone = gyroDzone; changed = true; }
+    if (getFloat("gyroSmooth", gSmooth)) { cfg.gyroSmooth = gSmooth; changed = true; }
+
+    // Power Management
+    int idleMins = 10;
+    bool lowBatWarn = true;
+    if (getInt("idleTimeout", idleMins)) { cfg.idleTimeoutMinutes = idleMins; changed = true; }
+    if (getBool("lowBatteryWarning", lowBatWarn)) { cfg.lowBatteryWarning = lowBatWarn; changed = true; }
+
     // Adaptive Triggers
     int lMode = 0, lStart = 0, lForce = 0, lFreq = 0;
     if (getInt("ltMode", lMode)) { cfg.leftTrigger.mode = (TriggerMode)lMode; changed = true; }
@@ -236,6 +255,18 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
        << "\"padBtn\":" << (s.touchpadBtn ? "true" : "false") << ","
        << "\"micBtn\":" << (s.micBtn ? "true" : "false") << ","
        << "\"micMuted\":" << (s.micMuted ? "true" : "false") << ","
+       << "\"fnL\":" << (s.fnLeft ? "true" : "false") << ","
+       << "\"fnR\":" << (s.fnRight ? "true" : "false") << ","
+       << "\"padL\":" << (s.paddleLeft ? "true" : "false") << ","
+       << "\"padR\":" << (s.paddleRight ? "true" : "false") << ","
+       << "\"gyroActive\":" << (s.gyroActive ? "true" : "false") << ","
+       << "\"isIdle\":" << (s.isIdle ? "true" : "false") << ","
+       << "\"gyroX\":" << s.gyroX << ","
+       << "\"gyroY\":" << s.gyroY << ","
+       << "\"gyroZ\":" << s.gyroZ << ","
+       << "\"accelX\":" << s.accelX << ","
+       << "\"accelY\":" << s.accelY << ","
+       << "\"accelZ\":" << s.accelZ << ","
        << "\"hapticL\":" << (int)s.hapticMotorL << ","
        << "\"hapticR\":" << (int)s.hapticMotorR << ","
        << "\"t1\":{\"on\":" << (s.touch1.active ? "true" : "false") << ",\"x\":" << s.touch1.x << ",\"y\":" << s.touch1.y << "},"
@@ -252,6 +283,16 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"hapticStereo\":" << (c.hapticStereo ? "true" : "false") << ","
            << "\"audioTriggerKick\":" << (c.audioTriggerKick ? "true" : "false") << ","
            << "\"audioTriggerThreshold\":" << c.audioTriggerThreshold << ","
+           << "\"gyro\":" << (c.gyroEnabled ? "true" : "false") << ","
+           << "\"gyroMode\":" << c.gyroTriggerMode << ","
+           << "\"gyroSensX\":" << c.gyroSensX << ","
+           << "\"gyroSensY\":" << c.gyroSensY << ","
+           << "\"gyroInvertX\":" << (c.gyroInvertX ? "true" : "false") << ","
+           << "\"gyroInvertY\":" << (c.gyroInvertY ? "true" : "false") << ","
+           << "\"gyroDeadzone\":" << c.gyroDeadzone << ","
+           << "\"gyroSmooth\":" << c.gyroSmooth << ","
+           << "\"idleTimeout\":" << c.idleTimeoutMinutes << ","
+           << "\"lowBatWarn\":" << (c.lowBatteryWarning ? "true" : "false") << ","
            << "\"ltMode\":" << (int)c.leftTrigger.mode << ","
            << "\"rtMode\":" << (int)c.rightTrigger.mode
        << "}"

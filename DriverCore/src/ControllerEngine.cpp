@@ -248,8 +248,40 @@ void ControllerEngine::PollingThread() {
                 // Process hardware mic button synchronization
                 localState.micMuted = m_audio.ProcessMicButton(localState.micBtn, localConfig.syncMicMute);
 
-                // Process Touchpad mouse ballistics & gestures
-                m_touchpad.Process(localState, localConfig);
+                // Check for user activity (to manage power saving / idle sleep)
+                bool hadActivity = localState.cross || localState.circle || localState.square || localState.triangle ||
+                                   localState.l1 || localState.r1 || localState.l2Btn || localState.r2Btn ||
+                                   localState.share || localState.options || localState.l3 || localState.r3 ||
+                                   localState.ps || localState.touchpadBtn || localState.micBtn ||
+                                   localState.fnLeft || localState.fnRight || localState.paddleLeft || localState.paddleRight ||
+                                   std::abs((int)localState.rawLX - 128) > 18 || std::abs((int)localState.rawLY - 128) > 18 ||
+                                   std::abs((int)localState.rawRX - 128) > 18 || std::abs((int)localState.rawRY - 128) > 18 ||
+                                   localState.rawL2 > 20 || localState.rawR2 > 20 ||
+                                   localState.touch1.active || localState.touch2.active ||
+                                   std::abs(localState.gyroX) > 85 || std::abs(localState.gyroY) > 85 || std::abs(localState.gyroZ) > 85;
+
+                uint64_t nowTick = GetTickCount64();
+                if (hadActivity || m_lastActivityTick.load() == 0) {
+                    m_lastActivityTick.store(nowTick);
+                    localState.isIdle = false;
+                } else if (localConfig.idleTimeoutMinutes > 0) {
+                    uint64_t idleMs = nowTick - m_lastActivityTick.load();
+                    localState.isIdle = (idleMs >= (uint64_t)localConfig.idleTimeoutMinutes * 60000ULL);
+                } else {
+                    localState.isIdle = false;
+                }
+
+                // Process Touchpad mouse ballistics & gestures (only if not idle)
+                if (!localState.isIdle) {
+                    m_touchpad.Process(localState, localConfig);
+                }
+
+                // Process 6-Axis Gyro Motion Aiming
+                if (!localState.isIdle) {
+                    localState.gyroActive = m_gyro.Process(localState, localConfig);
+                } else {
+                    localState.gyroActive = false;
+                }
 
                 // Update Virtual Gamepad (XInput)
                 if (localConfig.emulateXbox360) {
@@ -396,6 +428,25 @@ void ControllerEngine::OutputThread() {
                 activeCfg.rightTrigger.force = 225;
                 activeCfg.rightTrigger.frequency = 6;
                 activeCfg.rightTrigger.endPos = 240;
+            }
+
+            // Power saving & Low battery overrides
+            if (state.isIdle) {
+                // Controller is asleep due to inactivity
+                activeCfg.ledR = 0;
+                activeCfg.ledG = 0;
+                activeCfg.ledB = 0;
+                activeCfg.playerLeds = 0;
+                activeCfg.leftTrigger.mode = TriggerMode::Off;
+                activeCfg.rightTrigger.mode = TriggerMode::Off;
+                lRumble = 0;
+                rRumble = 0;
+            } else if (state.batteryPercent <= 15 && !state.isCharging && config.lowBatteryWarning) {
+                // Pulse lightbar red every second when battery is critical (<15%)
+                float pulse = (std::sin(m_effectPhase * 3.0f) + 1.0f) * 0.5f;
+                activeCfg.ledR = (uint8_t)(pulse * 255.0f);
+                activeCfg.ledG = 0;
+                activeCfg.ledB = 0;
             }
 
             if (state.model == ControllerModel::DualSense || state.model == ControllerModel::DualSenseEdge) {

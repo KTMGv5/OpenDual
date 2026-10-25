@@ -71,15 +71,20 @@ namespace OpenDualHub
                 TxtConnection.Text = $"Direct 1000Hz HID • {t.ConnectionName}";
 
                 // Battery
-                TxtBatteryPercent.Text = $"{t.Battery}%";
-                TxtChargingBadge.Visibility = t.Charging ? Visibility.Visible : Visibility.Collapsed;
-
-                if (t.Battery > 50)
-                    TxtBatteryPercent.Foreground = (Brush)FindResource("AccentGreen");
-                else if (t.Battery > 20)
-                    TxtBatteryPercent.Foreground = (Brush)FindResource("AccentAmber");
-                else
+                if (t.Battery <= 15 && !t.Charging)
+                {
+                    TxtBatteryPercent.Text = $"{t.Battery}% [LOW]";
                     TxtBatteryPercent.Foreground = (Brush)new BrushConverter().ConvertFromString("#FF334B")!;
+                }
+                else
+                {
+                    TxtBatteryPercent.Text = $"{t.Battery}%";
+                    if (t.Battery > 50)
+                        TxtBatteryPercent.Foreground = (Brush)FindResource("AccentGreen");
+                    else
+                        TxtBatteryPercent.Foreground = (Brush)FindResource("AccentAmber");
+                }
+                TxtChargingBadge.Visibility = t.Charging ? Visibility.Visible : Visibility.Collapsed;
 
                 // Mic
                 if (t.MicMuted)
@@ -118,6 +123,16 @@ namespace OpenDualHub
             6 => "TriggerStop",
             _ => "Standard"
         };
+
+        public void ShowNotification(string title, string details)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                TxtControllerName.Text = title;
+                TxtTriggerProfile.Text = details;
+                ShowHud();
+            });
+        }
 
         public void ToggleOrRefresh()
         {
