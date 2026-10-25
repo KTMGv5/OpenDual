@@ -1,0 +1,14 @@
+# Build intermediate directories
+build_core/
+DesktopApp/bin/
+DesktopApp/obj/
+Installer/bin/
+Installer/obj/
+*.obj
+*.pdb
+*.user
+
+# Visual Studio & temporary files
+.vs/
+*.tmp
+*.log
