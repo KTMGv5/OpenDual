@@ -339,8 +339,8 @@ void AudioSubsystem::LoopbackCaptureThread() {
                     ProcessAudioSamples(pData, numFrames, pFormat);
                 } else {
                     std::lock_guard<std::mutex> lock(m_hapticMutex);
-                    m_peakL *= 0.94f;
-                    m_peakR *= 0.94f;
+                    m_peakL *= 0.80f;
+                    m_peakR *= 0.80f;
                 }
                 pCapture->ReleaseBuffer(numFrames);
             }
@@ -446,9 +446,18 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
     }
 
     std::lock_guard<std::mutex> lock(m_hapticMutex);
-    // Instant attack on transient peaks. Avoid intra-packet decay here to prevent jitter.
-    if (localPeakL > m_peakL) m_peakL = localPeakL;
-    if (localPeakR > m_peakR) m_peakR = localPeakR;
+    // Instant attack on rising peaks, fast musical release on decay (~60ms)
+    if (localPeakL > m_peakL) {
+        m_peakL = localPeakL;
+    } else {
+        m_peakL = m_peakL * 0.88f + localPeakL * 0.12f;
+    }
+
+    if (localPeakR > m_peakR) {
+        m_peakR = localPeakR;
+    } else {
+        m_peakR = m_peakR * 0.88f + localPeakR * 0.12f;
+    }
 }
 
 void AudioSubsystem::GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float intensity, int cutoffHz, bool stereo) {
@@ -458,20 +467,23 @@ void AudioSubsystem::GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float 
 
     std::lock_guard<std::mutex> lock(m_hapticMutex);
 
-    // Natural smooth exponential decay (~150ms envelope follower)
-    m_peakL *= 0.955f;
-    m_peakR *= 0.955f;
+    // Fast envelope release (~70ms half-life at 60Hz) to silence rumble between drum beats/footsteps
+    m_peakL *= 0.86f;
+    m_peakR *= 0.86f;
 
-    // Musical noise gate: eliminates low-level room noise and fan hum
-    const float noiseGate = 0.008f;
-    const float nominalMax = 0.18f;
+    // Musical noise gate: eliminates continuous ambient room noise, dialogue bleed, and system hiss
+    const float noiseGate = 0.024f;
+    const float nominalMax = 0.20f;
 
     auto mapAmp = [noiseGate, nominalMax, intensity](float peak) -> uint8_t {
-        if (peak <= noiseGate || intensity <= 0.005f) return 0;
+        if (peak <= noiseGate || intensity <= 0.01f) return 0;
         float norm = (peak - noiseGate) / (nominalMax - noiseGate);
         if (norm > 1.0f) norm = 1.0f;
-        // Direct linear scaling with slider intensity multiplier
-        float scaled = norm * intensity;
+
+        // Quadratic dynamic expansion (punch curve):
+        // Suppresses continuous low-level drones while providing crisp, hard-hitting tactile punch
+        float punch = norm * norm;
+        float scaled = punch * intensity;
         if (scaled > 1.0f) scaled = 1.0f;
         return (uint8_t)std::clamp((int)(scaled * 255.0f), 0, 255);
     };
