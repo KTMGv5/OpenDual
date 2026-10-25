@@ -59,7 +59,7 @@ bool HidDevice::Open(const std::string& path) {
     }
 
     // Set Windows HID driver queue depth for low-latency streaming
-    HidD_SetNumInputBuffers(m_handle, 64);
+    (void)HidD_SetNumInputBuffers(m_handle, 64);
 
     m_ovRead.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     m_ovWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
