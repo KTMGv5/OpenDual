@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="OpenDual — PlayStation Controller Suite"
         Icon="Assets/app.ico"
-        Height="820" Width="1200"
-        MinHeight="560" MinWidth="860"
+        Height="820" Width="1100"
+        MinHeight="480" MinWidth="600"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgPrimary}"
         Foreground="{DynamicResource TextPrimary}"
         FontFamily="Segoe UI"
-        StateChanged="Window_StateChanged">
+        StateChanged="Window_StateChanged"
+        SizeChanged="Window_SizeChanged">
 
     <Window.Resources>
         <!-- Theme Brushes (Default PS5) -->
@@ -124,10 +125,10 @@
         <Style x:Key="PS5NavTabStyle" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Padding" Value="10,8"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -137,7 +138,7 @@
                                 <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Border>
                             <!-- Active indicator underline bar (PS5 style) -->
-                            <Border x:Name="ActiveBar" Height="3" VerticalAlignment="Bottom" Background="{DynamicResource AccentSignature}" CornerRadius="1.5" Visibility="Collapsed" Margin="8,0,8,-2"/>
+                            <Border x:Name="ActiveBar" Height="3" VerticalAlignment="Bottom" Background="{DynamicResource AccentSignature}" CornerRadius="1.5" Visibility="Collapsed" Margin="6,0,6,-2"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -231,7 +232,7 @@
         </Grid.RowDefinitions>
 
         <!-- PS5 HOMESCREEN TOP NAVIGATION BAR -->
-        <Border Grid.Row="0" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="24,0">
+        <Border Grid.Row="0" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="14,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -240,33 +241,35 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left: OpenDual Logo & Title -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
-                    <Image Source="Assets/logo.png" Width="34" Height="34" Margin="0,0,10,0"/>
-                    <TextBlock Text="OpenDual" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                    <Border Background="{DynamicResource InputBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <Image Source="Assets/logo.png" Width="30" Height="30" Margin="0,0,8,0"/>
+                    <TextBlock Text="OpenDual" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                    <Border Background="{DynamicResource InputBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="8,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="SUITE" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
                     </Border>
                 </StackPanel>
 
-                <!-- Center: Navigation Ribbon Tabs (PS5 Homescreen style) -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
-                    <RadioButton Content="CONTROLLER" Style="{StaticResource PS5NavTabStyle}" IsChecked="True" Checked="Nav_Dashboard_Checked"/>
-                    <RadioButton Content="LIGHTBAR" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Rgb_Checked"/>
-                    <RadioButton Content="TRIGGERS" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Triggers_Checked"/>
-                    <RadioButton Content="TOUCHPAD" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Touchpad_Checked"/>
-                    <RadioButton Content="AUDIO" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Audio_Checked"/>
-                    <RadioButton Content="SYSTEM" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Driver_Checked"/>
-                </StackPanel>
+                <!-- Center: Navigation Ribbon Tabs (Smoothly scrollable, zero clipping) -->
+                <ScrollViewer x:Name="NavTabsScrollViewer" Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Focusable="False" PanningMode="HorizontalOnly" PreviewMouseWheel="NavTabsScrollViewer_PreviewMouseWheel">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <RadioButton x:Name="TabController" Content="CONTROLLER" Style="{StaticResource PS5NavTabStyle}" IsChecked="True" Checked="Nav_Dashboard_Checked"/>
+                        <RadioButton x:Name="TabLightbar" Content="LIGHTBAR" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Rgb_Checked"/>
+                        <RadioButton x:Name="TabTriggers" Content="TRIGGERS" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Triggers_Checked"/>
+                        <RadioButton x:Name="TabTouchpad" Content="TOUCHPAD" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Touchpad_Checked"/>
+                        <RadioButton x:Name="TabAudio" Content="AUDIO" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Audio_Checked"/>
+                        <RadioButton x:Name="TabSystem" Content="SYSTEM" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Driver_Checked"/>
+                    </StackPanel>
+                </ScrollViewer>
 
                 <!-- Right: Global Clock & Battery Status -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
                     <!-- Real-Time Digital Clock -->
-                    <TextBlock x:Name="TxtClock" Text="12:00 PM" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <TextBlock x:Name="TxtClock" Text="12:00 PM" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,10,0"/>
 
                     <!-- Battery & Connection Indicator -->
-                    <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="10,5">
+                    <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="9,5">
                         <StackPanel Orientation="Horizontal">
-                            <Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{StaticResource AccentRed}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{StaticResource AccentRed}" Margin="0,0,7,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtBatteryHeader" Text="100%" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
@@ -276,7 +279,7 @@
 
         <!-- MAIN CONTENT AREA WITH AUTO SCROLLING -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-            <Grid Margin="28,16,28,24">
+            <Grid Margin="18,14,18,20">
             
             <!-- 1. CONTROLLER DASHBOARD VIEW -->
             <Grid x:Name="ViewDashboard" Visibility="Visible">
@@ -286,34 +289,34 @@
                 </Grid.RowDefinitions>
 
                 <!-- Hero Information Card -->
-                <Border Grid.Row="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="22,16" Margin="0,0,0,18">
+                <Border Grid.Row="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="20,16" Margin="0,0,0,16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="DashModelTitle" Text="PlayStation 5 DualSense Wireless Controller" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock x:Name="DashModelTitle" Text="PlayStation 5 DualSense Wireless Controller" FontSize="19" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}"/>
                                 <Border x:Name="DashMicBadge" Background="#33FF9800" CornerRadius="4" Padding="6,2" Margin="14,0,0,0" VerticalAlignment="Center" Visibility="Collapsed">
                                     <TextBlock Text="MIC MUTED" FontSize="10" FontWeight="Bold" Foreground="#FFA726"/>
                                 </Border>
                             </StackPanel>
-                            <TextBlock x:Name="DashConnInfo" Text="Active USB Connection • Direct Win32 Overlapped High-Priority Driver" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                            <TextBlock x:Name="DashConnInfo" Text="Active USB Connection • Direct Win32 Overlapped High-Priority Driver" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                         </StackPanel>
                         
                         <!-- Telemetry Badges -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,10,0">
+                            <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,10,0">
                                 <StackPanel HorizontalAlignment="Center">
                                     <TextBlock Text="POLLING RATE" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
-                                    <TextBlock x:Name="DashHzVal" Text="1000 Hz" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="DashHzVal" Text="1000 Hz" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
-                            <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14,8">
+                            <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12,8">
                                 <StackPanel HorizontalAlignment="Center">
                                     <TextBlock Text="INPUT LATENCY" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource HeaderAccent}"/>
-                                    <TextBlock x:Name="DashLatencyVal" Text="0.8 ms" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="DashLatencyVal" Text="0.8 ms" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -321,14 +324,18 @@
                 </Border>
 
                 <!-- Visual Controller Canvas -->
-                <Grid Grid.Row="1">
+                <Grid x:Name="GridDashContent" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition x:Name="DashColDefLeft" Width="1*"/>
+                        <ColumnDefinition x:Name="DashColDefRight" Width="1*"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Column: Sticks & Triggers -->
-                    <Border Grid.Column="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,10,0">
+                    <Border x:Name="DashLeftCol" Grid.Row="0" Grid.Column="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,10,0">
                         <StackPanel>
                             <TextBlock Text="ANALOG STICKS &amp; TRIGGERS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
 
@@ -410,7 +417,7 @@
                     </Border>
 
                     <!-- Right Column: Touchpad & Action Buttons -->
-                    <Border Grid.Column="1" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="20" Margin="10,0,0,0">
+                    <Border x:Name="DashRightCol" Grid.Row="0" Grid.Column="1" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="20" Margin="10,0,0,0">
                         <StackPanel>
                             <TextBlock Text="TOUCHPAD SURFACE &amp; FACE BUTTONS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
 
@@ -469,14 +476,18 @@
                         <TextBlock Text="Lightbar Illumination Studio" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                         <TextBlock Text="Customize 24-bit RGB lighting, cycle animations, speed curves, and Player indicator LEDs." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,24"/>
 
-                        <Grid>
+                        <Grid x:Name="GridRgbContent">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.2*"/>
-                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition x:Name="RgbColDefLeft" Width="1.2*"/>
+                                <ColumnDefinition x:Name="RgbColDefRight" Width="1*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Color Sliders & Controls -->
-                            <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                            <StackPanel x:Name="RgbLeftCol" Grid.Row="0" Grid.Column="0" Margin="0,0,24,0">
                                 <!-- Red -->
                                 <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="60"/><ColumnDefinition Width="*"/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions>
@@ -531,7 +542,7 @@
                             </StackPanel>
 
                             <!-- Live Color Preview & Presets -->
-                            <StackPanel Grid.Column="1">
+                            <StackPanel x:Name="RgbRightCol" Grid.Row="0" Grid.Column="1">
                                 <TextBlock Text="LIVE HARDWARE GLOW" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,10"/>
                                 <Border x:Name="ColorPreviewBox" Height="110" CornerRadius="10" Background="#0078FF" Margin="0,0,0,16">
                                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -561,14 +572,18 @@
                         <TextBlock Text="DualSense Adaptive Triggers" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                         <TextBlock Text="Configure stepper-motor force resistance, mechanical machine-gun recoil, and bow tension." FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,24"/>
 
-                        <Grid>
+                        <Grid x:Name="GridTriggersContent">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition x:Name="TriggersColDefLeft" Width="1*"/>
+                                <ColumnDefinition x:Name="TriggersColDefRight" Width="1*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Left Trigger (L2) -->
-                            <Border Grid.Column="0" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,12,0">
+                            <Border x:Name="TriggersLeftCol" Grid.Row="0" Grid.Column="0" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,12,0">
                                 <StackPanel>
                                     <TextBlock Text="LEFT TRIGGER (L2)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}" Margin="0,0,0,12"/>
                                     <TextBlock Text="Mode Profile" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
@@ -592,7 +607,7 @@
                             </Border>
 
                             <!-- Right Trigger (R2) -->
-                            <Border Grid.Column="1" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="12,0,0,0">
+                            <Border x:Name="TriggersRightCol" Grid.Row="0" Grid.Column="1" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="12,0,0,0">
                                 <StackPanel>
                                     <TextBlock Text="RIGHT TRIGGER (R2)" FontSize="13" FontWeight="Bold" Foreground="{StaticResource AccentMagenta}" Margin="0,0,0,12"/>
                                     <TextBlock Text="Mode Profile" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
@@ -630,22 +645,26 @@
 
                         <!-- Sensitivity Sliders -->
                         <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
                             <TextBlock Text="Cursor Movement Sensitivity" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                             <Slider x:Name="SliderMouseSens" Grid.Column="1" Minimum="0.2" Maximum="3.0" Value="1.2" ValueChanged="TouchpadConfig_Changed"/>
                             <TextBlock x:Name="TxtMouseSensVal" Grid.Column="2" Text="1.2x" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                         </Grid>
 
                         <Grid Margin="0,0,0,20">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
                             <TextBlock Text="Two-Finger Scroll Speed" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                             <Slider x:Name="SliderScrollSens" Grid.Column="1" Minimum="0.2" Maximum="3.0" Value="1.0" ValueChanged="TouchpadConfig_Changed"/>
                             <TextBlock x:Name="TxtScrollSensVal" Grid.Column="2" Text="1.0x" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                         </Grid>
 
                         <StackPanel Margin="0,10,0,0">
-                            <CheckBox x:Name="ChkTapClick" Content="Tap-To-Click (Single finger tap = Left Click, Two fingers tap = Right Click)" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed"/>
-                            <CheckBox x:Name="ChkSplitClick" Content="Split Physical Click (Right 25% zone triggers Right Click)" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed"/>
+                            <CheckBox x:Name="ChkTapClick" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed">
+                                <TextBlock Text="Tap-To-Click (Single finger tap = Left Click, Two fingers tap = Right Click)" TextWrapping="Wrap"/>
+                            </CheckBox>
+                            <CheckBox x:Name="ChkSplitClick" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed">
+                                <TextBlock Text="Split Physical Click (Right 25% zone triggers Right Click)" TextWrapping="Wrap"/>
+                            </CheckBox>
                             <CheckBox x:Name="ChkInvertY" Content="Invert Y Axis Movement" FontSize="13" Foreground="{DynamicResource TextPrimary}" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed"/>
                         </StackPanel>
 
@@ -668,7 +687,9 @@
                                 <TextBlock Text="HARDWARE MIC MUTE BUTTON SYNCHRONIZATION" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}" Margin="0,0,0,8"/>
                                 <TextBlock Text="Syncs the DualSense physical microphone mute button directly with Windows CoreAudio. Pressing the button on the controller mutes Windows microphone and illuminates the amber hardware LED in real time." TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,14"/>
 
-                                <CheckBox x:Name="ChkSyncMic" Content="Synchronize Controller Mic Button with Windows System Microphone" FontSize="14" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Checked="MicSync_Changed" Unchecked="MicSync_Changed"/>
+                                <CheckBox x:Name="ChkSyncMic" FontSize="14" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Checked="MicSync_Changed" Unchecked="MicSync_Changed">
+                                    <TextBlock Text="Synchronize Controller Mic Button with Windows System Microphone" TextWrapping="Wrap"/>
+                                </CheckBox>
                             </StackPanel>
                         </Border>
 
@@ -689,7 +710,7 @@
 
                                 <!-- Haptic Intensity Slider -->
                                 <Grid Margin="0,12,0,8">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="60"/></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="60"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Vibration Intensity" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.0" Maximum="2.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
                                     <TextBlock x:Name="TxtHapticIntensityVal" Grid.Column="2" Text="100%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -697,7 +718,7 @@
 
                                 <!-- Low-Pass Bass Cutoff Slider (4th-Order 24dB/oct Surgical Filter) -->
                                 <Grid Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="140"/></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="140"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Bass Cutoff Filter" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="40" Maximum="250" Value="100" IsSnapToTickEnabled="True" TickFrequency="10" SmallChange="10" LargeChange="20" ValueChanged="AudioHaptics_Changed"/>
                                     <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="100 Hz (Punchy)" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -711,14 +732,14 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
+                                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
                                                 <TextBlock Text="Audio-to-Trigger Mechanical Recoil Kick" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <TextBlock Text="Pulses DualSense adaptive trigger stepper motors during heavy bass transients (gunshots, explosions) for realistic weapon recoil." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                                <TextBlock Text="Pulses DualSense adaptive trigger stepper motors during heavy bass transients (gunshots, explosions) for realistic weapon recoil." TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                             </StackPanel>
                                             <CheckBox x:Name="ChkTriggerKick" Grid.Column="1" Content="Enable Kick" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
                                         </Grid>
                                         <Grid Margin="0,4,0,0">
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
                                             <TextBlock Text="Recoil Transient Sensitivity" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
                                             <Slider x:Name="SliderTriggerThreshold" Grid.Column="1" Minimum="0.15" Maximum="0.85" Value="0.45" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
                                             <TextBlock x:Name="TxtTriggerThresholdVal" Grid.Column="2" Text="45%" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
@@ -728,37 +749,43 @@
 
                                 <!-- Stereo Mode & Live Tactile Meters -->
                                 <Grid Margin="0,4,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="Auto" MinWidth="180"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,6">
                                         <RadioButton x:Name="RadioHapticStereo" Content="Directional Stereo (L / R)" GroupName="HapticMode" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Checked="AudioHaptics_Changed" Margin="0,0,0,4"/>
                                         <RadioButton x:Name="RadioHapticMono" Content="Combined Mono" GroupName="HapticMode" Foreground="{DynamicResource TextPrimary}" Checked="AudioHaptics_Changed"/>
                                     </StackPanel>
 
                                     <!-- Live Tactile Meters (Left & Right) -->
-                                    <Grid Grid.Column="1" Margin="20,0,0,0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="80"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="40"/>
-                                        </Grid.ColumnDefinitions>
+                                    <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" MinWidth="200" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="65"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="35"/>
+                                            </Grid.ColumnDefinitions>
 
-                                        <!-- Left Grip -->
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Left Grip:" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
-                                        <ProgressBar x:Name="BarHapticL" Grid.Row="0" Grid.Column="1" Height="10" Minimum="0" Maximum="255" Value="0" Foreground="{DynamicResource AccentSignature}" Background="{DynamicResource SlotBg}" BorderThickness="0" Margin="0,3"/>
-                                        <TextBlock x:Name="TxtHapticL" Grid.Row="0" Grid.Column="2" Text="0" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            <!-- Left Grip -->
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Left Grip:" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                            <ProgressBar x:Name="BarHapticL" Grid.Row="0" Grid.Column="1" Height="10" Minimum="0" Maximum="255" Value="0" Foreground="{DynamicResource AccentSignature}" Background="#1F283B" BorderThickness="0" Margin="4,3"/>
+                                            <TextBlock x:Name="TxtHapticL" Grid.Row="0" Grid.Column="2" Text="0" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 
-                                        <!-- Right Grip -->
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Right Grip:" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
-                                        <ProgressBar x:Name="BarHapticR" Grid.Row="1" Grid.Column="1" Height="10" Minimum="0" Maximum="255" Value="0" Foreground="{DynamicResource HeaderAccent}" Background="{DynamicResource SlotBg}" BorderThickness="0" Margin="0,3"/>
-                                        <TextBlock x:Name="TxtHapticR" Grid.Row="1" Grid.Column="2" Text="0" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    </Grid>
+                                            <!-- Right Grip -->
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Right Grip:" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                            <ProgressBar x:Name="BarHapticR" Grid.Row="1" Grid.Column="1" Height="10" Minimum="0" Maximum="255" Value="0" Foreground="{DynamicResource HeaderAccent}" Background="#1F283B" BorderThickness="0" Margin="4,3"/>
+                                            <TextBlock x:Name="TxtHapticR" Grid.Row="1" Grid.Column="2" Text="0" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -769,12 +796,12 @@
                                 <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Playback Device:" Foreground="{DynamicResource TextSecondary}"/>
-                                    <TextBlock x:Name="TxtRenderDev" Grid.Column="1" Text="Speakers (DualSense Wireless Controller)" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtRenderDev" Grid.Column="1" Text="Speakers (DualSense Wireless Controller)" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}"/>
                                 </Grid>
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Microphone Device:" Foreground="{DynamicResource TextSecondary}"/>
-                                    <TextBlock x:Name="TxtCaptureDev" Grid.Column="1" Text="Headset Microphone (DualSense Wireless Controller)" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtCaptureDev" Grid.Column="1" Text="Headset Microphone (DualSense Wireless Controller)" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -815,19 +842,19 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="OpenDualDriver Service (1000Hz C++20 Direct HID)" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                                    <TextBlock Text="Asynchronous overlapped Direct HID reader with sub-millisecond dispatch." Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="OpenDualDriver Service (1000Hz C++20 Direct HID)" FontSize="15" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="Asynchronous overlapped Direct HID reader with sub-millisecond dispatch." TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                                         <TextBlock Text="Service Status: " Foreground="{DynamicResource TextSecondary}"/>
                                         <TextBlock x:Name="TxtEngineStatus" Text="Running (1000Hz Active)" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button x:Name="BtnStartEngine" Content="Start Engine" Style="{StaticResource PrimaryBtnStyle}" Background="{StaticResource AccentGreen}" Margin="0,0,8,0" Click="BtnStartEngine_Click"/>
-                                    <Button x:Name="BtnRestartEngine" Content="Restart Engine" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" Margin="0,0,8,0" Click="BtnRestartEngine_Click"/>
-                                    <Button x:Name="BtnStopEngine" Content="Stop Engine" Style="{StaticResource PrimaryBtnStyle}" Background="{StaticResource AccentRed}" Click="BtnStopEngine_Click"/>
-                                </StackPanel>
+                                <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <Button x:Name="BtnStartEngine" Content="Start Engine" Style="{StaticResource PrimaryBtnStyle}" Background="{StaticResource AccentGreen}" Margin="0,0,8,4" Click="BtnStartEngine_Click"/>
+                                    <Button x:Name="BtnRestartEngine" Content="Restart Engine" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" Margin="0,0,8,4" Click="BtnRestartEngine_Click"/>
+                                    <Button x:Name="BtnStopEngine" Content="Stop Engine" Style="{StaticResource PrimaryBtnStyle}" Background="{StaticResource AccentRed}" Margin="0,0,0,4" Click="BtnStopEngine_Click"/>
+                                </WrapPanel>
                             </Grid>
                         </Border>
 

@@ -73,6 +73,7 @@ namespace OpenDualHub
             _trayManager.RightClick += ShowTrayContextMenu;
 
             _quickHud = new QuickHudWindow();
+            UpdateResponsiveLayout(ActualWidth);
         }
 
         private void RestoreFromTray()
@@ -138,6 +139,102 @@ namespace OpenDualHub
                 {
                     _hasShownTrayBalloon = true;
                     _trayManager.ShowNotification("OpenDual Suite", "OpenDual is minimized to the system tray. Click icon to restore.");
+                }
+            }
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateResponsiveLayout(e.NewSize.Width);
+        }
+
+        private void NavTabsScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (sender is ScrollViewer sv)
+            {
+                if (e.Delta < 0)
+                    sv.LineRight();
+                else
+                    sv.LineLeft();
+                e.Handled = true;
+            }
+        }
+
+        private void EnsureNavTabVisible(RadioButton? tab)
+        {
+            tab?.BringIntoView();
+        }
+
+        private void UpdateResponsiveLayout(double width)
+        {
+            if (!_isInitialized) return;
+
+            // 1. Clock visibility in header
+            if (TxtClock != null)
+            {
+                TxtClock.Visibility = width < 780 ? Visibility.Collapsed : Visibility.Visible;
+            }
+
+            // 2. Dashboard 2-column vs 1-column stacked
+            if (DashLeftCol != null && DashRightCol != null && DashColDefRight != null)
+            {
+                if (width < 920)
+                {
+                    Grid.SetRow(DashRightCol, 1);
+                    Grid.SetColumn(DashRightCol, 0);
+                    DashRightCol.Margin = new Thickness(0, 16, 0, 0);
+                    DashLeftCol.Margin = new Thickness(0, 0, 0, 0);
+                    DashColDefRight.Width = new GridLength(0);
+                }
+                else
+                {
+                    Grid.SetRow(DashRightCol, 0);
+                    Grid.SetColumn(DashRightCol, 1);
+                    DashRightCol.Margin = new Thickness(10, 0, 0, 0);
+                    DashLeftCol.Margin = new Thickness(0, 0, 10, 0);
+                    DashColDefRight.Width = new GridLength(1, GridUnitType.Star);
+                }
+            }
+
+            // 3. Triggers 2-column vs 1-column stacked
+            if (TriggersLeftCol != null && TriggersRightCol != null && TriggersColDefRight != null)
+            {
+                if (width < 880)
+                {
+                    Grid.SetRow(TriggersRightCol, 1);
+                    Grid.SetColumn(TriggersRightCol, 0);
+                    TriggersRightCol.Margin = new Thickness(0, 14, 0, 0);
+                    TriggersLeftCol.Margin = new Thickness(0, 0, 0, 0);
+                    TriggersColDefRight.Width = new GridLength(0);
+                }
+                else
+                {
+                    Grid.SetRow(TriggersRightCol, 0);
+                    Grid.SetColumn(TriggersRightCol, 1);
+                    TriggersRightCol.Margin = new Thickness(12, 0, 0, 0);
+                    TriggersLeftCol.Margin = new Thickness(0, 0, 12, 0);
+                    TriggersColDefRight.Width = new GridLength(1, GridUnitType.Star);
+                }
+            }
+
+            // 4. RGB 2-column vs 1-column stacked
+            if (RgbLeftCol != null && RgbRightCol != null && RgbColDefRight != null)
+            {
+                if (width < 880)
+                {
+                    Grid.SetRow(RgbRightCol, 1);
+                    Grid.SetColumn(RgbRightCol, 0);
+                    RgbRightCol.Margin = new Thickness(0, 18, 0, 0);
+                    RgbLeftCol.Margin = new Thickness(0, 0, 0, 0);
+                    RgbColDefRight.Width = new GridLength(0);
+                }
+                else
+                {
+                    Grid.SetRow(RgbRightCol, 0);
+                    Grid.SetColumn(RgbRightCol, 1);
+                    RgbRightCol.Margin = new Thickness(0, 0, 0, 0);
+                    RgbLeftCol.Margin = new Thickness(0, 0, 24, 0);
+                    RgbColDefRight.Width = new GridLength(1, GridUnitType.Star);
                 }
             }
         }
@@ -230,30 +327,35 @@ namespace OpenDualHub
         {
             HideAllViews();
             if (ViewDashboard != null) ViewDashboard.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabController);
         }
 
         private void Nav_Rgb_Checked(object sender, RoutedEventArgs e)
         {
             HideAllViews();
             if (ViewRgb != null) ViewRgb.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabLightbar);
         }
 
         private void Nav_Triggers_Checked(object sender, RoutedEventArgs e)
         {
             HideAllViews();
             if (ViewTriggers != null) ViewTriggers.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabTriggers);
         }
 
         private void Nav_Touchpad_Checked(object sender, RoutedEventArgs e)
         {
             HideAllViews();
             if (ViewTouchpad != null) ViewTouchpad.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabTouchpad);
         }
 
         private void Nav_Audio_Checked(object sender, RoutedEventArgs e)
         {
             HideAllViews();
             if (ViewAudio != null) ViewAudio.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabAudio);
         }
 
         private void Nav_Driver_Checked(object sender, RoutedEventArgs e)
@@ -264,6 +366,7 @@ namespace OpenDualHub
                 ViewDriver.Visibility = Visibility.Visible;
                 RefreshDriverStatus();
             }
+            EnsureNavTabVisible(TabSystem);
         }
         #endregion
 
