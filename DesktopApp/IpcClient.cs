@@ -140,12 +140,14 @@ namespace OpenDualHub
             SendCommand(json);
         }
 
-        public void SetAudioHaptics(bool enabled, float intensity, int cutoffHz, bool stereo)
+        public void SetAudioHaptics(bool enabled, float intensity, int cutoffHz, bool stereo, bool triggerKick = false, float triggerThreshold = 0.45f)
         {
             var json = $"{{\"audioHaptics\":{(enabled ? "true" : "false")}," +
                        $"\"hapticIntensity\":{intensity.ToString(System.Globalization.CultureInfo.InvariantCulture)}," +
                        $"\"hapticCutoff\":{cutoffHz}," +
-                       $"\"hapticStereo\":{(stereo ? "true" : "false")}}}";
+                       $"\"hapticStereo\":{(stereo ? "true" : "false")}," +
+                       $"\"audioTriggerKick\":{(triggerKick ? "true" : "false")}," +
+                       $"\"audioTriggerThreshold\":{triggerThreshold.ToString(System.Globalization.CultureInfo.InvariantCulture)}}}";
             SendCommand(json);
         }
 

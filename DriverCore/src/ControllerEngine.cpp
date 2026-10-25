@@ -373,6 +373,31 @@ void ControllerEngine::OutputThread() {
             state.hapticMotorL = audioHapticL;
             state.hapticMotorR = audioHapticR;
 
+            // Audio-to-Trigger Mechanical Recoil Kick
+            static int kickCountdownFrames = 0;
+            if (config.audioHapticsEnabled && config.audioTriggerKick) {
+                if (m_audio.CheckTriggerKick(config.audioTriggerThreshold)) {
+                    // Trigger recoil kick: pulse triggers for ~100ms (approx 6 frames at 60Hz)
+                    kickCountdownFrames = 6;
+                }
+            }
+
+            if (kickCountdownFrames > 0) {
+                kickCountdownFrames--;
+                // Override trigger mode with physical recoil kick
+                activeCfg.leftTrigger.mode = TriggerMode::Pulse;
+                activeCfg.leftTrigger.startPos = 15;
+                activeCfg.leftTrigger.force = 225;
+                activeCfg.leftTrigger.frequency = 6;
+                activeCfg.leftTrigger.endPos = 240;
+
+                activeCfg.rightTrigger.mode = TriggerMode::Pulse;
+                activeCfg.rightTrigger.startPos = 15;
+                activeCfg.rightTrigger.force = 225;
+                activeCfg.rightTrigger.frequency = 6;
+                activeCfg.rightTrigger.endPos = 240;
+            }
+
             if (state.model == ControllerModel::DualSense || state.model == ControllerModel::DualSenseEdge) {
                 if (state.connection == ConnectionType::USB) {
                     DualSenseProtocol::BuildOutputReportUSB(outBuf, sizeof(outBuf), activeCfg, lRumble, rRumble, micMuted);

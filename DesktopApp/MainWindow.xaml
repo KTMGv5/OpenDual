@@ -8,7 +8,8 @@
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgPrimary}"
         Foreground="{DynamicResource TextPrimary}"
-        FontFamily="Segoe UI">
+        FontFamily="Segoe UI"
+        StateChanged="Window_StateChanged">
 
     <Window.Resources>
         <!-- Theme Brushes (Default PS5) -->
@@ -650,7 +651,7 @@
                                 <Grid Margin="0,12,0,8">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Vibration Intensity" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                    <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.1" Maximum="2.0" Value="1.0" ValueChanged="AudioHaptics_Changed"/>
+                                    <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.1" Maximum="2.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
                                     <TextBlock x:Name="TxtHapticIntensityVal" Grid.Column="2" Text="100%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
 
@@ -658,9 +659,32 @@
                                 <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Bass Cutoff Filter" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                    <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="60" Maximum="200" Value="100" ValueChanged="AudioHaptics_Changed"/>
+                                    <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="60" Maximum="200" Value="100" IsSnapToTickEnabled="True" TickFrequency="10" SmallChange="10" LargeChange="20" ValueChanged="AudioHaptics_Changed"/>
                                     <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="100 Hz" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
+
+                                <!-- Audio-to-Trigger Mechanical Recoil Kick -->
+                                <Border Background="{DynamicResource BgCardHover}" CornerRadius="8" Padding="14,12" Margin="0,4,0,12">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Audio-to-Trigger Mechanical Recoil Kick" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="Pulses DualSense adaptive trigger stepper motors during heavy bass transients (gunshots, explosions) for realistic weapon recoil." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <CheckBox x:Name="ChkTriggerKick" Grid.Column="1" Content="Enable Kick" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
+                                        </Grid>
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Recoil Transient Sensitivity" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                            <Slider x:Name="SliderTriggerThreshold" Grid.Column="1" Minimum="0.15" Maximum="0.85" Value="0.45" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
+                                            <TextBlock x:Name="TxtTriggerThresholdVal" Grid.Column="2" Text="45%" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
 
                                 <!-- Stereo Mode & Live Tactile Meters -->
                                 <Grid Margin="0,4,0,0">
@@ -767,6 +791,32 @@
                             </Grid>
                         </Border>
 
+                        <!-- Quick HUD and System Tray Preferences -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,18,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Quick HUD &amp; Background Tray Preferences" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Seamless in-game overlay and lightweight background system tray residency." Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,16"/>
+                                
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="In-Game PS Button Quick HUD Overlay" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Displays a sleek PS5-style floating status card (battery %, volume, mic mute, triggers) whenever you press the PS button." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkEnableQuickHud" Grid.Column="1" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Minimize to Windows System Tray" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Hides the application window from the taskbar and docks an icon in the notification area." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkMinimizeToTray" Grid.Column="1" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                         <TextBlock x:Name="TxtDriverLog" Text="" Foreground="{DynamicResource AccentSignature}" Margin="0,16,0,0"/>
                     </StackPanel>
                 </Border>
@@ -786,7 +836,7 @@
                     <TextBlock Text="  •  " FontSize="11" Foreground="{DynamicResource BorderColor}"/>
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="OpenDual Suite v1.1.0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock Grid.Column="1" Text="OpenDual Suite v1.3.0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>

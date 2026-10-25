@@ -1,0 +1,89 @@
+<Window x:Class="OpenDualHub.QuickHudWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OpenDual Quick HUD"
+        Height="80" Width="680"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="HudBg" Color="#EE0B0F19"/>
+        <SolidColorBrush x:Key="HudBorder" Color="#3300F5D4"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#8C9BB0"/>
+        <SolidColorBrush x:Key="AccentSignature" Color="#00F5D4"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#00E676"/>
+        <SolidColorBrush x:Key="AccentAmber" Color="#FFB300"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#0070D1"/>
+    </Window.Resources>
+
+    <Border x:Name="HudRoot" Background="{StaticResource HudBg}" BorderBrush="{StaticResource HudBorder}" BorderThickness="1.5" CornerRadius="20" Padding="18,12" Opacity="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.7"/>
+        </Border.Effect>
+
+        <Grid VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <!-- Controller & Model -->
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="16"/>
+                <!-- Battery Status -->
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="16"/>
+                <!-- Mic Mute Status -->
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="16"/>
+                <!-- Trigger Profile Status -->
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Controller Info -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Width="34" Height="34" Background="#1AFFFFFF" CornerRadius="10" Margin="0,0,10,0">
+                    <TextBlock Text="PS" FontWeight="Bold" FontSize="15" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtControllerName" Text="DualSense Wireless" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                    <TextBlock x:Name="TxtConnection" Text="Direct 1000Hz HID" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Rectangle Grid.Column="1" Width="1" Height="28" Fill="#243046" HorizontalAlignment="Center"/>
+
+            <!-- Battery Status -->
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock Text="BATTERY" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                    <TextBlock x:Name="TxtBatteryPercent" Text="85%" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                    <TextBlock x:Name="TxtChargingBadge" Text=" [CHG]" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Visibility="Collapsed"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Rectangle Grid.Column="3" Width="1" Height="28" Fill="#243046" HorizontalAlignment="Center"/>
+
+            <!-- Mic Status -->
+            <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                <TextBlock Text="MICROPHONE" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                <Border x:Name="BadgeMicMuted" Background="#33FFB300" CornerRadius="4" Padding="6,2" Margin="0,2,0,0" Visibility="Collapsed">
+                    <TextBlock Text="MUTED" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentAmber}"/>
+                </Border>
+                <Border x:Name="BadgeMicActive" Background="#2600E676" CornerRadius="4" Padding="6,2" Margin="0,2,0,0" Visibility="Visible">
+                    <TextBlock Text="ACTIVE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                </Border>
+            </StackPanel>
+
+            <Rectangle Grid.Column="5" Width="1" Height="28" Fill="#243046" HorizontalAlignment="Center"/>
+
+            <!-- Triggers & Haptics Profile -->
+            <StackPanel Grid.Column="6" VerticalAlignment="Center">
+                <TextBlock Text="ADAPTIVE TRIGGERS &amp; HAPTICS" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                <TextBlock x:Name="TxtTriggerProfile" Text="Audio Haptics (Active) • Mechanical Recoil" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

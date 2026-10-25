@@ -12,7 +12,7 @@ namespace OpenDualSetup
     {
         private const string AppName = "OpenDual";
         private const string AppFullName = "OpenDual PlayStation Controller Suite";
-        private const string AppVersion = "1.1.0";
+        private const string AppVersion = "1.3.0";
         private const string AppPublisher = "OpenDual Team";
 
         [STAThread]
@@ -76,10 +76,7 @@ namespace OpenDualSetup
                 foreach (var file in filesToCopy)
                 {
                     string src = Path.Combine(sourceDir, file);
-                    if (File.Exists(src))
-                    {
-                        File.Copy(src, Path.Combine(targetDir, file), true);
-                    }
+                    SafeCopyFile(src, Path.Combine(targetDir, file));
                 }
 
                 // Copy Assets directory if present
@@ -90,7 +87,7 @@ namespace OpenDualSetup
                     if (!Directory.Exists(dstAssets)) Directory.CreateDirectory(dstAssets);
                     foreach (var f in Directory.GetFiles(srcAssets))
                     {
-                        File.Copy(f, Path.Combine(dstAssets, Path.GetFileName(f)), true);
+                        SafeCopyFile(f, Path.Combine(dstAssets, Path.GetFileName(f)));
                     }
                 }
 
@@ -99,7 +96,7 @@ namespace OpenDualSetup
                 string uninstallerDst = Path.Combine(targetDir, "OpenDualUninstaller.exe");
                 if (File.Exists(currentExe))
                 {
-                    try { File.Copy(currentExe, uninstallerDst, true); } catch { }
+                    try { SafeCopyFile(currentExe, uninstallerDst); } catch { }
                 }
 
                 // Create standalone uninstall.bat script as backup uninstaller
@@ -118,18 +115,28 @@ namespace OpenDualSetup
 
                 // 7. Create Shortcuts (Start Menu & Desktop)
                 string mainExe = Path.Combine(targetDir, "OpenDualHub.exe");
+                string driverExe = Path.Combine(targetDir, "OpenDualDriver.exe");
                 CreateShortcuts(mainExe);
 
-                if (!silent)
+                // 8. Relaunch OpenDual Driver and Hub
+                if (File.Exists(driverExe))
                 {
-                    MessageBox.Show(
-                        $"{AppFullName} has been installed successfully!\n\nShortcuts created on Desktop and Start Menu.\nRegistered in Windows Settings (Installed Apps).",
-                        "OpenDual Setup",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = driverExe,
+                            WorkingDirectory = targetDir,
+                            UseShellExecute = true,
+                            WindowStyle = ProcessWindowStyle.Hidden
+                        });
+                    }
+                    catch { }
+                }
 
-                    // Launch OpenDualHub
-                    if (File.Exists(mainExe))
+                if (File.Exists(mainExe))
+                {
+                    try
                     {
                         Process.Start(new ProcessStartInfo
                         {
@@ -138,6 +145,16 @@ namespace OpenDualSetup
                             UseShellExecute = true
                         });
                     }
+                    catch { }
+                }
+
+                if (!silent)
+                {
+                    MessageBox.Show(
+                        $"{AppFullName} has been installed and updated successfully!\n\nAll previous driver instances were cleanly replaced and the suite has been restarted.\nShortcuts created on Desktop and Start Menu.",
+                        "OpenDual Setup",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
@@ -211,16 +228,59 @@ namespace OpenDualSetup
         private static void StopProcesses()
         {
             string[] procNames = new string[] { "OpenDualDriver", "OpenDualHub" };
+            
+            // 1. Force terminate via Process API
             foreach (var name in procNames)
             {
                 foreach (var p in Process.GetProcessesByName(name))
                 {
                     try
                     {
-                        p.Kill();
+                        p.Kill(true);
                         p.WaitForExit(1500);
                     }
                     catch { }
+                }
+            }
+
+            // 2. Force terminate via Windows taskkill command line
+            foreach (var name in procNames)
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "taskkill.exe",
+                        Arguments = $"/f /t /im {name}.exe",
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    using var killProc = Process.Start(psi);
+                    killProc?.WaitForExit(1000);
+                }
+                catch { }
+            }
+
+            System.Threading.Thread.Sleep(300);
+        }
+
+        private static void SafeCopyFile(string src, string dst)
+        {
+            if (!File.Exists(src)) return;
+
+            for (int attempt = 1; attempt <= 6; attempt++)
+            {
+                try
+                {
+                    File.Copy(src, dst, true);
+                    return;
+                }
+                catch (IOException)
+                {
+                    if (attempt == 6) throw;
+                    StopProcesses();
+                    System.Threading.Thread.Sleep(200 * attempt);
                 }
             }
         }

@@ -172,10 +172,14 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getBool("syncMicMute", syncMic)) { cfg.syncMicMute = syncMic; changed = true; }
 
     // Audio-Reactive Haptics
+    bool trigKick = false;
+    float trigThresh = 0.45f;
     if (getBool("audioHaptics", hapEn)) { cfg.audioHapticsEnabled = hapEn; changed = true; }
     if (getFloat("hapticIntensity", hapIntensity)) { cfg.hapticIntensity = hapIntensity; changed = true; }
     if (getInt("hapticCutoff", hapCutoff)) { cfg.hapticCutoffHz = hapCutoff; changed = true; }
     if (getBool("hapticStereo", hapStereo)) { cfg.hapticStereo = hapStereo; changed = true; }
+    if (getBool("audioTriggerKick", trigKick)) { cfg.audioTriggerKick = trigKick; changed = true; }
+    if (getFloat("audioTriggerThreshold", trigThresh)) { cfg.audioTriggerThreshold = trigThresh; changed = true; }
 
     // Adaptive Triggers
     int lMode = 0, lStart = 0, lForce = 0, lFreq = 0;
@@ -246,6 +250,8 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"hapticIntensity\":" << c.hapticIntensity << ","
            << "\"hapticCutoff\":" << c.hapticCutoffHz << ","
            << "\"hapticStereo\":" << (c.hapticStereo ? "true" : "false") << ","
+           << "\"audioTriggerKick\":" << (c.audioTriggerKick ? "true" : "false") << ","
+           << "\"audioTriggerThreshold\":" << c.audioTriggerThreshold << ","
            << "\"ltMode\":" << (int)c.leftTrigger.mode << ","
            << "\"rtMode\":" << (int)c.rightTrigger.mode
        << "}"

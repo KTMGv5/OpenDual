@@ -78,6 +78,8 @@ struct ControllerConfig {
     float hapticIntensity = 1.0f;       // 0.0 to 2.0 (0% to 200%)
     int hapticCutoffHz = 100;           // 60 to 200 Hz low-pass
     bool hapticStereo = true;           // True = directional stereo, False = combined mono
+    bool audioTriggerKick = false;      // Audio-to-trigger mechanical recoil kick
+    float audioTriggerThreshold = 0.45f;// Transient spike threshold (0.1 to 1.0)
 
     // Output Mode
     bool emulateXbox360 = true; // ViGEmBus XInput emulation

@@ -15,6 +15,13 @@ namespace OpenDualHub
         private bool _isUpdatingUi = false;
         private bool _isInitialized = false;
 
+        private readonly TrayIconManager _trayManager = new();
+        private QuickHudWindow? _quickHud;
+        private bool _lastPsState = false;
+        private bool _hasShownTrayBalloon = false;
+        private DispatcherTimer? _hapticDebounceTimer;
+        private DateTime _lastHapticSendTime = DateTime.MinValue;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -46,7 +53,8 @@ namespace OpenDualHub
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // Hook Win32 messages to auto-update when Windows theme or accent color changes
-            var source = System.Windows.Interop.HwndSource.FromHwnd(new System.Windows.Interop.WindowInteropHelper(this).Handle);
+            var helper = new System.Windows.Interop.WindowInteropHelper(this);
+            var source = System.Windows.Interop.HwndSource.FromHwnd(helper.Handle);
             source?.AddHook(WndProc);
 
             ThemeManager.ApplySystemTheme(Resources);
@@ -59,10 +67,85 @@ namespace OpenDualHub
 
             _ipc.Start();
             RefreshDriverStatus();
+
+            _trayManager.Initialize(helper.Handle, "OpenDual — PlayStation Controller Suite");
+            _trayManager.DoubleClick += RestoreFromTray;
+            _trayManager.RightClick += ShowTrayContextMenu;
+
+            _quickHud = new QuickHudWindow();
+        }
+
+        private void RestoreFromTray()
+        {
+            Show();
+            WindowState = WindowState.Normal;
+            ShowInTaskbar = true;
+            Activate();
+        }
+
+        private void ShowTrayContextMenu()
+        {
+            var menu = new ContextMenu();
+            var itemOpen = new MenuItem { Header = "Open OpenDual Hub" };
+            itemOpen.Click += (s, e) => RestoreFromTray();
+            menu.Items.Add(itemOpen);
+
+            var itemRestart = new MenuItem { Header = "Restart Driver Engine" };
+            itemRestart.Click += (s, e) => BtnRestartEngine_Click(this, new RoutedEventArgs());
+            menu.Items.Add(itemRestart);
+
+            var itemMute = new MenuItem { Header = "Toggle Microphone Mute" };
+            itemMute.Click += (s, e) => ToggleMicMute();
+            menu.Items.Add(itemMute);
+
+            menu.Items.Add(new Separator());
+
+            var itemExit = new MenuItem { Header = "Exit OpenDual" };
+            itemExit.Click += (s, e) => ExitApplication();
+            menu.Items.Add(itemExit);
+
+            menu.IsOpen = true;
+        }
+
+        private void ToggleMicMute()
+        {
+            if (ChkSyncMic != null)
+            {
+                bool newSync = !(ChkSyncMic.IsChecked == true);
+                ChkSyncMic.IsChecked = newSync;
+                _ipc.SetMicSync(newSync);
+            }
+        }
+
+        private void ExitApplication()
+        {
+            _trayManager.Dispose();
+            _quickHud?.Close();
+            Application.Current.Shutdown();
+        }
+
+        private void Window_StateChanged(object? sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized && ChkMinimizeToTray?.IsChecked == true)
+            {
+                Hide();
+                ShowInTaskbar = false;
+                if (!_hasShownTrayBalloon)
+                {
+                    _hasShownTrayBalloon = true;
+                    _trayManager.ShowNotification("OpenDual Suite", "OpenDual is minimized to the system tray. Click icon to restore.");
+                }
+            }
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
+            if (_trayManager.ProcessWindowMessage(msg, lParam))
+            {
+                handled = true;
+                return IntPtr.Zero;
+            }
+
             const int WM_SETTINGCHANGE = 0x001A;
             const int WM_DWMCOLORIZATIONCOLORCHANGED = 0x0320;
             if (msg == WM_SETTINGCHANGE || msg == WM_DWMCOLORIZATIONCOLORCHANGED)
@@ -80,6 +163,8 @@ namespace OpenDualHub
         {
             _clockTimer.Stop();
             _ipc.Dispose();
+            _trayManager.Dispose();
+            _quickHud?.Close();
         }
 
         private void RefreshDriverStatus()
@@ -319,6 +404,17 @@ namespace OpenDualHub
                         if (TxtHapticL != null) TxtHapticL.Text = t.HapticL.ToString();
                         if (BarHapticR != null) BarHapticR.Value = t.HapticR;
                         if (TxtHapticR != null) TxtHapticR.Text = t.HapticR.ToString();
+
+                        // In-Game Quick HUD Update & PS Button Detection
+                        if (_quickHud != null)
+                        {
+                            _quickHud.UpdateState(t);
+                            if (t.PS && !_lastPsState && ChkEnableQuickHud?.IsChecked == true)
+                            {
+                                _quickHud.ToggleOrRefresh();
+                            }
+                        }
+                        _lastPsState = t.PS;
                     }
                     else
                     {
@@ -533,11 +629,32 @@ namespace OpenDualHub
             float intensity = (float)SliderHapticIntensity.Value;
             int cutoff = (int)SliderHapticCutoff.Value;
             bool stereo = RadioHapticStereo?.IsChecked == true;
+            bool triggerKick = ChkTriggerKick?.IsChecked == true;
+            float kickThreshold = SliderTriggerThreshold != null ? (float)SliderTriggerThreshold.Value : 0.45f;
 
             if (TxtHapticIntensityVal != null) TxtHapticIntensityVal.Text = $"{(int)(intensity * 100)}%";
             if (TxtHapticCutoffVal != null) TxtHapticCutoffVal.Text = $"{cutoff} Hz";
+            if (TxtTriggerThresholdVal != null) TxtTriggerThresholdVal.Text = $"{(int)(kickThreshold * 100)}%";
 
-            _ipc.SetAudioHaptics(enabled, intensity, cutoff, stereo);
+            // Throttle / debounce IPC sends to prevent pipe spam during fast dragging
+            var now = DateTime.UtcNow;
+            if ((now - _lastHapticSendTime).TotalMilliseconds >= 40)
+            {
+                _lastHapticSendTime = now;
+                _ipc.SetAudioHaptics(enabled, intensity, cutoff, stereo, triggerKick, kickThreshold);
+            }
+            else
+            {
+                _hapticDebounceTimer?.Stop();
+                _hapticDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(45) };
+                _hapticDebounceTimer.Tick += (s, args) =>
+                {
+                    _hapticDebounceTimer.Stop();
+                    _lastHapticSendTime = DateTime.UtcNow;
+                    _ipc.SetAudioHaptics(enabled, intensity, cutoff, stereo, triggerKick, kickThreshold);
+                };
+                _hapticDebounceTimer.Start();
+            }
         }
         #endregion
 

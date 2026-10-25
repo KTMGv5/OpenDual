@@ -55,6 +55,12 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("hapticStereo")]
         public bool HapticStereo { get; set; } = true;
+
+        [JsonPropertyName("audioTriggerKick")]
+        public bool AudioTriggerKick { get; set; } = false;
+
+        [JsonPropertyName("audioTriggerThreshold")]
+        public float AudioTriggerThreshold { get; set; } = 0.45f;
     }
 
     public class ControllerTelemetry

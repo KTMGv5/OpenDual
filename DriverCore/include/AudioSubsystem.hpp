@@ -44,6 +44,7 @@ public:
     void StopLoopback();
     bool IsLoopbackRunning() const { return m_loopbackRunning; }
     void GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float intensity, int cutoffHz, bool stereo);
+    bool CheckTriggerKick(float threshold = 0.45f);
 
     // Audio device information
     std::wstring GetActiveRenderDeviceName() const { return m_renderDeviceName; }
@@ -73,6 +74,8 @@ private:
     std::mutex m_hapticMutex;
     float m_peakL = 0.0f;
     float m_peakR = 0.0f;
+    float m_lastPeak = 0.0f;
+    float m_sampleRate = 48000.0f;
     int m_currentCutoffHz = 100;
     AudioBiquadFilter m_filterL;
     AudioBiquadFilter m_filterR;

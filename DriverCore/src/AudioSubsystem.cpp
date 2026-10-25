@@ -298,8 +298,9 @@ void AudioSubsystem::LoopbackCaptureThread() {
 
     float sampleRate = (float)pFormat->nSamplesPerSec;
     if (sampleRate < 8000.0f) sampleRate = 48000.0f;
-    m_filterL.SetLowPass(sampleRate, (float)m_currentCutoffHz);
-    m_filterR.SetLowPass(sampleRate, (float)m_currentCutoffHz);
+    m_sampleRate = sampleRate;
+    m_filterL.SetLowPass(m_sampleRate, (float)m_currentCutoffHz);
+    m_filterR.SetLowPass(m_sampleRate, (float)m_currentCutoffHz);
 
     while (m_loopbackRunning) {
         UINT32 packetLength = 0;
@@ -317,8 +318,8 @@ void AudioSubsystem::LoopbackCaptureThread() {
                     ProcessAudioSamples(pData, numFrames, pFormat);
                 } else {
                     std::lock_guard<std::mutex> lock(m_hapticMutex);
-                    m_peakL *= 0.92f;
-                    m_peakR *= 0.92f;
+                    m_peakL *= 0.94f;
+                    m_peakR *= 0.94f;
                 }
                 pCapture->ReleaseBuffer(numFrames);
             }
@@ -381,12 +382,9 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
     }
 
     std::lock_guard<std::mutex> lock(m_hapticMutex);
-    // Instant attack, smooth sustain
+    // Instant attack on transient peaks. Avoid intra-packet decay here to prevent jitter.
     if (localPeakL > m_peakL) m_peakL = localPeakL;
-    else m_peakL = m_peakL * 0.82f + localPeakL * 0.18f;
-
     if (localPeakR > m_peakR) m_peakR = localPeakR;
-    else m_peakR = m_peakR * 0.82f + localPeakR * 0.18f;
 }
 
 void AudioSubsystem::GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float intensity, int cutoffHz, bool stereo) {
@@ -394,23 +392,23 @@ void AudioSubsystem::GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float 
 
     if (cutoffHz != m_currentCutoffHz && cutoffHz >= 40 && cutoffHz <= 300) {
         m_currentCutoffHz = cutoffHz;
-        m_filterL.SetLowPass(48000.0f, (float)cutoffHz);
-        m_filterR.SetLowPass(48000.0f, (float)cutoffHz);
+        m_filterL.SetLowPass(m_sampleRate, (float)cutoffHz);
+        m_filterR.SetLowPass(m_sampleRate, (float)cutoffHz);
     }
 
-    // Natural decay over ~16ms tick
-    m_peakL *= 0.94f;
-    m_peakR *= 0.94f;
+    // Natural smooth exponential decay (~150ms envelope follower)
+    m_peakL *= 0.955f;
+    m_peakR *= 0.955f;
 
-    // Noise gate threshold: filters out low-level ambient hum
-    const float noiseGate = 0.015f;
+    // Musical noise gate: eliminates low-level room noise and fan hum
+    const float noiseGate = 0.012f;
 
     auto mapAmp = [noiseGate, intensity](float peak) -> uint8_t {
         if (peak <= noiseGate) return 0;
-        float norm = (peak - noiseGate) / (0.70f - noiseGate);
+        float norm = (peak - noiseGate) / (0.65f - noiseGate);
         if (norm > 1.0f) norm = 1.0f;
-        // Non-linear punch curve
-        float punch = std::pow(norm, 0.75f);
+        // Soft-knee expansion preserves punch without premature saturation
+        float punch = std::sqrt(norm);
         int val = (int)(punch * 255.0f * intensity);
         return (uint8_t)std::clamp(val, 0, 255);
     };
@@ -426,6 +424,25 @@ void AudioSubsystem::GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float 
         outLeft = m;
         outRight = m;
     }
+}
+
+bool AudioSubsystem::CheckTriggerKick(float threshold) {
+    std::lock_guard<std::mutex> lock(m_hapticMutex);
+    float currentMax = (m_peakL > m_peakR) ? m_peakL : m_peakR;
+
+    // Transient detection: difference between instantaneous peak and low-passed envelope
+    float delta = currentMax - m_lastPeak;
+    m_lastPeak = m_lastPeak * 0.70f + currentMax * 0.30f; // Track baseline
+
+    static ULONGLONG s_lastKickTick = 0;
+    ULONGLONG now = GetTickCount64();
+
+    // Must exceed threshold, have sharp positive onset (delta > 0.10f), and honor cooldown (120ms)
+    if (currentMax >= threshold && delta >= 0.10f && (now - s_lastKickTick >= 120)) {
+        s_lastKickTick = now;
+        return true;
+    }
+    return false;
 }
 
 } // namespace DualDriver

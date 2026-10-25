@@ -47,7 +47,7 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-echo [4/4] Packaging distribution into .\dist\...
+echo [4/5] Packaging distribution into .\dist\...
 taskkill /f /t /im OpenDualDriver.exe >nul 2>&1
 taskkill /f /t /im OpenDualHub.exe >nul 2>&1
 taskkill /f /t /im OpenDualSetup.exe >nul 2>&1
@@ -66,6 +66,9 @@ copy /y Installer\bin\Release\net10.0-windows\win-x64\publish\OpenDualSetup.exe 
 copy /y DesktopApp\Assets\* dist\Assets\
 copy /y setup.bat dist\
 copy /y uninstall.bat dist\
+
+echo [5/5] Signing Authenticode binaries in .\dist\...
+powershell -NoProfile -ExecutionPolicy Bypass -File "tools\sign_binaries.ps1" -TargetDir "dist"
 
 echo =========================================================
 echo   Build Successful! Artifacts are in .\dist\
