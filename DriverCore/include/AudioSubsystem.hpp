@@ -11,15 +11,28 @@
 
 namespace DualDriver {
 
-struct AudioBiquadFilter {
-    float b0 = 0.0f, b1 = 0.0f, b2 = 0.0f;
-    float a1 = 0.0f, a2 = 0.0f;
-    float x1 = 0.0f, x2 = 0.0f;
-    float y1 = 0.0f, y2 = 0.0f;
+// 64-bit precision biquad stage
+struct BiquadStage {
+    double b0 = 1.0, b1 = 0.0, b2 = 0.0;
+    double a1 = 0.0, a2 = 0.0;
+    double x1 = 0.0, x2 = 0.0;
+    double y1 = 0.0, y2 = 0.0;
 
-    void SetLowPass(float sampleRate, float cutoffHz, float q = 0.707f);
+    void SetLowPass(double sampleRate, double cutoffHz, double q);
+    double Process(double in);
+    void Reset();
+};
+
+// 4th-Order 24 dB/octave Cascaded Butterworth Low-Pass Filter
+class AudioLowPass4thOrder {
+public:
+    void SetLowPass(double sampleRate, double cutoffHz);
     float Process(float in);
     void Reset();
+
+private:
+    BiquadStage m_stage1;
+    BiquadStage m_stage2;
 };
 
 class AudioSubsystem {
@@ -76,9 +89,10 @@ private:
     float m_peakR = 0.0f;
     float m_lastPeak = 0.0f;
     float m_sampleRate = 48000.0f;
+    std::atomic<int> m_targetCutoffHz{ 100 };
     int m_currentCutoffHz = 100;
-    AudioBiquadFilter m_filterL;
-    AudioBiquadFilter m_filterR;
+    AudioLowPass4thOrder m_filterL;
+    AudioLowPass4thOrder m_filterR;
 };
 
 } // namespace DualDriver

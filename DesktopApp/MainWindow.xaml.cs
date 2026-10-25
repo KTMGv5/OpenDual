@@ -632,8 +632,15 @@ namespace OpenDualHub
             bool triggerKick = ChkTriggerKick?.IsChecked == true;
             float kickThreshold = SliderTriggerThreshold != null ? (float)SliderTriggerThreshold.Value : 0.45f;
 
+            string cutoffDesc = cutoff switch
+            {
+                <= 60 => "Sub-Bass",
+                <= 100 => "Punchy",
+                <= 160 => "Deep Bass",
+                _ => "Full Low"
+            };
             if (TxtHapticIntensityVal != null) TxtHapticIntensityVal.Text = $"{(int)(intensity * 100)}%";
-            if (TxtHapticCutoffVal != null) TxtHapticCutoffVal.Text = $"{cutoff} Hz";
+            if (TxtHapticCutoffVal != null) TxtHapticCutoffVal.Text = $"{cutoff} Hz ({cutoffDesc})";
             if (TxtTriggerThresholdVal != null) TxtTriggerThresholdVal.Text = $"{(int)(kickThreshold * 100)}%";
 
             // Throttle / debounce IPC sends to prevent pipe spam during fast dragging

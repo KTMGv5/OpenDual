@@ -655,12 +655,12 @@
                                     <TextBlock x:Name="TxtHapticIntensityVal" Grid.Column="2" Text="100%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
 
-                                <!-- Low-Pass Bass Cutoff Slider -->
+                                <!-- Low-Pass Bass Cutoff Slider (4th-Order 24dB/oct Surgical Filter) -->
                                 <Grid Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Bass Cutoff Filter" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                    <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="60" Maximum="200" Value="100" IsSnapToTickEnabled="True" TickFrequency="10" SmallChange="10" LargeChange="20" ValueChanged="AudioHaptics_Changed"/>
-                                    <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="100 Hz" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="40" Maximum="250" Value="100" IsSnapToTickEnabled="True" TickFrequency="10" SmallChange="10" LargeChange="20" ValueChanged="AudioHaptics_Changed"/>
+                                    <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="100 Hz (Punchy)" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
 
                                 <!-- Audio-to-Trigger Mechanical Recoil Kick -->

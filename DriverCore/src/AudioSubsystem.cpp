@@ -9,22 +9,22 @@
 namespace DualDriver {
 
 // ============================================================================
-// AudioBiquadFilter Implementation
+// 64-bit Biquad Stage Implementation
 // ============================================================================
-void AudioBiquadFilter::SetLowPass(float sampleRate, float cutoffHz, float q) {
-    if (sampleRate < 8000.0f) sampleRate = 48000.0f;
-    cutoffHz = std::clamp(cutoffHz, 30.0f, sampleRate * 0.45f);
+void BiquadStage::SetLowPass(double sampleRate, double cutoffHz, double q) {
+    if (sampleRate < 8000.0) sampleRate = 48000.0;
+    cutoffHz = std::clamp(cutoffHz, 20.0, sampleRate * 0.45);
 
-    float w0 = 2.0f * 3.1415926535f * cutoffHz / sampleRate;
-    float alpha = std::sin(w0) / (2.0f * q);
-    float cosw0 = std::cos(w0);
+    double w0 = 2.0 * 3.14159265358979323846 * cutoffHz / sampleRate;
+    double alpha = std::sin(w0) / (2.0 * q);
+    double cosw0 = std::cos(w0);
 
-    float b0_raw = (1.0f - cosw0) * 0.5f;
-    float b1_raw = 1.0f - cosw0;
-    float b2_raw = (1.0f - cosw0) * 0.5f;
-    float a0_raw = 1.0f + alpha;
-    float a1_raw = -2.0f * cosw0;
-    float a2_raw = 1.0f - alpha;
+    double b0_raw = (1.0 - cosw0) * 0.5;
+    double b1_raw = 1.0 - cosw0;
+    double b2_raw = (1.0 - cosw0) * 0.5;
+    double a0_raw = 1.0 + alpha;
+    double a1_raw = -2.0 * cosw0;
+    double a2_raw = 1.0 - alpha;
 
     b0 = b0_raw / a0_raw;
     b1 = b1_raw / a0_raw;
@@ -33,8 +33,8 @@ void AudioBiquadFilter::SetLowPass(float sampleRate, float cutoffHz, float q) {
     a2 = a2_raw / a0_raw;
 }
 
-float AudioBiquadFilter::Process(float in) {
-    float out = b0 * in + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+double BiquadStage::Process(double in) {
+    double out = b0 * in + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
     x2 = x1;
     x1 = in;
     y2 = y1;
@@ -42,8 +42,29 @@ float AudioBiquadFilter::Process(float in) {
     return out;
 }
 
-void AudioBiquadFilter::Reset() {
-    x1 = x2 = y1 = y2 = 0.0f;
+void BiquadStage::Reset() {
+    x1 = x2 = y1 = y2 = 0.0;
+}
+
+// ============================================================================
+// 4th-Order (24 dB/octave) Cascaded Butterworth Low-Pass Filter
+// ============================================================================
+void AudioLowPass4thOrder::SetLowPass(double sampleRate, double cutoffHz) {
+    // Stage 1: Q1 = 1 / (2 * cos(pi / 8)) = 0.5411961
+    // Stage 2: Q2 = 1 / (2 * cos(3*pi / 8)) = 1.3065630
+    m_stage1.SetLowPass(sampleRate, cutoffHz, 0.541196100146197);
+    m_stage2.SetLowPass(sampleRate, cutoffHz, 1.3065629648763765);
+}
+
+float AudioLowPass4thOrder::Process(float in) {
+    double s1 = m_stage1.Process((double)in);
+    double s2 = m_stage2.Process(s1);
+    return (float)s2;
+}
+
+void AudioLowPass4thOrder::Reset() {
+    m_stage1.Reset();
+    m_stage2.Reset();
 }
 
 // ============================================================================
@@ -299,8 +320,8 @@ void AudioSubsystem::LoopbackCaptureThread() {
     float sampleRate = (float)pFormat->nSamplesPerSec;
     if (sampleRate < 8000.0f) sampleRate = 48000.0f;
     m_sampleRate = sampleRate;
-    m_filterL.SetLowPass(m_sampleRate, (float)m_currentCutoffHz);
-    m_filterR.SetLowPass(m_sampleRate, (float)m_currentCutoffHz);
+    m_filterL.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
+    m_filterR.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
 
     while (m_loopbackRunning) {
         UINT32 packetLength = 0;
@@ -338,7 +359,15 @@ void AudioSubsystem::LoopbackCaptureThread() {
 
 void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORMATEX* pFormat) {
     int channels = pFormat->nChannels;
-    if (channels < 1) return;
+    if (channels < 1 || numFrames == 0 || !pData) return;
+
+    // Check if target cutoff changed and recompute 4th-order filter
+    int targetCutoff = m_targetCutoffHz.load();
+    if (targetCutoff != m_currentCutoffHz) {
+        m_currentCutoffHz = targetCutoff;
+        m_filterL.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
+        m_filterR.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
+    }
 
     bool isFloat = (pFormat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT);
     if (pFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
@@ -379,6 +408,41 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
             if (aL > localPeakL) localPeakL = aL;
             if (aR > localPeakR) localPeakR = aR;
         }
+    } else if (pFormat->wBitsPerSample == 24) {
+        BYTE* pBytes = pData;
+        int bytesPerFrame = pFormat->nBlockAlign;
+        for (UINT32 i = 0; i < numFrames; i++) {
+            BYTE* framePtr = pBytes + i * bytesPerFrame;
+            int32_t rawL = (framePtr[0]) | (framePtr[1] << 8) | ((int8_t)framePtr[2] << 16);
+            int32_t rawR = rawL;
+            if (channels > 1) {
+                rawR = (framePtr[3]) | (framePtr[4] << 8) | ((int8_t)framePtr[5] << 16);
+            }
+            float sL = rawL / 8388608.0f;
+            float sR = rawR / 8388608.0f;
+
+            float fL = m_filterL.Process(sL);
+            float fR = m_filterR.Process(sR);
+
+            float aL = std::abs(fL);
+            float aR = std::abs(fR);
+            if (aL > localPeakL) localPeakL = aL;
+            if (aR > localPeakR) localPeakR = aR;
+        }
+    } else if (pFormat->wBitsPerSample == 32 && !isFloat) {
+        int32_t* pSamples = (int32_t*)pData;
+        for (UINT32 i = 0; i < numFrames; i++) {
+            float sL = pSamples[i * channels + 0] / 2147483648.0f;
+            float sR = pSamples[i * channels + (channels > 1 ? 1 : 0)] / 2147483648.0f;
+
+            float fL = m_filterL.Process(sL);
+            float fR = m_filterR.Process(sR);
+
+            float aL = std::abs(fL);
+            float aR = std::abs(fR);
+            if (aL > localPeakL) localPeakL = aL;
+            if (aR > localPeakR) localPeakR = aR;
+        }
     }
 
     std::lock_guard<std::mutex> lock(m_hapticMutex);
@@ -388,27 +452,25 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
 }
 
 void AudioSubsystem::GetHapticRumble(uint8_t& outLeft, uint8_t& outRight, float intensity, int cutoffHz, bool stereo) {
-    std::lock_guard<std::mutex> lock(m_hapticMutex);
-
-    if (cutoffHz != m_currentCutoffHz && cutoffHz >= 40 && cutoffHz <= 300) {
-        m_currentCutoffHz = cutoffHz;
-        m_filterL.SetLowPass(m_sampleRate, (float)cutoffHz);
-        m_filterR.SetLowPass(m_sampleRate, (float)cutoffHz);
+    if (cutoffHz >= 30 && cutoffHz <= 350) {
+        m_targetCutoffHz.store(cutoffHz);
     }
+
+    std::lock_guard<std::mutex> lock(m_hapticMutex);
 
     // Natural smooth exponential decay (~150ms envelope follower)
     m_peakL *= 0.955f;
     m_peakR *= 0.955f;
 
     // Musical noise gate: eliminates low-level room noise and fan hum
-    const float noiseGate = 0.012f;
+    const float noiseGate = 0.015f;
 
     auto mapAmp = [noiseGate, intensity](float peak) -> uint8_t {
         if (peak <= noiseGate) return 0;
-        float norm = (peak - noiseGate) / (0.65f - noiseGate);
+        float norm = (peak - noiseGate) / (0.60f - noiseGate);
         if (norm > 1.0f) norm = 1.0f;
-        // Soft-knee expansion preserves punch without premature saturation
-        float punch = std::sqrt(norm);
+        // Progressive power curve: suppresses quiet voice bleed while keeping explosions hard-hitting
+        float punch = std::pow(norm, 1.30f);
         int val = (int)(punch * 255.0f * intensity);
         return (uint8_t)std::clamp(val, 0, 255);
     };
