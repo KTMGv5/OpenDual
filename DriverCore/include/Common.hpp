@@ -165,6 +165,10 @@ struct ControllerState {
     // Audio-Reactive Haptics live output levels (0..255)
     uint8_t hapticMotorL = 0;
     uint8_t hapticMotorR = 0;
+
+    // Active Audio endpoints
+    std::string renderAudioDev;
+    std::string captureAudioDev;
 };
 
 } // namespace DualDriver

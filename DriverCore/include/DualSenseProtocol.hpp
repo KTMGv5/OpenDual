@@ -153,6 +153,10 @@ public:
         out[25] = config.leftTrigger.frequency;
         out[26] = config.leftTrigger.endPos;
 
+        // valid_flag2 (out[39]):
+        // 0x04: DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2 (ensures rumble fires even with active USB Audio)
+        out[39] = 0x04;
+
         // Player LEDs
         out[44] = config.playerLeds;
 
@@ -191,6 +195,10 @@ public:
         out[25] = config.leftTrigger.force;
         out[26] = config.leftTrigger.frequency;
         out[27] = config.leftTrigger.endPos;
+
+        // valid_flag2 (out[40] in Bluetooth report):
+        // 0x04: DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2
+        out[40] = 0x04;
 
         out[45] = config.playerLeds;
 

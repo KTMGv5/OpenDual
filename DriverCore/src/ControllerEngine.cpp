@@ -33,6 +33,15 @@ static void HsvToRgb(float h, float s, float v, uint8_t& r, uint8_t& g, uint8_t&
     b = (uint8_t)std::clamp((bf + m) * 255.0f, 0.0f, 255.0f);
 }
 
+static std::string WideToUtf8(const std::wstring& wstr) {
+    if (wstr.empty()) return std::string();
+    int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), (int)wstr.size(), NULL, 0, NULL, NULL);
+    if (sizeNeeded <= 0) return std::string();
+    std::string str(sizeNeeded, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.data(), (int)wstr.size(), &str[0], sizeNeeded, NULL, NULL);
+    return str;
+}
+
 ControllerEngine::ControllerEngine() {
 }
 
@@ -466,6 +475,9 @@ void ControllerEngine::OutputThread() {
                     m_device.WriteReport(outBuf, 78, 10);
                 }
             }
+
+            state.renderAudioDev = WideToUtf8(m_audio.GetActiveRenderDeviceName());
+            state.captureAudioDev = WideToUtf8(m_audio.GetActiveCaptureDeviceName());
 
             // Broadcast state to desktop app via IPC at ~60Hz
             m_ipc.BroadcastState(state, activeCfg);

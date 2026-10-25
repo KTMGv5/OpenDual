@@ -235,6 +235,12 @@ namespace OpenDualHub.Models
         [JsonPropertyName("hapticR")]
         public int HapticR { get; set; }
 
+        [JsonPropertyName("renderDev")]
+        public string? RenderDev { get; set; }
+
+        [JsonPropertyName("captureDev")]
+        public string? CaptureDev { get; set; }
+
         // Touchpad
         [JsonPropertyName("t1")]
         public TouchPointDto Touch1 { get; set; } = new();

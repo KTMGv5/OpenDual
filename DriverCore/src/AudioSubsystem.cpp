@@ -93,6 +93,10 @@ bool AudioSubsystem::Initialize() {
     }
 
     m_initialized = true;
+
+    // Register notification callback for dynamic Windows default audio endpoint switching
+    m_pEnum->RegisterEndpointNotificationCallback(&m_notifyClient);
+
     RefreshDevices();
 
     // Start background loopback listener for audio-reactive haptics
@@ -102,6 +106,10 @@ bool AudioSubsystem::Initialize() {
 
 void AudioSubsystem::Shutdown() {
     StopLoopback();
+
+    if (m_pEnum) {
+        m_pEnum->UnregisterEndpointNotificationCallback(&m_notifyClient);
+    }
 
     if (m_pCaptureVolume) {
         m_pCaptureVolume->Release();
@@ -130,9 +138,12 @@ bool AudioSubsystem::RefreshDevices() {
         m_pCaptureDev = nullptr;
     }
 
-    m_hasDualSenseAudio = false;
-    m_renderDeviceName.clear();
-    m_captureDeviceName.clear();
+    {
+        std::lock_guard<std::mutex> lock(m_hapticMutex);
+        m_hasDualSenseAudio = false;
+        m_renderDeviceName.clear();
+        m_captureDeviceName.clear();
+    }
 
     // Find DualSense Capture/Microphone device
     IMMDeviceCollection* pCol = nullptr;
@@ -179,7 +190,10 @@ bool AudioSubsystem::RefreshDevices() {
                 PROPVARIANT var;
                 PropVariantInit(&var);
                 if (SUCCEEDED(pStore->GetValue(PKEY_Device_FriendlyName, &var))) {
-                    if (var.pwszVal) m_captureDeviceName = var.pwszVal;
+                    if (var.pwszVal) {
+                        std::lock_guard<std::mutex> lock(m_hapticMutex);
+                        m_captureDeviceName = var.pwszVal;
+                    }
                     PropVariantClear(&var);
                 }
                 pStore->Release();
@@ -195,7 +209,10 @@ bool AudioSubsystem::RefreshDevices() {
             PROPVARIANT var;
             PropVariantInit(&var);
             if (SUCCEEDED(pStore->GetValue(PKEY_Device_FriendlyName, &var))) {
-                if (var.pwszVal) m_renderDeviceName = var.pwszVal;
+                if (var.pwszVal) {
+                    std::lock_guard<std::mutex> lock(m_hapticMutex);
+                    m_renderDeviceName = var.pwszVal;
+                }
                 PropVariantClear(&var);
             }
             pStore->Release();
@@ -224,6 +241,10 @@ void AudioSubsystem::SetSystemMicMute(bool mute) {
 }
 
 bool AudioSubsystem::ProcessMicButton(bool micButtonPressed, bool syncEnabled) {
+    if (m_captureDeviceChanged.exchange(false)) {
+        RefreshDevices();
+    }
+
     if (micButtonPressed && !m_lastMicBtnState) {
         if (syncEnabled) {
             bool nowMuted = !IsSystemMicMuted();
@@ -264,96 +285,130 @@ void AudioSubsystem::StopLoopback() {
 void AudioSubsystem::LoopbackCaptureThread() {
     HRESULT hr = CoInitialize(NULL);
 
-    IMMDevice* pRender = nullptr;
-    hr = m_pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pRender);
-    if (FAILED(hr) || !pRender) {
-        if (hr == S_OK || hr == S_FALSE) CoUninitialize();
-        return;
-    }
+    while (m_loopbackRunning) {
+        m_defaultDeviceChanged.store(false);
 
-    IAudioClient* pClient = nullptr;
-    hr = pRender->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, (void**)&pClient);
-    pRender->Release();
-    if (FAILED(hr) || !pClient) {
-        if (hr == S_OK || hr == S_FALSE) CoUninitialize();
-        return;
-    }
+        IMMDevice* pRender = nullptr;
+        hr = m_pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pRender);
+        if (FAILED(hr) || !pRender) {
+            // No default render endpoint currently active, wait and retry
+            for (int i = 0; i < 20 && m_loopbackRunning && !m_defaultDeviceChanged.load(); i++) {
+                Sleep(50);
+            }
+            continue;
+        }
 
-    WAVEFORMATEX* pFormat = nullptr;
-    hr = pClient->GetMixFormat(&pFormat);
-    if (FAILED(hr) || !pFormat) {
-        pClient->Release();
-        if (hr == S_OK || hr == S_FALSE) CoUninitialize();
-        return;
-    }
+        // Cache render device friendly name
+        {
+            IPropertyStore* pStore = nullptr;
+            if (SUCCEEDED(pRender->OpenPropertyStore(STGM_READ, &pStore))) {
+                PROPVARIANT var;
+                PropVariantInit(&var);
+                if (SUCCEEDED(pStore->GetValue(PKEY_Device_FriendlyName, &var)) && var.pwszVal) {
+                    std::lock_guard<std::mutex> lock(m_hapticMutex);
+                    m_renderDeviceName = var.pwszVal;
+                }
+                PropVariantClear(&var);
+                pStore->Release();
+            }
+        }
 
-    // AUDCLNT_STREAMFLAGS_LOOPBACK captures playback stream from Windows audio engine
-    REFERENCE_TIME hnsBufferDuration = 1000000; // 100ms
-    hr = pClient->Initialize(AUDCLNT_SHAREMODE_SHARED,
-                             AUDCLNT_STREAMFLAGS_LOOPBACK,
-                             hnsBufferDuration, 0, pFormat, NULL);
-    if (FAILED(hr)) {
-        CoTaskMemFree(pFormat);
-        pClient->Release();
-        if (hr == S_OK || hr == S_FALSE) CoUninitialize();
-        return;
-    }
+        IAudioClient* pClient = nullptr;
+        hr = pRender->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, (void**)&pClient);
+        pRender->Release();
+        pRender = nullptr;
 
-    IAudioCaptureClient* pCapture = nullptr;
-    hr = pClient->GetService(__uuidof(IAudioCaptureClient), (void**)&pCapture);
-    if (FAILED(hr) || !pCapture) {
-        CoTaskMemFree(pFormat);
-        pClient->Release();
-        if (hr == S_OK || hr == S_FALSE) CoUninitialize();
-        return;
-    }
+        if (FAILED(hr) || !pClient) {
+            Sleep(100);
+            continue;
+        }
 
-    hr = pClient->Start();
-    if (FAILED(hr)) {
+        WAVEFORMATEX* pFormat = nullptr;
+        hr = pClient->GetMixFormat(&pFormat);
+        if (FAILED(hr) || !pFormat) {
+            pClient->Release();
+            Sleep(100);
+            continue;
+        }
+
+        // AUDCLNT_STREAMFLAGS_LOOPBACK captures playback stream from Windows audio engine
+        REFERENCE_TIME hnsBufferDuration = 1000000; // 100ms
+        hr = pClient->Initialize(AUDCLNT_SHAREMODE_SHARED,
+                                 AUDCLNT_STREAMFLAGS_LOOPBACK,
+                                 hnsBufferDuration, 0, pFormat, NULL);
+        if (FAILED(hr)) {
+            CoTaskMemFree(pFormat);
+            pClient->Release();
+            Sleep(100);
+            continue;
+        }
+
+        IAudioCaptureClient* pCapture = nullptr;
+        hr = pClient->GetService(__uuidof(IAudioCaptureClient), (void**)&pCapture);
+        if (FAILED(hr) || !pCapture) {
+            CoTaskMemFree(pFormat);
+            pClient->Release();
+            Sleep(100);
+            continue;
+        }
+
+        hr = pClient->Start();
+        if (FAILED(hr)) {
+            pCapture->Release();
+            CoTaskMemFree(pFormat);
+            pClient->Release();
+            Sleep(100);
+            continue;
+        }
+
+        float sampleRate = (float)pFormat->nSamplesPerSec;
+        if (sampleRate < 8000.0f) sampleRate = 48000.0f;
+        m_sampleRate = sampleRate;
+        m_filterL.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
+        m_filterR.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
+
+        // Dynamic capture loop on active endpoint
+        while (m_loopbackRunning && !m_defaultDeviceChanged.load()) {
+            UINT32 packetLength = 0;
+            hr = pCapture->GetNextPacketSize(&packetLength);
+            if (FAILED(hr)) {
+                // Device was invalidated (e.g. AUDCLNT_E_DEVICE_INVALIDATED 0x88890004) or endpoint changed
+                break;
+            }
+
+            while (packetLength > 0) {
+                BYTE* pData = nullptr;
+                UINT32 numFrames = 0;
+                DWORD flags = 0;
+
+                hr = pCapture->GetBuffer(&pData, &numFrames, &flags, NULL, NULL);
+                if (SUCCEEDED(hr)) {
+                    if (!(flags & AUDCLNT_BUFFERFLAGS_SILENT) && pData && numFrames > 0) {
+                        ProcessAudioSamples(pData, numFrames, pFormat);
+                    } else {
+                        std::lock_guard<std::mutex> lock(m_hapticMutex);
+                        m_peakL *= 0.80f;
+                        m_peakR *= 0.80f;
+                    }
+                    pCapture->ReleaseBuffer(numFrames);
+                }
+                pCapture->GetNextPacketSize(&packetLength);
+            }
+
+            Sleep(8); // High update rate (~120Hz)
+        }
+
+        pClient->Stop();
         pCapture->Release();
         CoTaskMemFree(pFormat);
         pClient->Release();
-        if (hr == S_OK || hr == S_FALSE) CoUninitialize();
-        return;
-    }
 
-    float sampleRate = (float)pFormat->nSamplesPerSec;
-    if (sampleRate < 8000.0f) sampleRate = 48000.0f;
-    m_sampleRate = sampleRate;
-    m_filterL.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
-    m_filterR.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
-
-    while (m_loopbackRunning) {
-        UINT32 packetLength = 0;
-        hr = pCapture->GetNextPacketSize(&packetLength);
-        if (FAILED(hr)) break;
-
-        while (packetLength > 0) {
-            BYTE* pData = nullptr;
-            UINT32 numFrames = 0;
-            DWORD flags = 0;
-
-            hr = pCapture->GetBuffer(&pData, &numFrames, &flags, NULL, NULL);
-            if (SUCCEEDED(hr)) {
-                if (!(flags & AUDCLNT_BUFFERFLAGS_SILENT) && pData && numFrames > 0) {
-                    ProcessAudioSamples(pData, numFrames, pFormat);
-                } else {
-                    std::lock_guard<std::mutex> lock(m_hapticMutex);
-                    m_peakL *= 0.80f;
-                    m_peakR *= 0.80f;
-                }
-                pCapture->ReleaseBuffer(numFrames);
-            }
-            pCapture->GetNextPacketSize(&packetLength);
+        // Small grace period for Windows audio routing engine to finish switching
+        if (m_loopbackRunning && m_defaultDeviceChanged.load()) {
+            Sleep(50);
         }
-
-        Sleep(8); // High update rate (~120Hz)
     }
 
-    pClient->Stop();
-    pCapture->Release();
-    CoTaskMemFree(pFormat);
-    pClient->Release();
     if (hr == S_OK || hr == S_FALSE) CoUninitialize();
 }
 
@@ -386,6 +441,22 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
             float sL = pSamples[i * channels + 0];
             float sR = pSamples[i * channels + (channels > 1 ? 1 : 0)];
 
+            // If 4-channel Quadraphonic (DualSense USB Audio):
+            // Channels 0 & 1 = Headphone Audio, Channels 2 & 3 = Dedicated Voice-Coil Haptics
+            if (channels == 4) {
+                float hL = pSamples[i * channels + 2];
+                float hR = pSamples[i * channels + 3];
+                if (std::abs(hL) > 0.001f || std::abs(hR) > 0.001f) {
+                    sL = sL * 0.5f + hL;
+                    sR = sR * 0.5f + hR;
+                }
+            } else if (channels >= 6) {
+                // 5.1 / 7.1 Surround setups: Channel 3 is standard LFE (Subwoofer)
+                float lfe = pSamples[i * channels + 3];
+                sL += lfe * 0.5f;
+                sR += lfe * 0.5f;
+            }
+
             float fL = m_filterL.Process(sL);
             float fR = m_filterR.Process(sR);
 
@@ -399,6 +470,19 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
         for (UINT32 i = 0; i < numFrames; i++) {
             float sL = pSamples[i * channels + 0] / 32768.0f;
             float sR = pSamples[i * channels + (channels > 1 ? 1 : 0)] / 32768.0f;
+
+            if (channels == 4) {
+                float hL = pSamples[i * channels + 2] / 32768.0f;
+                float hR = pSamples[i * channels + 3] / 32768.0f;
+                if (std::abs(hL) > 0.001f || std::abs(hR) > 0.001f) {
+                    sL = sL * 0.5f + hL;
+                    sR = sR * 0.5f + hR;
+                }
+            } else if (channels >= 6) {
+                float lfe = pSamples[i * channels + 3] / 32768.0f;
+                sL += lfe * 0.5f;
+                sR += lfe * 0.5f;
+            }
 
             float fL = m_filterL.Process(sL);
             float fR = m_filterR.Process(sR);

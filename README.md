@@ -1,7 +1,7 @@
 # OpenDual — PlayStation Controller Driver & Desktop Suite
 
 [![Code Analysis & Build Verification](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml/badge.svg)](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml)
-[![Release v1.4.0](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.4.0)
+[![Release v1.4.1](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.4.1)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Open-source, ultra-low-latency Windows driver service and desktop suite for PlayStation DualShock 4 and DualSense (PS5) controllers on Windows 10 & 11.**
@@ -51,8 +51,10 @@
 * **Zero-Lag Gamepad Output**:
   * Dynamic ViGEmBus client integration for 100% plug-and-play Xbox 360 controller emulation across all Windows PC games.
   * Two-way force feedback: routes game rumble events directly into the controller's physical motors.
-* **Audio-Reactive Haptic Bass Rumble (WASAPI Loopback)**:
-  * Captures Windows system and game audio in real time via low-latency WASAPI loopback.
+* **Audio-Reactive Haptic Bass Rumble (Dynamic WASAPI Loopback)**:
+  * Captures Windows system and game audio in real time via low-latency WASAPI loopback with **Dynamic Endpoint Migration** (`IMMNotificationClient`). Seamlessly follows default playback output switches between Soundbars, TV speakers, wireless headsets, and the DualSense / DS4 controller itself without dropping haptics.
+  * Multi-channel support: handles 4-channel Quadraphonic DualSense streams (headphone stereo + native haptic audio blending) and 5.1/7.1 LFE subwoofer channel isolation.
+  * DualSense firmware v2 compatible vibration flags (`DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2`) enable crisp tactile rumble concurrent with high-res USB Audio headphone playback.
   * Isolates low-frequency explosions, footsteps, engine revs, and gunshots using an adjustable 4th-order low-pass filter (40Hz to 250Hz).
   * Direct stereo voice-coil tactile motor routing with soft-knee punch curve and fast musical release envelope (zero static buzz).
 * **Audio-to-Trigger Mechanical Recoil Kick**:

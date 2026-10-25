@@ -582,6 +582,12 @@ namespace OpenDualHub
                         if (BarHapticR != null) BarHapticR.Value = t.HapticR;
                         if (TxtHapticR != null) TxtHapticR.Text = t.HapticR.ToString();
 
+                        // Dynamic Audio Endpoint Names
+                        if (!string.IsNullOrEmpty(t.RenderDev) && TxtRenderDev != null && TxtRenderDev.Text != t.RenderDev)
+                            TxtRenderDev.Text = t.RenderDev;
+                        if (!string.IsNullOrEmpty(t.CaptureDev) && TxtCaptureDev != null && TxtCaptureDev.Text != t.CaptureDev)
+                            TxtCaptureDev.Text = t.CaptureDev;
+
                         // In-Game Quick HUD Update & PS Button Detection
                         if (_quickHud != null)
                         {

@@ -4,6 +4,26 @@
 
 namespace DualDriver {
 
+static std::string EscapeJsonString(const std::string& input) {
+    std::string out;
+    out.reserve(input.size() + 16);
+    for (char c : input) {
+        if (c == '"') out += "\\\"";
+        else if (c == '\\') out += "\\\\";
+        else if (c == '\b') out += "\\b";
+        else if (c == '\f') out += "\\f";
+        else if (c == '\n') out += "\\n";
+        else if (c == '\r') out += "\\r";
+        else if (c == '\t') out += "\\t";
+        else if ((unsigned char)c < 0x20) {
+            // omit raw control characters
+        } else {
+            out += c;
+        }
+    }
+    return out;
+}
+
 IpcServer::IpcServer() {
 }
 
@@ -269,6 +289,8 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
        << "\"accelZ\":" << s.accelZ << ","
        << "\"hapticL\":" << (int)s.hapticMotorL << ","
        << "\"hapticR\":" << (int)s.hapticMotorR << ","
+       << "\"renderDev\":\"" << EscapeJsonString(s.renderAudioDev) << "\","
+       << "\"captureDev\":\"" << EscapeJsonString(s.captureAudioDev) << "\","
        << "\"t1\":{\"on\":" << (s.touch1.active ? "true" : "false") << ",\"x\":" << s.touch1.x << ",\"y\":" << s.touch1.y << "},"
        << "\"t2\":{\"on\":" << (s.touch2.active ? "true" : "false") << ",\"x\":" << s.touch2.x << ",\"y\":" << s.touch2.y << "},"
        << "\"cfg\":{"
