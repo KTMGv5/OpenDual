@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.6.0",
-    [string]$ReleaseName = "OpenDual v1.6.0 - PS5 Create Capture Bar & Windows Game Bar Integration",
+    [string]$TagName = "v1.6.1",
+    [string]$ReleaseName = "OpenDual v1.6.1 - Capture Bar Thumbstick Deadzone and Navigation Fix",
     [string]$DistDir = "dist"
 )
 
@@ -46,47 +46,35 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.6.0
+## Highlights in OpenDual v1.6.1
 
-OpenDual v1.6.0 brings full **PlayStation Create / Share Button** functionality with an authentic **PS5-style Create Capture Bar** directly integrated with PC gaming tools (Windows Game Bar & GameDVR), plus rock-solid HUD clock centering that eliminates side-to-side wobble from ms latency fluctuations.
+OpenDual v1.6.1 is a hotfix release addressing thumbstick deadzones and controller navigation within the PS5 Create Capture Bar, plus mutual overlay exclusivity with the Control Center HUD.
 
 ---
 
-### What's New in v1.6.0
+### What's New and Fixed in v1.6.1
 
-* **PlayStation Create / Share Button (Capture Bar)**:
-  * **Authentic PS5 Create Menu**: Pressing Create / Share opens a floating, non-focus-stealing capture bar (`WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`) at the bottom of the screen.
-  * **5 Capture Tiles**:
-    * **Tile 0 (Screenshot)**: Instant high-res screenshot capture (`Win + Alt + PrtScn`).
-    * **Tile 1 (Save Recent Clip)**: Instant Replay clip saving (`Win + Alt + G`).
-    * **Tile 2 (Record Gameplay)**: Start / Stop full video recording (`Win + Alt + R`).
-    * **Tile 3 (Xbox Game Bar)**: Direct shortcut to PC Game Bar overlay (`Win + G`).
-    * **Tile 4 (Gallery)**: 1-click access to Windows `Videos\Captures` gallery.
-  * **On-the-Fly Replay Buffer Duration**: On Tile 1, D-Pad Up/Down allows selecting clip length on the fly (`15s`, `30s`, `1 min`, `3 min`, `5 min`), directly updating the Windows GameDVR registry buffer.
-  * **PS5-Style Quick Gestures**:
-    * **Single Tap Share**: Toggles Create Capture Bar.
-    * **Hold Share (> 800ms)**: Instant screenshot with shutter notification.
-    * **Double-Tap Share**: Instant 30s replay clip capture (`Win + Alt + G`).
-  * **Full Controller Navigation**: D-Pad Left/Right navigates tiles, Cross (X) confirms action, Circle (O) or Share dismisses.
+* **Capture Bar Thumbstick Navigation Fix**:
+  * Fixed an issue where the left thumbstick at neutral rest (0.0f) satisfied a faulty threshold, causing the Capture Bar selection to lock to the far left tile (Tile 0) and fight user input.
+  * Configured proper bipolar deadzones (-0.55f / +0.55f) on Left Thumbstick X and Y axes, ensuring stick navigation is smooth, deliberate, and stable at rest.
+  * Added rate-limited vertical navigation ticks (320ms hold threshold, 150ms repeat rate) when using thumbstick up/down on Tile 1 to cycle replay buffer durations.
 
-* **Rock-Solid Centered HUD Clock**:
-  * Fixed HUD layout where fluctuating sub-millisecond polling latency pushed the digital clock side-to-side.
-  * The clock is now anchored across the entire HUD boundary, guaranteeing rock-solid dead-center placement regardless of left or right telemetry string widths.
+* **State Reset and Mutual Exclusivity**:
+  * Capture Bar now resets its selection cursor to Tile 1 (Save Recent Gameplay) and purges held analog state each time it is opened.
+  * Mutually exclusive overlay presentation: Opening the Control Center HUD via PS Button automatically hides the Capture Bar, and tapping Share automatically hides the Control Center HUD.
+  * Prevented Share button release re-triggering race conditions during in-menu controller handling.
 
-* **Codebase Verification & Security**:
-  * MSVC C/C++ Static Code Analysis (`/p:RunCodeAnalysis=true`) passed with 0 warnings and 0 defects.
+* **Codebase Verification and Security**:
   * Full .NET C# build passed with 0 warnings, 0 errors.
   * Documentation and release notes verified with 0 non-ASCII characters.
 
 ---
 
 ### Included Signed Binaries
-* `OpenDualSetup.exe` - Standalone installer and uninstaller suite
-* `OpenDualHub.exe` - Desktop controller hub and configuration center
-* `OpenDualDriver.exe` - 1000Hz C++20 driver service engine
-* `OpenDual-v1.6.0.zip` - Portable release bundle
-
-All binaries are digitally signed with Authenticode SHA-256 signatures.
+* OpenDualSetup.exe - Standalone installer and uninstaller suite
+* OpenDualHub.exe - Desktop controller hub and configuration center
+* OpenDualDriver.exe - 1000Hz C++20 driver service engine
+* OpenDual-v1.6.1.zip - Portable release bundle
 "@
 
 # 3. Check if release already exists

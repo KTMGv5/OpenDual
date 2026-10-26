@@ -655,6 +655,10 @@ namespace OpenDualHub
                             }
                             if (t.PS && !_lastPsState && ChkEnableQuickHud?.IsChecked == true)
                             {
+                                if (_captureBar != null && _captureBar.IsVisibleToUser)
+                                {
+                                    _captureBar.HideBar();
+                                }
                                 _quickHud.ToggleOrRefresh();
                             }
                         }
@@ -698,6 +702,10 @@ namespace OpenDualHub
                                         else
                                         {
                                             _lastShareReleaseTime = now;
+                                            if (_quickHud != null && _quickHud.IsVisibleToUser)
+                                            {
+                                                _quickHud.HideHud();
+                                            }
                                             _captureBar.ToggleOrShow();
                                         }
                                     }

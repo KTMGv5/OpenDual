@@ -36,6 +36,9 @@ namespace OpenDualHub
         private DateTime _dpadHeldSince = DateTime.MinValue;
         private DateTime _lastDpadTick = DateTime.MinValue;
         private int _lastHeldDirection = 0; // -1: Left, +1: Right
+        private DateTime _vHeldSince = DateTime.MinValue;
+        private DateTime _lastVTick = DateTime.MinValue;
+        private int _lastHeldVerticalDirection = 0; // -1: Down, +1: Up
 
         public Func<string>? GetActiveGameName { get; set; }
         public bool IsVisibleToUser => Visibility == Visibility.Visible && Opacity > 0.05;
@@ -125,6 +128,12 @@ namespace OpenDualHub
                 TxtActiveGame.Text = string.IsNullOrWhiteSpace(game) ? "Windows Desktop" : game;
             }
 
+            _selectedTile = 1;
+            _lastHeldDirection = 0;
+            _lastHeldVerticalDirection = 0;
+            _dpadHeldSince = DateTime.MinValue;
+            _vHeldSince = DateTime.MinValue;
+
             TxtNotification.Text = "";
             UpdateTileHighlights();
             UpdateDurationDisplay();
@@ -163,12 +172,11 @@ namespace OpenDualHub
 
             DateTime now = DateTime.UtcNow;
 
-            // Handle Circle or Share: dismiss
-            if ((t.Circle && !_lastCircle) || (t.Share && !_lastShare))
+            // Handle Circle: dismiss
+            if (t.Circle && !_lastCircle)
             {
                 HideBar();
                 _lastCircle = t.Circle;
-                _lastShare = t.Share;
                 return;
             }
 
@@ -177,9 +185,9 @@ namespace OpenDualHub
             bool dpadDown = (t.DPad == 3 || t.DPad == 4 || t.DPad == 5);
             bool dpadLeft = (t.DPad == 5 || t.DPad == 6 || t.DPad == 7);
 
-            // Left / Right Navigation (D-Pad or Stick)
-            bool navLeft = dpadLeft || (t.LX < 0.35f);
-            bool navRight = dpadRight || (t.LX > 0.65f);
+            // Left / Right Navigation (D-Pad or Left Stick: LX is -1.0 to +1.0, center is 0.0)
+            bool navLeft = dpadLeft || (t.LX < -0.55f);
+            bool navRight = dpadRight || (t.LX > 0.55f);
 
             int currentDirection = 0;
             if (navLeft) currentDirection = -1;
@@ -219,27 +227,57 @@ namespace OpenDualHub
                 _lastHeldDirection = 0;
             }
 
-            // Up / Down Navigation: On Tile 1, cycles duration
-            bool navUp = dpadUp || (t.LY < 0.35f);
-            bool navDown = dpadDown || (t.LY > 0.65f);
+            // Up / Down Navigation: On Tile 1, cycles duration (LY is -1.0 to +1.0, Up is positive, center is 0.0)
+            bool navUp = dpadUp || (t.LY > 0.55f);
+            bool navDown = dpadDown || (t.LY < -0.55f);
+
+            int verticalDirection = 0;
+            if (navUp) verticalDirection = +1;
+            else if (navDown) verticalDirection = -1;
 
             if (_selectedTile == 1)
             {
-                if (navUp && !_lastDpadUp)
+                if (verticalDirection != 0)
                 {
-                    _clipDurationIndex = Math.Min(_clipDurationIndex + 1, ClipDurations.Length - 1);
-                    UpdateDurationDisplay();
-                    GameCaptureManager.SetHistoricalBufferLengthSeconds(ClipDurations[_clipDurationIndex]);
-                    _autoDismissTimer.Stop();
-                    _autoDismissTimer.Start();
+                    bool canTriggerV = false;
+                    if (verticalDirection != _lastHeldVerticalDirection)
+                    {
+                        canTriggerV = true;
+                        _vHeldSince = now;
+                        _lastVTick = now;
+                        _lastHeldVerticalDirection = verticalDirection;
+                    }
+                    else
+                    {
+                        double heldMs = (now - _vHeldSince).TotalMilliseconds;
+                        double sinceLastTick = (now - _lastVTick).TotalMilliseconds;
+                        if (heldMs >= 320 && sinceLastTick >= 150)
+                        {
+                            canTriggerV = true;
+                            _lastVTick = now;
+                        }
+                    }
+
+                    if (canTriggerV)
+                    {
+                        if (verticalDirection > 0)
+                        {
+                            _clipDurationIndex = Math.Min(_clipDurationIndex + 1, ClipDurations.Length - 1);
+                        }
+                        else
+                        {
+                            _clipDurationIndex = Math.Max(_clipDurationIndex - 1, 0);
+                        }
+
+                        UpdateDurationDisplay();
+                        GameCaptureManager.SetHistoricalBufferLengthSeconds(ClipDurations[_clipDurationIndex]);
+                        _autoDismissTimer.Stop();
+                        _autoDismissTimer.Start();
+                    }
                 }
-                else if (navDown && !_lastDpadDown)
+                else
                 {
-                    _clipDurationIndex = Math.Max(_clipDurationIndex - 1, 0);
-                    UpdateDurationDisplay();
-                    GameCaptureManager.SetHistoricalBufferLengthSeconds(ClipDurations[_clipDurationIndex]);
-                    _autoDismissTimer.Stop();
-                    _autoDismissTimer.Start();
+                    _lastHeldVerticalDirection = 0;
                 }
             }
 
