@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.5.0",
-    [string]$ReleaseName = "OpenDual v1.5.0 - Interactive In-Game HUD Control Center & Touchpad Notch Overhaul",
+    [string]$TagName = "v1.5.1",
+    [string]$ReleaseName = "OpenDual v1.5.1 - 1000 Hz USB Polling Rate Overclocking Assistant",
     [string]$DistDir = "dist"
 )
 
@@ -46,37 +46,35 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.5.0
+## Highlights in OpenDual v1.5.1
 
-OpenDual v1.5.0 introduces an interactive **In-Game Control Center HUD** inspired by the PS5 dashboard, complete with controller-driven tile navigation and live PC hardware telemetry, plus an overhaul to the **Touchpad Engine** for clean, slot-by-slot inventory hotbar scrolling in games like Minecraft.
+OpenDual v1.5.1 delivers a built-in **1000 Hz USB Polling Rate Overclocking Assistant** with 1-click **SweetLow HIDUSBF** integration, giving competitive players an effortless path to slash DualSense input latency from 4.0ms down to a true 1.0ms esports response time.
 
 ---
 
-### What's New in v1.5.0
+### What's New in v1.5.1
 
-* **Interactive PS5 Control Center In-Game HUD**:
-  * **Persistent Overlay**: Summon with the PS button or system tray; stays open persistently until explicitly closed with Circle (O) or PS button (no auto-hide timeout when in HUD mode). Ephemeral toasts still auto-dismiss cleanly.
-  * **Zero Focus Stealing**: Built with Win32 `WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW` and topmost z-ordering - interact with controller shortcuts without pulling focus away from fullscreen games.
-  * **Adjustable HUD Scaling**: Dynamic scale modes (Compact 85%, Standard 100%, Large 115%, Couch/4K TV 130%) so the HUD is never clipped on high-DPI displays.
-  * **5 Controller-Navigable Tiles**:
-    * **Tile 0 (Game & Profile)**: Displays active game executable and active profile; D-Pad Up/Down cycles profiles, Cross (X) applies.
-    * **Tile 1 (Master Audio & Mic)**: Live Windows volume bar and endpoint name; D-Pad Up/Down adjusts volume in +/-5% steps, Cross (X) toggles Master Mute.
-    * **Tile 2 (6-Axis Gyro Aiming)**: Motion aiming status (Active ADS / Disabled) and live sensitivity; D-Pad Up/Down adjusts sensitivity (+/-0.1x), Cross (X) toggles Gyro on/off.
-    * **Tile 3 (PC Hardware Specs)**: Zero-overhead CPU % utilization (`GetSystemTimes`), RAM load % and used GB / total GB (`GlobalMemoryStatusEx`).
-    * **Tile 4 (Touchpad & Haptics)**: Live touchpad sensitivity and stereo haptic summary; D-Pad Up/Down adjusts sensitivity (+/-0.1x), Cross (X) toggles Touchpad on/off.
-  * **Universal Quick Actions**: Square ([]) instantly toggles microphone mute from anywhere in the HUD. Mouse clicks and touch inputs are also fully supported.
-  * **Input Debouncing**: Rate-limited controller repeats (320ms hold, 130ms tick) with edge-triggered button actions ensure rapid, accurate tile navigation.
+* **1000 Hz USB Polling Rate Overclocking Assistant**:
+  * **Hardware Latency Unlocked**: Standard DualSense controllers default to 250 Hz (4.0ms interval) on Windows USB because Sony's hardware descriptor reserves USB bus bandwidth for 48kHz audio endpoints. The new assistant guides users through applying SweetLow's low-latency filter driver to achieve 1000 Hz (1.0ms delay) on standard USB.
+  * **1-Click Package Downloader**: Automatically downloads and extracts the official SweetLow HIDUSBF archive directly into `%LocalAppData%\OpenDual\tools\hidusbf\` with real-time download progress tracking.
+  * **1-Click Driver Certificate Installer**: Installs `SweetLow.CER` directly into Windows Trusted Root and Trusted Publishers stores via elevated `certutil`, ensuring Windows 10 & 11 64-bit load the filter driver without security warnings.
+  * **1-Click Elevated Setup Launcher**: Launches `Setup.exe` with Administrator elevation directly from the OpenDual interface.
+  * **Windows Core Isolation Shortcut**: Direct 1-click launcher for `windowsdefender://coreisolation` for quick toggling if Memory Integrity (HVCI) blocks filter loading.
 
-* **Touchpad Engine Overhaul (Minecraft & Inventory Safe)**:
-  * **Discrete Notched Scroll Mode**: Replaced high-frequency mouse wheel spam with discrete notching (`notchThreshold = 42.0f`, `scrollCooldownMs = 65ms`, standard `WHEEL_DELTA = 120`). Prevents hotbars from spinning uncontrollably in Minecraft, weapon wheels, and menus - each two-finger swipe advances cleanly one slot at a time.
-  * **Micro-Jitter Deadzone & Dual-Slope Ballistics**: Filtered resting finger tremors (`std::abs(dx) <= 1 && std::abs(dy) <= 1`) with 1:1 linear tracking at low speeds for pinpoint 36x36 slot clicking, smoothly accelerating at higher velocities for rapid cross-screen travel.
+* **Real-Time Live Polling & Latency Benchmark**:
+  * Live rolling benchmark tracking Current Hz, Latency (ms), Min Latency, Max Latency, and Average Latency.
+  * Live filter service detection: verifies whether `hidusbf.sys` is installed in the Windows Service Control Manager and whether `LowerFilters` is active on DualSense (`VID_054C&PID_0CE6`).
+  * Instant reconnection celebration: as soon as the user unplugs and replugs their controller, OpenDual automatically verifies the 1000 Hz stream and displays a success banner.
 
-* **Live Touchpad Sensitivity Telemetry**:
-  * Bidirectional IPC sync for `mouseSens` and `scrollSens` between DriverCore and DesktopApp.
+* **Dashboard & In-Game Control Center HUD Integration**:
+  * **Dashboard Header**: Live polling rate badge displays `1000 Hz Active (Esports 1.0ms)` when overclocked, or `1000 Hz Assistant (Boost to 1ms)` when running at factory default.
+  * **System Tab**: Added a dedicated "1000 Hz USB Polling Rate Overclocking" card with status readout and one-click assistant access.
+  * **Control Center HUD**: Displays live [1000Hz (1.0ms)] overclock indicator directly in the in-game overlay.
 
 * **Codebase Verification & Security**:
   * MSVC C/C++ Static Code Analysis (`/p:RunCodeAnalysis=true`) passed with 0 warnings and 0 defects.
   * Full .NET C# build passed with 0 warnings, 0 errors.
+  * Documentation and release notes verified with 0 non-ASCII characters.
 
 ---
 
@@ -84,7 +82,7 @@ OpenDual v1.5.0 introduces an interactive **In-Game Control Center HUD** inspire
 * `OpenDualSetup.exe` - Standalone installer and uninstaller suite
 * `OpenDualHub.exe` - Desktop controller hub and configuration center
 * `OpenDualDriver.exe` - 1000Hz C++20 driver service engine
-* `OpenDual-v1.5.0.zip` - Portable release bundle
+* `OpenDual-v1.5.1.zip` - Portable release bundle
 
 All binaries are digitally signed with Authenticode SHA-256 signatures.
 "@

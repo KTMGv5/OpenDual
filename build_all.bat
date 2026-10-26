@@ -70,9 +70,9 @@ copy /y uninstall.bat dist\
 echo [5/6] Signing Authenticode binaries in .\dist\...
 powershell -NoProfile -ExecutionPolicy Bypass -File "tools\sign_binaries.ps1" -TargetDir "dist"
 
-echo [6/6] Creating release archive: dist\OpenDual-v1.5.0.zip...
-if exist dist\OpenDual-v1.4.1.zip del /f /q dist\OpenDual-v1.4.1.zip
-powershell -NoProfile -Command "Compress-Archive -Path dist\* -DestinationPath dist\OpenDual-v1.5.0.zip -Force"
+echo [6/6] Creating release archive: dist\OpenDual-v1.5.1.zip...
+if exist dist\*.zip del /f /q dist\*.zip
+powershell -NoProfile -Command "Compress-Archive -Path dist\* -DestinationPath dist\OpenDual-v1.5.1.zip -Force"
 
 echo =========================================================
 echo   Build Successful! Artifacts are in .\dist\

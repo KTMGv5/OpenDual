@@ -29,6 +29,7 @@ namespace OpenDualHub
         private GameProfile _currentProfile = new();
         private bool _lowBatteryWarned = false;
         private bool _isProfileApplying = false;
+        private OverclockAssistantWindow? _overclockAssistant;
 
         public MainWindow()
         {
@@ -154,6 +155,7 @@ namespace OpenDualHub
             _gameDetector?.Dispose();
             _trayManager.Dispose();
             _quickHud?.Close();
+            _overclockAssistant?.Close();
             Application.Current.Shutdown();
         }
 
@@ -295,6 +297,7 @@ namespace OpenDualHub
             _ipc.Dispose();
             _trayManager.Dispose();
             _quickHud?.Close();
+            _overclockAssistant?.Close();
         }
 
         private void RefreshDriverStatus()
@@ -448,6 +451,39 @@ namespace OpenDualHub
 
                         if (DashHzVal != null) DashHzVal.Text = $"{t.PollingRateHz} Hz";
                         if (DashLatencyVal != null) DashLatencyVal.Text = $"{t.LatencyMs:F1} ms";
+
+                        if (t.PollingRateHz >= 900)
+                        {
+                            if (DashOverclockLabel != null) DashOverclockLabel.Text = "1000 Hz Active";
+                            if (DashOverclockSub != null) DashOverclockSub.Text = "Esports 1.0ms";
+                            if (BtnDashOverclock != null)
+                            {
+                                BtnDashOverclock.Background = new SolidColorBrush(Color.FromRgb(19, 51, 36));
+                                BtnDashOverclock.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 230, 118));
+                            }
+                            if (TxtOverclockStatus != null)
+                            {
+                                TxtOverclockStatus.Text = $"{t.PollingRateHz} Hz ({t.LatencyMs:F1} ms) • Esports Active";
+                                TxtOverclockStatus.Foreground = (Brush)FindResource("AccentGreen");
+                            }
+                        }
+                        else if (t.PollingRateHz > 0)
+                        {
+                            if (DashOverclockLabel != null) DashOverclockLabel.Text = "1000 Hz Assistant";
+                            if (DashOverclockSub != null) DashOverclockSub.Text = "Boost to 1ms";
+                            if (BtnDashOverclock != null)
+                            {
+                                BtnDashOverclock.Background = new SolidColorBrush(Color.FromRgb(34, 26, 60));
+                                BtnDashOverclock.BorderBrush = new SolidColorBrush(Color.FromRgb(124, 77, 255));
+                            }
+                            if (TxtOverclockStatus != null)
+                            {
+                                TxtOverclockStatus.Text = $"{t.PollingRateHz} Hz ({t.LatencyMs:F1} ms) • Default";
+                                TxtOverclockStatus.Foreground = (Brush)FindResource("AccentAmber");
+                            }
+                        }
+
+                        _overclockAssistant?.UpdateTelemetry(t);
 
                         if (DashMicBadge != null) DashMicBadge.Visibility = t.MicMuted ? Visibility.Visible : Visibility.Collapsed;
 
@@ -621,6 +657,11 @@ namespace OpenDualHub
                         if (DashConnInfo != null) DashConnInfo.Text = "Connect a DualSense or DualShock 4 via USB or Bluetooth.";
                         if (DashHzVal != null) DashHzVal.Text = "0 Hz";
                         if (DashLatencyVal != null) DashLatencyVal.Text = "0.0 ms";
+                        if (TxtOverclockStatus != null)
+                        {
+                            TxtOverclockStatus.Text = "No Controller Connected";
+                            TxtOverclockStatus.Foreground = (Brush)FindResource("TextSecondary");
+                        }
                     }
                 }
                 finally
@@ -898,6 +939,33 @@ namespace OpenDualHub
             BtnInstallViGEm.IsEnabled = true;
             TxtDriverLog.Text = success ? "ViGEmBus Driver installed successfully!" : "ViGEmBus installation cancelled or failed.";
             RefreshDriverStatus();
+        }
+
+        private void BtnDashOverclock_Click(object sender, RoutedEventArgs e)
+        {
+            OpenOverclockAssistant();
+        }
+
+        private void BtnOpenOverclockAssistant_Click(object sender, RoutedEventArgs e)
+        {
+            OpenOverclockAssistant();
+        }
+
+        private void OpenOverclockAssistant()
+        {
+            if (_overclockAssistant == null || !_overclockAssistant.IsLoaded)
+            {
+                _overclockAssistant = new OverclockAssistantWindow
+                {
+                    Owner = this
+                };
+                _overclockAssistant.Closed += (s, ev) => _overclockAssistant = null;
+                _overclockAssistant.Show();
+            }
+            else
+            {
+                _overclockAssistant.Activate();
+            }
         }
 
         private void CmbHudScale_SelectionChanged(object sender, SelectionChangedEventArgs e)

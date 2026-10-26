@@ -385,7 +385,8 @@ namespace OpenDualHub
                 {
                     string connType = t.Connection == 1 ? "USB" : "Bluetooth";
                     string latStr = t.LatencyMs > 0 ? t.LatencyMs.ToString("F1") : "1.0";
-                    TxtConnection.Text = $"{t.PollingRateHz}Hz ({latStr}ms) • {connType}";
+                    string ocPrefix = t.PollingRateHz >= 900 ? "⚡ " : "";
+                    TxtConnection.Text = $"{ocPrefix}{t.PollingRateHz}Hz ({latStr}ms) • {connType}";
                 }
 
                 // Clock

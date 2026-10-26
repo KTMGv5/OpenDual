@@ -11,6 +11,9 @@
 ## Highlights & Key Features
 
 * **True 1000Hz (1ms) Polling Engine**: High-priority multimedia scheduled C++20 engine using raw Windows HID asynchronous overlapped I/O (`AvSetMmThreadCharacteristicsW` + `timeBeginPeriod(1)`), achieving sub-millisecond input pipeline latency.
+* **Built-in 1000 Hz USB Overclocking Assistant (SweetLow HIDUSBF Integration)**:
+  * Standard DualSense controllers default to 250 Hz (4.0ms) over USB on PC because Sony reserves USB endpoint bandwidth for 48kHz audio. OpenDual features an interactive Overclocking Assistant to guide competitive players through enabling SweetLow HIDUSBF for a true 1000 Hz (1.0ms) esports polling rate.
+  * Features 1-click package download, driver certificate installer, elevated setup launcher, Windows Core Isolation shortcuts, and real-time live polling rate benchmarking.
 * **Interactive In-Game Control Center HUD (PS Button)**:
   * Persistent, non-focus-stealing PS5-style overlay (`WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`) that opens when pressing the **PS button** without minimizing or dropping focus in games.
   * Stays open persistently until explicitly closed with Circle (O) or PS Button. Ephemeral toasts auto-dismiss cleanly after 3.5 seconds.
@@ -125,6 +128,20 @@ Or run:
 * **Hold PS Button + D-Pad Up**: Increase touchpad sensitivity (+0.1x)
 * **Hold PS Button + D-Pad Down**: Decrease touchpad sensitivity (-0.1x)
 * **Hold PS Button + Touchpad Click**: Toggle mouse cursor ON/OFF
+
+### 5. 1000 Hz USB Polling Rate Overclocking
+Sony sets the standard DualSense USB endpoint interval to 4.0ms (250 Hz) on Windows to reserve bandwidth for simultaneous 48kHz audio and microphone streams. To unlock esports-grade 1000 Hz (1.0ms delay) over USB:
+1. Open **OpenDual Hub** -> Click **1000 Hz Assistant** (or go to the **System** tab).
+2. Click **1-Click Download SweetLow HIDUSBF**.
+3. (Optional) Click **Install Driver Certificate** to add SweetLow certificate to Windows.
+4. Click **Launch SweetLow Setup (Admin)**:
+   * Change top filter dropdown to **All**.
+   * Select **Wireless Controller** (`VID_054C&PID_0CE6`).
+   * Check **Filter On Device**.
+   * Change **Selected Rate** to **1000**.
+   * Click **Install Service**.
+5. Unplug and replug your DualSense controller USB cable.
+OpenDual will immediately detect the 1000 Hz stream and switch to the ultra-low latency badge!
 
 ---
 
