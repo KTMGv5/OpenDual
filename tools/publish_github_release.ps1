@@ -135,7 +135,7 @@ if ($existingRelease) {
 $uploadBase = $uploadUrlTemplate -replace '\{\?name,label\}', ''
 
 $assetsToUpload = @(
-    "OpenDual-v1.4.1.zip",
+    "OpenDual-$TagName.zip",
     "OpenDualSetup.exe",
     "OpenDualHub.exe",
     "OpenDualDriver.exe"
