@@ -18,6 +18,7 @@
   * Persistent, non-focus-stealing PS5-style overlay (`WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`) that opens when pressing the **PS button** without minimizing or dropping focus in games.
   * Stays open persistently until explicitly closed with Circle (O) or PS Button. Ephemeral toasts auto-dismiss cleanly after 3.5 seconds.
   * Customizable display scaling (Compact 85%, Standard 100%, Large 115%, Couch/TV 130%) so the HUD is never cut off on high-DPI screens.
+  * **Rock-Solid Centered HUD Clock**: Anchored across the entire HUD boundary, eliminating side-to-side wobble from micro-fluctuations in ms latency.
   * **5 Controller-Navigable Tiles**:
     * **Tile 0 (Game & Profile)**: Live active game name, profile badge, and trigger modes. D-Pad Up/Down cycles profiles on the fly; Cross (X) applies.
     * **Tile 1 (Master Audio & Mic)**: Live Windows volume bar and endpoint name. D-Pad Up/Down adjusts volume in +/-5% steps; Cross (X) toggles master mute.
@@ -25,6 +26,14 @@
     * **Tile 3 (PC Hardware Specs)**: Real-time CPU % utilization (`GetSystemTimes`), RAM load % and used GB / total GB (`GlobalMemoryStatusEx`) with zero CPU overhead.
     * **Tile 4 (Touchpad & Haptics)**: Live touchpad sensitivity and stereo haptic summary. D-Pad Up/Down adjusts sensitivity (+/-0.1x); Cross (X) toggles touchpad on/off.
   * **Universal Quick Action**: Square ([]) toggles mic mute from anywhere in the HUD. Mouse clicks and touch inputs are also fully supported.
+* **PlayStation Create / Share Button & Windows Game Bar Integration**:
+  * **PS5-Style Create / Capture Bar**: Pressing Create / Share summons an authentic floating capture bar at the bottom of the screen without minimizing or interrupting PC gameplay.
+  * **5 Capture Tiles**: Screenshot (`Win + Alt + PrtScn`), Save Recent Clip (`Win + Alt + G`), Start / Stop Recording (`Win + Alt + R`), Xbox Game Bar Overlay (`Win + G`), and Captures Gallery (`Videos\Captures`).
+  * **Adjustable Instant Replay Length**: On Tile 1, D-Pad Up/Down lets players choose their instant replay buffer on the fly (15s, 30s, 1 min, 3 min, 5 min), directly synchronized with Windows GameDVR registry settings.
+  * **Quick Gestures (PS5 Style)**:
+    * **Single Tap Share**: Toggles Create Capture Bar.
+    * **Hold Share (> 800ms)**: Instant screenshot with shutter notification.
+    * **Double-Tap Share**: Instant 30s replay clip capture (`Win + Alt + G`).
 * **Touchpad Mouse & Precision Notch Scrolling**:
   * **Discrete Notched Scroll Mode (Minecraft & Inventory Safe)**: Cleanly moves inventory hotbars, weapon selectors, and menus exactly one slot per physical two-finger swipe, eliminating frantic runaway scroll spinning.
   * **Micro-Jitter Deadzone & Dual-Slope Ballistics**: Filters out tiny finger tremors for pinpoint 36x36 slot clicking, accelerating smoothly for swift cross-screen desktop navigation.

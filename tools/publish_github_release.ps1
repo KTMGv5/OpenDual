@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.5.1",
-    [string]$ReleaseName = "OpenDual v1.5.1 - 1000 Hz USB Polling Rate Overclocking Assistant",
+    [string]$TagName = "v1.6.0",
+    [string]$ReleaseName = "OpenDual v1.6.0 - PS5 Create Capture Bar & Windows Game Bar Integration",
     [string]$DistDir = "dist"
 )
 
@@ -46,30 +46,32 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.5.1
+## Highlights in OpenDual v1.6.0
 
-OpenDual v1.5.1 delivers a built-in **1000 Hz USB Polling Rate Overclocking Assistant** with 1-click **SweetLow HIDUSBF** integration, giving competitive players an effortless path to slash DualSense input latency from 4.0ms down to a true 1.0ms esports response time.
+OpenDual v1.6.0 brings full **PlayStation Create / Share Button** functionality with an authentic **PS5-style Create Capture Bar** directly integrated with PC gaming tools (Windows Game Bar & GameDVR), plus rock-solid HUD clock centering that eliminates side-to-side wobble from ms latency fluctuations.
 
 ---
 
-### What's New in v1.5.1
+### What's New in v1.6.0
 
-* **1000 Hz USB Polling Rate Overclocking Assistant**:
-  * **Hardware Latency Unlocked**: Standard DualSense controllers default to 250 Hz (4.0ms interval) on Windows USB because Sony's hardware descriptor reserves USB bus bandwidth for 48kHz audio endpoints. The new assistant guides users through applying SweetLow's low-latency filter driver to achieve 1000 Hz (1.0ms delay) on standard USB.
-  * **1-Click Package Downloader**: Automatically downloads and extracts the official SweetLow HIDUSBF archive directly into `%LocalAppData%\OpenDual\tools\hidusbf\` with real-time download progress tracking.
-  * **1-Click Driver Certificate Installer**: Installs `SweetLow.CER` directly into Windows Trusted Root and Trusted Publishers stores via elevated `certutil`, ensuring Windows 10 & 11 64-bit load the filter driver without security warnings.
-  * **1-Click Elevated Setup Launcher**: Launches `Setup.exe` with Administrator elevation directly from the OpenDual interface.
-  * **Windows Core Isolation Shortcut**: Direct 1-click launcher for `windowsdefender://coreisolation` for quick toggling if Memory Integrity (HVCI) blocks filter loading.
+* **PlayStation Create / Share Button (Capture Bar)**:
+  * **Authentic PS5 Create Menu**: Pressing Create / Share opens a floating, non-focus-stealing capture bar (`WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`) at the bottom of the screen.
+  * **5 Capture Tiles**:
+    * **Tile 0 (Screenshot)**: Instant high-res screenshot capture (`Win + Alt + PrtScn`).
+    * **Tile 1 (Save Recent Clip)**: Instant Replay clip saving (`Win + Alt + G`).
+    * **Tile 2 (Record Gameplay)**: Start / Stop full video recording (`Win + Alt + R`).
+    * **Tile 3 (Xbox Game Bar)**: Direct shortcut to PC Game Bar overlay (`Win + G`).
+    * **Tile 4 (Gallery)**: 1-click access to Windows `Videos\Captures` gallery.
+  * **On-the-Fly Replay Buffer Duration**: On Tile 1, D-Pad Up/Down allows selecting clip length on the fly (`15s`, `30s`, `1 min`, `3 min`, `5 min`), directly updating the Windows GameDVR registry buffer.
+  * **PS5-Style Quick Gestures**:
+    * **Single Tap Share**: Toggles Create Capture Bar.
+    * **Hold Share (> 800ms)**: Instant screenshot with shutter notification.
+    * **Double-Tap Share**: Instant 30s replay clip capture (`Win + Alt + G`).
+  * **Full Controller Navigation**: D-Pad Left/Right navigates tiles, Cross (X) confirms action, Circle (O) or Share dismisses.
 
-* **Real-Time Live Polling & Latency Benchmark**:
-  * Live rolling benchmark tracking Current Hz, Latency (ms), Min Latency, Max Latency, and Average Latency.
-  * Live filter service detection: verifies whether `hidusbf.sys` is installed in the Windows Service Control Manager and whether `LowerFilters` is active on DualSense (`VID_054C&PID_0CE6`).
-  * Instant reconnection celebration: as soon as the user unplugs and replugs their controller, OpenDual automatically verifies the 1000 Hz stream and displays a success banner.
-
-* **Dashboard & In-Game Control Center HUD Integration**:
-  * **Dashboard Header**: Live polling rate badge displays `1000 Hz Active (Esports 1.0ms)` when overclocked, or `1000 Hz Assistant (Boost to 1ms)` when running at factory default.
-  * **System Tab**: Added a dedicated "1000 Hz USB Polling Rate Overclocking" card with status readout and one-click assistant access.
-  * **Control Center HUD**: Displays live [1000Hz (1.0ms)] overclock indicator directly in the in-game overlay.
+* **Rock-Solid Centered HUD Clock**:
+  * Fixed HUD layout where fluctuating sub-millisecond polling latency pushed the digital clock side-to-side.
+  * The clock is now anchored across the entire HUD boundary, guaranteeing rock-solid dead-center placement regardless of left or right telemetry string widths.
 
 * **Codebase Verification & Security**:
   * MSVC C/C++ Static Code Analysis (`/p:RunCodeAnalysis=true`) passed with 0 warnings and 0 defects.
@@ -82,7 +84,7 @@ OpenDual v1.5.1 delivers a built-in **1000 Hz USB Polling Rate Overclocking Assi
 * `OpenDualSetup.exe` - Standalone installer and uninstaller suite
 * `OpenDualHub.exe` - Desktop controller hub and configuration center
 * `OpenDualDriver.exe` - 1000Hz C++20 driver service engine
-* `OpenDual-v1.5.1.zip` - Portable release bundle
+* `OpenDual-v1.6.0.zip` - Portable release bundle
 
 All binaries are digitally signed with Authenticode SHA-256 signatures.
 "@

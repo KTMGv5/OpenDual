@@ -30,6 +30,11 @@ namespace OpenDualHub
         private bool _lowBatteryWarned = false;
         private bool _isProfileApplying = false;
         private OverclockAssistantWindow? _overclockAssistant;
+        private CaptureBarWindow? _captureBar;
+        private bool _lastShareState = false;
+        private DateTime _sharePressStartTime = DateTime.MinValue;
+        private bool _shareLongPressHandled = false;
+        private DateTime _lastShareReleaseTime = DateTime.MinValue;
 
         public MainWindow()
         {
@@ -77,7 +82,7 @@ namespace OpenDualHub
             _ipc.Start();
             RefreshDriverStatus();
 
-            _trayManager.Initialize(helper.Handle, "OpenDual — PlayStation Controller Suite");
+            _trayManager.Initialize(helper.Handle, "OpenDual - PlayStation Controller Suite");
             _trayManager.DoubleClick += RestoreFromTray;
             _trayManager.RightClick += ShowTrayContextMenu;
 
@@ -91,6 +96,9 @@ namespace OpenDualHub
             _quickHud.OnHudScaleChanged = OnHudScaleChangedFromHud;
             _quickHud.GetActiveGameName = () => _gameDetector?.CurrentProcessName ?? "";
             _quickHud.GetActiveProfileName = () => _currentProfile?.Name ?? "Default Profile";
+            _captureBar = new CaptureBarWindow();
+            _captureBar.GetActiveGameName = () => _gameDetector?.CurrentProcessName ?? "";
+            RefreshGameDvrStatus();
             UpdateResponsiveLayout(ActualWidth);
 
             // Game-Specific Auto Profile Switching
@@ -156,6 +164,7 @@ namespace OpenDualHub
             _trayManager.Dispose();
             _quickHud?.Close();
             _overclockAssistant?.Close();
+            _captureBar?.Close();
             Application.Current.Shutdown();
         }
 
@@ -298,6 +307,7 @@ namespace OpenDualHub
             _trayManager.Dispose();
             _quickHud?.Close();
             _overclockAssistant?.Close();
+            _captureBar?.Close();
         }
 
         private void RefreshDriverStatus()
@@ -340,6 +350,8 @@ namespace OpenDualHub
                         BtnStopEngine.Visibility = Visibility.Collapsed;
                     }
                 }
+
+                RefreshGameDvrStatus();
             });
         }
 
@@ -647,6 +659,52 @@ namespace OpenDualHub
                             }
                         }
                         _lastPsState = t.PS;
+
+                        // In-Game Create / Capture Bar Update & Share Button Detection (PS5 Style)
+                        if (_captureBar != null)
+                        {
+                            if (_captureBar.IsVisibleToUser)
+                            {
+                                _captureBar.HandleControllerNavigation(t);
+                            }
+
+                            if (ChkEnableShareCapture?.IsChecked != false)
+                            {
+                                if (t.Share && !_lastShareState)
+                                {
+                                    _sharePressStartTime = DateTime.UtcNow;
+                                    _shareLongPressHandled = false;
+                                }
+                                else if (t.Share && _lastShareState)
+                                {
+                                    if (!_shareLongPressHandled && (DateTime.UtcNow - _sharePressStartTime).TotalMilliseconds >= 800)
+                                    {
+                                        _shareLongPressHandled = true;
+                                        GameCaptureManager.TakeScreenshot();
+                                        _captureBar.ShowInstantNotification("📸 Screenshot Captured (Win+Alt+PrtScn)");
+                                    }
+                                }
+                                else if (!t.Share && _lastShareState)
+                                {
+                                    if (!_shareLongPressHandled)
+                                    {
+                                        DateTime now = DateTime.UtcNow;
+                                        if ((now - _lastShareReleaseTime).TotalMilliseconds <= 350)
+                                        {
+                                            GameCaptureManager.SaveRecentClip();
+                                            _captureBar.ShowInstantNotification("⏱️ Instant Clip Saved (Win+Alt+G)");
+                                            _lastShareReleaseTime = DateTime.MinValue;
+                                        }
+                                        else
+                                        {
+                                            _lastShareReleaseTime = now;
+                                            _captureBar.ToggleOrShow();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        _lastShareState = t.Share;
                     }
                     else
                     {
@@ -974,6 +1032,7 @@ namespace OpenDualHub
             if (item.Tag is string tagStr && double.TryParse(tagStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double scale))
             {
                 _quickHud.SetHudScale(scale);
+                _captureBar?.SetBarScale(scale);
             }
         }
 
@@ -981,6 +1040,7 @@ namespace OpenDualHub
         {
             Dispatcher.Invoke(() =>
             {
+                _captureBar?.SetBarScale(scale);
                 if (CmbHudScale == null) return;
                 for (int i = 0; i < CmbHudScale.Items.Count; i++)
                 {
@@ -998,6 +1058,61 @@ namespace OpenDualHub
         private void BtnPreviewQuickHud_Click(object sender, RoutedEventArgs e)
         {
             _quickHud?.ToggleOrRefresh();
+        }
+
+        private void BtnPreviewCaptureBar_Click(object sender, RoutedEventArgs e)
+        {
+            _captureBar?.ToggleOrShow();
+        }
+
+        private void CmbClipDuration_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isInitialized || CmbClipDuration?.SelectedItem is not ComboBoxItem item) return;
+            if (item.Tag is string tagStr && int.TryParse(tagStr, out int seconds))
+            {
+                GameCaptureManager.SetHistoricalBufferLengthSeconds(seconds);
+                RefreshGameDvrStatus();
+            }
+        }
+
+        private void BtnGameDvrSettings_Click(object sender, RoutedEventArgs e)
+        {
+            GameCaptureManager.OpenGameDvrSettings();
+        }
+
+        private void BtnOpenCapturesGallery_Click(object sender, RoutedEventArgs e)
+        {
+            GameCaptureManager.OpenCapturesFolder();
+        }
+
+        private void RefreshGameDvrStatus()
+        {
+            if (TxtGameDvrStatus == null) return;
+            bool enabled = GameCaptureManager.IsGameDvrEnabled();
+            int sec = GameCaptureManager.GetHistoricalBufferLengthSeconds();
+
+            if (enabled)
+            {
+                TxtGameDvrStatus.Text = $"Active - Instant Replay Buffer: {sec}s (Win+Alt+G ready)";
+                TxtGameDvrStatus.Foreground = (SolidColorBrush)FindResource("AccentGreen");
+            }
+            else
+            {
+                TxtGameDvrStatus.Text = "GameDVR Disabled in Windows Settings (Click Captures Settings to enable)";
+                TxtGameDvrStatus.Foreground = (SolidColorBrush)FindResource("AccentAmber");
+            }
+
+            if (CmbClipDuration != null)
+            {
+                for (int i = 0; i < CmbClipDuration.Items.Count; i++)
+                {
+                    if (CmbClipDuration.Items[i] is ComboBoxItem item && item.Tag is string tagStr && int.TryParse(tagStr, out int val) && val == sec)
+                    {
+                        CmbClipDuration.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
         }
         #endregion
 

@@ -42,7 +42,7 @@ namespace OpenDualHub
     public class UpdateInfo
     {
         public bool UpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = "1.5.1";
+        public string CurrentVersion { get; set; } = "1.6.0";
         public string LatestVersion { get; set; } = "";
         public string ReleaseNotes { get; set; } = "";
         public string ReleaseUrl { get; set; } = "";
@@ -52,7 +52,7 @@ namespace OpenDualHub
 
     public class UpdateChecker
     {
-        public const string CurrentAppVersion = "1.5.1";
+        public const string CurrentAppVersion = "1.6.0";
         private const string RepoApiUrl = "https://api.github.com/repos/KTMGv5/OpenDual/releases/latest";
         private static readonly HttpClient HttpClient = new HttpClient();
 

@@ -1152,6 +1152,18 @@
                                 <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
+                                        <TextBlock Text="PlayStation Create / Share Button (Capture Bar)" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Pressing Create / Share summons a PS5-style Capture Bar (Screenshot, Instant Replay clip, Record, Game Bar)." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="Preview Capture Bar" Style="{StaticResource PrimaryBtnStyle}" Background="#222B3F" Padding="12,6" Margin="0,0,12,0" Click="BtnPreviewCaptureBar_Click"/>
+                                        <CheckBox x:Name="ChkEnableShareCapture" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
                                         <TextBlock Text="HUD Display Scale &amp; Size" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                         <TextBlock Text="Scale the Control Center overlay for high-DPI monitors, ultra-wide setups, or couch/TV gaming." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                     </StackPanel>
@@ -1174,7 +1186,40 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Power Management & Battery Preferences -->
+                        <!-- PC GameDVR & Capture Preferences -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,18,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Windows Game Bar &amp; DVR Integration" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Hardware-accelerated gameplay recording, instant replay clips, and screenshots via Windows GameDVR." Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,16"/>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Default Instant Replay Clip Duration" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Specifies how much previous gameplay is saved when pressing 'Save Clip' or double-tapping Share." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <ComboBox x:Name="CmbClipDuration" Grid.Column="1" Width="180" SelectionChanged="CmbClipDuration_SelectionChanged">
+                                        <ComboBoxItem Content="15 Seconds" Tag="15"/>
+                                        <ComboBoxItem Content="30 Seconds (Default)" Tag="30" IsSelected="True"/>
+                                        <ComboBoxItem Content="1 Minute" Tag="60"/>
+                                        <ComboBoxItem Content="3 Minutes" Tag="180"/>
+                                        <ComboBoxItem Content="5 Minutes" Tag="300"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Game DVR Service Status" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock x:Name="TxtGameDvrStatus" Text="Checking Windows GameDVR..." FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="Captures Settings" Style="{StaticResource PrimaryBtnStyle}" Background="#222B3F" Padding="12,6" Margin="0,0,8,0" Click="BtnGameDvrSettings_Click"/>
+                                        <Button Content="Open Gallery" Style="{StaticResource PrimaryBtnStyle}" Background="#222B3F" Padding="12,6" Click="BtnOpenCapturesGallery_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                         <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,18,0,0">
                             <StackPanel>
                                 <TextBlock Text="Bluetooth Power Management &amp; Battery Health" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>

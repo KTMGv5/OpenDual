@@ -62,11 +62,11 @@
                         </Border>
                         <TextBlock x:Name="TxtControllerName" Text="DualSense Wireless" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
                         <TextBlock Text="  •  " Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TxtConnection" Text="1000Hz (1.0ms) • USB" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtConnection" Text="1000Hz (1.0ms) • USB" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" VerticalAlignment="Center" MinWidth="180"/>
                     </StackPanel>
 
-                    <!-- Center: Clock -->
-                    <TextBlock x:Name="TxtClock" Grid.Column="1" Text="8:45 PM" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <!-- Center: Clock (Centered across entire HUD width, locked dead center regardless of left/right text) -->
+                    <TextBlock x:Name="TxtClock" Grid.Column="0" Grid.ColumnSpan="3" Text="8:45 PM" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
 
                     <!-- Right: Battery & Stereo Tactile Mini-Meters -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
