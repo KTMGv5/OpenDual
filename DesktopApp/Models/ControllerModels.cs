@@ -150,6 +150,18 @@ namespace OpenDualHub.Models
         [JsonPropertyName("dpad")]
         public int DPad { get; set; }
 
+        [JsonIgnore]
+        public bool DPadUp => DPad == 0 || DPad == 1 || DPad == 7;
+
+        [JsonIgnore]
+        public bool DPadRight => DPad == 1 || DPad == 2 || DPad == 3;
+
+        [JsonIgnore]
+        public bool DPadDown => DPad == 3 || DPad == 4 || DPad == 5;
+
+        [JsonIgnore]
+        public bool DPadLeft => DPad == 5 || DPad == 6 || DPad == 7;
+
         // Buttons
         [JsonPropertyName("sq")]
         public bool Square { get; set; }

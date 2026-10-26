@@ -57,6 +57,15 @@ namespace OpenDualHub
                 TxtClock.Text = DateTime.Now.ToString("h:mm tt");
             }
 
+            if (TxtInstalledVersion != null)
+            {
+                TxtInstalledVersion.Text = $"v{UpdateChecker.CurrentAppVersion} (Latest Release)";
+            }
+            if (TxtFooterVersion != null)
+            {
+                TxtFooterVersion.Text = $"OpenDual Suite v{UpdateChecker.CurrentAppVersion}";
+            }
+
             _ipc.OnTelemetryReceived += OnTelemetryReceived;
             _ipc.OnConnectionChanged += OnIpcConnectionChanged;
 
@@ -595,6 +604,22 @@ namespace OpenDualHub
                         if (BtnSquare != null) HighlightButton(BtnSquare, t.Square, "#FF3377");
                         if (BtnCircle != null) HighlightButton(BtnCircle, t.Circle, "#FF334B");
                         if (BtnCross != null) HighlightButton(BtnCross, t.Cross, "#3399FF");
+
+                        // Directional D-Pad Visualizer & Status Pills
+                        bool dUp = t.DPadUp;
+                        bool dDown = t.DPadDown;
+                        bool dLeft = t.DPadLeft;
+                        bool dRight = t.DPadRight;
+
+                        if (BtnDpadUp != null) HighlightButton(BtnDpadUp, dUp, "#00E5FF");
+                        if (BtnDpadDown != null) HighlightButton(BtnDpadDown, dDown, "#00E5FF");
+                        if (BtnDpadLeft != null) HighlightButton(BtnDpadLeft, dLeft, "#00E5FF");
+                        if (BtnDpadRight != null) HighlightButton(BtnDpadRight, dRight, "#00E5FF");
+
+                        if (PillDpadUp != null) HighlightPill(PillDpadUp, dUp);
+                        if (PillDpadDown != null) HighlightPill(PillDpadDown, dDown);
+                        if (PillDpadLeft != null) HighlightPill(PillDpadLeft, dLeft);
+                        if (PillDpadRight != null) HighlightPill(PillDpadRight, dRight);
 
                         // Touchpad (380x200 canvas from 1920x1080)
                         if (DotTouch1 != null)

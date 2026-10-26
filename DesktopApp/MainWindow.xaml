@@ -433,6 +433,10 @@
                             <StackPanel Margin="0,22,0,0">
                                 <TextBlock Text="BUTTONS &amp; D-PAD" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,10"/>
                                 <WrapPanel HorizontalAlignment="Center">
+                                    <Border x:Name="PillDpadUp" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="D-Up" FontSize="11" FontWeight="Bold"/></Border>
+                                    <Border x:Name="PillDpadDown" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="D-Down" FontSize="11" FontWeight="Bold"/></Border>
+                                    <Border x:Name="PillDpadLeft" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="D-Left" FontSize="11" FontWeight="Bold"/></Border>
+                                    <Border x:Name="PillDpadRight" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="D-Right" FontSize="11" FontWeight="Bold"/></Border>
                                     <Border x:Name="PillL1" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="L1" FontSize="11" FontWeight="Bold"/></Border>
                                     <Border x:Name="PillR1" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="R1" FontSize="11" FontWeight="Bold"/></Border>
                                     <Border x:Name="PillShare" Background="{DynamicResource PillBg}" CornerRadius="4" Padding="10,4" Margin="4"><TextBlock Text="Create" FontSize="11" FontWeight="Bold"/></Border>
@@ -453,7 +457,7 @@
                     <!-- Right Column: Touchpad & Action Buttons -->
                     <Border x:Name="DashRightCol" Grid.Row="0" Grid.Column="1" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="20" Margin="10,0,0,0">
                         <StackPanel>
-                            <TextBlock Text="TOUCHPAD SURFACE &amp; FACE BUTTONS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+                            <TextBlock Text="TOUCHPAD SURFACE &amp; BUTTON CONTROLS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
 
                             <!-- Touchpad Visualizer -->
                             <TextBlock Text="Dual-Point Multi-Touch Surface (1920 x 1080)" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,6"/>
@@ -467,36 +471,90 @@
                             </Border>
                             <TextBlock x:Name="TxtTouchCoords" Text="Touch 1: Inactive | Touch 2: Inactive" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,6,0,16"/>
 
-                            <!-- PlayStation Face Buttons -->
-                            <TextBlock Text="ACTION BUTTONS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,10"/>
-                            <Grid HorizontalAlignment="Center" Width="200">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="45"/>
-                                    <RowDefinition Height="45"/>
-                                    <RowDefinition Height="45"/>
-                                </Grid.RowDefinitions>
+                            <!-- D-Pad and PlayStation Face Buttons Side-by-Side -->
+                            <Grid Margin="0,10,0,0" HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="1*"/>
-                                    <ColumnDefinition Width="1*"/>
-                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="36"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Triangle (Top) -->
-                                <Border x:Name="BtnTriangle" Grid.Row="0" Grid.Column="1" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
-                                    <TextBlock Text="▲" Foreground="#00E676" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <!-- Square (Left) -->
-                                <Border x:Name="BtnSquare" Grid.Row="1" Grid.Column="0" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
-                                    <TextBlock Text="■" Foreground="#FF3377" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <!-- Circle (Right) -->
-                                <Border x:Name="BtnCircle" Grid.Row="1" Grid.Column="2" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
-                                    <TextBlock Text="●" Foreground="#FF334B" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <!-- Cross (Bottom) -->
-                                <Border x:Name="BtnCross" Grid.Row="2" Grid.Column="1" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
-                                    <TextBlock Text="✕" Foreground="#3399FF" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
+                                <!-- Directional Pad (D-Pad) -->
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="DIRECTIONAL D-PAD" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                    <Grid HorizontalAlignment="Center" Width="140" Height="140">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="45"/>
+                                            <RowDefinition Height="45"/>
+                                            <RowDefinition Height="45"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="45"/>
+                                            <ColumnDefinition Width="45"/>
+                                            <ColumnDefinition Width="45"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Center Hub Junction -->
+                                        <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="6"/>
+
+                                        <!-- D-Pad Up (Top) -->
+                                        <Border x:Name="BtnDpadUp" Grid.Row="0" Grid.Column="1" Width="38" Height="38" CornerRadius="8,8,4,4" Background="{DynamicResource PillBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                            <TextBlock Text="▲" Foreground="{DynamicResource TextPrimary}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- D-Pad Left (Left) -->
+                                        <Border x:Name="BtnDpadLeft" Grid.Row="1" Grid.Column="0" Width="38" Height="38" CornerRadius="8,4,4,8" Background="{DynamicResource PillBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                            <TextBlock Text="◀" Foreground="{DynamicResource TextPrimary}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- D-Pad Right (Right) -->
+                                        <Border x:Name="BtnDpadRight" Grid.Row="1" Grid.Column="2" Width="38" Height="38" CornerRadius="4,8,8,4" Background="{DynamicResource PillBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                            <TextBlock Text="▶" Foreground="{DynamicResource TextPrimary}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- D-Pad Down (Bottom) -->
+                                        <Border x:Name="BtnDpadDown" Grid.Row="2" Grid.Column="1" Width="38" Height="38" CornerRadius="4,4,8,8" Background="{DynamicResource PillBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                                            <TextBlock Text="▼" Foreground="{DynamicResource TextPrimary}" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Vertical Divider -->
+                                <Rectangle Grid.Column="1" Width="1" VerticalAlignment="Stretch" Fill="{DynamicResource BorderColor}" Margin="0,10"/>
+
+                                <!-- PlayStation Face Buttons -->
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                    <TextBlock Text="ACTION BUTTONS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                    <Grid HorizontalAlignment="Center" Width="140" Height="140">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="45"/>
+                                            <RowDefinition Height="45"/>
+                                            <RowDefinition Height="45"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="45"/>
+                                            <ColumnDefinition Width="45"/>
+                                            <ColumnDefinition Width="45"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Triangle (Top) -->
+                                        <Border x:Name="BtnTriangle" Grid.Row="0" Grid.Column="1" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
+                                            <TextBlock Text="▲" Foreground="#00E676" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <!-- Square (Left) -->
+                                        <Border x:Name="BtnSquare" Grid.Row="1" Grid.Column="0" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
+                                            <TextBlock Text="■" Foreground="#FF3377" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <!-- Circle (Right) -->
+                                        <Border x:Name="BtnCircle" Grid.Row="1" Grid.Column="2" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
+                                            <TextBlock Text="●" Foreground="#FF334B" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <!-- Cross (Bottom) -->
+                                        <Border x:Name="BtnCross" Grid.Row="2" Grid.Column="1" Width="38" Height="38" CornerRadius="19" Background="{DynamicResource PillBg}">
+                                            <TextBlock Text="✕" Foreground="#3399FF" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -1262,7 +1320,7 @@
                                     <StackPanel Grid.Column="0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="Installed Version: " Foreground="{DynamicResource TextSecondary}"/>
-                                            <TextBlock Text="v1.5.0 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.2 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </StackPanel>
                                         <TextBlock x:Name="TxtUpdateStatus" Text="Up to date." FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,4,0,0"/>
                                     </StackPanel>
@@ -1301,7 +1359,7 @@
                     <TextBlock Text="  •  " FontSize="11" Foreground="{DynamicResource BorderColor}"/>
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="OpenDual Suite v1.5.0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.2" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>
