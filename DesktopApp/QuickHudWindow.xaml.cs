@@ -396,7 +396,12 @@ namespace OpenDualHub
                 // Battery
                 if (TxtBatteryPercent != null)
                 {
-                    if (t.Battery <= 15 && !t.Charging)
+                    if (t.Charging)
+                    {
+                        TxtBatteryPercent.Text = (t.Battery >= 100) ? "100%" : $"{t.Battery}%";
+                        TxtBatteryPercent.Foreground = (Brush)FindResource("AccentGreen");
+                    }
+                    else if (t.Battery <= 15)
                     {
                         TxtBatteryPercent.Text = $"{t.Battery}% [LOW]";
                         TxtBatteryPercent.Foreground = (Brush)new BrushConverter().ConvertFromString("#FF334B")!;

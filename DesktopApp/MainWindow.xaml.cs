@@ -27,7 +27,11 @@ namespace OpenDualHub
         private readonly UpdateChecker _updateChecker = new();
         private UpdateInfo? _latestUpdateInfo;
         private GameProfile _currentProfile = new();
-        private bool _lowBatteryWarned = false;
+        private bool _lastChargingState = false;
+        private bool _hasInitializedBatteryState = false;
+        private bool _fullChargeNotified = false;
+        private bool _lowBatteryWarned15 = false;
+        private bool _criticalBatteryWarned5 = false;
         private bool _isProfileApplying = false;
         private OverclockAssistantWindow? _overclockAssistant;
         private CaptureBarWindow? _captureBar;
@@ -468,7 +472,7 @@ namespace OpenDualHub
                         if (FooterStatus != null) FooterStatus.Text = $"{t.ModelName} Connected ({t.ConnectionName})";
                         if (DashModelTitle != null) DashModelTitle.Text = t.ModelName;
                         if (DashConnInfo != null) DashConnInfo.Text = $"Connected via {t.ConnectionName} • Ultra Low-Latency Direct HID (1000Hz)";
-                        if (TxtBatteryHeader != null) TxtBatteryHeader.Text = $"{t.Battery}%{(t.Charging ? " [CHG]" : "")}";
+                        if (TxtBatteryHeader != null) TxtBatteryHeader.Text = $"{t.Battery}%{(t.Charging ? " ⚡" : "")}";
 
                         if (DashHzVal != null) DashHzVal.Text = $"{t.PollingRateHz} Hz";
                         if (DashLatencyVal != null) DashLatencyVal.Text = $"{t.LatencyMs:F1} ms";
@@ -582,22 +586,96 @@ namespace OpenDualHub
                         if (TxtGyroPitch != null) TxtGyroPitch.Text = $"Pitch: {t.GyroX:+0000;-0000;0}";
                         if (TxtGyroRoll != null) TxtGyroRoll.Text = $"Roll: {t.GyroY:+0000;-0000;0}";
 
-                        // Battery Low Alert & Visual Badge
-                        if (t.Battery <= 15 && !t.Charging)
+                        // Live Charging & Low Battery Badges
+                        if (DashChargingBadge != null)
                         {
-                            if (DashBatteryLowBadge != null) DashBatteryLowBadge.Visibility = Visibility.Visible;
-                            if (TxtBatteryHeader != null) TxtBatteryHeader.Foreground = (SolidColorBrush)FindResource("AccentRed");
-                            if (!_lowBatteryWarned)
+                            DashChargingBadge.Visibility = t.Charging ? Visibility.Visible : Visibility.Collapsed;
+                            if (TxtChargingBadge != null)
                             {
-                                _lowBatteryWarned = true;
-                                _trayManager.ShowNotification("OpenDual Battery Warning", $"DualSense battery is critical ({t.Battery}%). Please connect USB charging cable.");
+                                TxtChargingBadge.Text = (t.Battery >= 100) ? "FULLY CHARGED (100%)" : $"CHARGING ({t.Battery}%)";
                             }
                         }
-                        else
+
+                        if (DashBatteryLowBadge != null)
                         {
-                            if (DashBatteryLowBadge != null) DashBatteryLowBadge.Visibility = Visibility.Collapsed;
-                            if (TxtBatteryHeader != null) TxtBatteryHeader.Foreground = (SolidColorBrush)FindResource("TextPrimary");
-                            if (t.Battery > 20 || t.Charging) _lowBatteryWarned = false;
+                            DashBatteryLowBadge.Visibility = (t.Battery <= 15 && !t.Charging) ? Visibility.Visible : Visibility.Collapsed;
+                        }
+
+                        if (TxtBatteryHeader != null)
+                        {
+                            if (t.Charging)
+                            {
+                                TxtBatteryHeader.Foreground = (SolidColorBrush)FindResource("AccentGreen");
+                            }
+                            else if (t.Battery <= 15)
+                            {
+                                TxtBatteryHeader.Foreground = (SolidColorBrush)FindResource("AccentRed");
+                            }
+                            else
+                            {
+                                TxtBatteryHeader.Foreground = (SolidColorBrush)FindResource("TextPrimary");
+                            }
+                        }
+
+                        // Battery Level Alerts & Charging Notifications
+                        bool allowBatteryNotifs = ChkBatteryNotifications?.IsChecked != false;
+                        if (allowBatteryNotifs)
+                        {
+                            if (!_hasInitializedBatteryState)
+                            {
+                                _lastChargingState = t.Charging;
+                                _hasInitializedBatteryState = true;
+                            }
+                            else
+                            {
+                                // Detect charger connection
+                                if (t.Charging && !_lastChargingState)
+                                {
+                                    _lastChargingState = true;
+                                    _fullChargeNotified = (t.Battery >= 100);
+                                    _lowBatteryWarned15 = false;
+                                    _criticalBatteryWarned5 = false;
+                                    _trayManager.ShowNotification("OpenDual Charging Connected", $"DualSense is now charging ({t.Battery}%).");
+                                }
+                                // Detect charger disconnection
+                                else if (!t.Charging && _lastChargingState)
+                                {
+                                    _lastChargingState = false;
+                                    _fullChargeNotified = false;
+                                    _trayManager.ShowNotification("OpenDual Disconnected from Charger", $"DualSense on battery ({t.Battery}% remaining).");
+                                }
+                                // Detect 100% full charge
+                                else if (t.Charging && t.Battery >= 100 && !_fullChargeNotified)
+                                {
+                                    _fullChargeNotified = true;
+                                    _trayManager.ShowNotification("OpenDual Battery Full", "DualSense battery is fully charged (100%).");
+                                }
+                                else if (t.Battery < 95)
+                                {
+                                    _fullChargeNotified = false;
+                                }
+
+                                // Staged battery discharge warnings when not charging
+                                if (!t.Charging)
+                                {
+                                    if (t.Battery <= 5 && !_criticalBatteryWarned5)
+                                    {
+                                        _criticalBatteryWarned5 = true;
+                                        _lowBatteryWarned15 = true;
+                                        _trayManager.ShowNotification("OpenDual Critical Battery", $"DualSense battery is critically low ({t.Battery}%). Please connect USB charging cable.");
+                                    }
+                                    else if (t.Battery <= 15 && !_lowBatteryWarned15)
+                                    {
+                                        _lowBatteryWarned15 = true;
+                                        _trayManager.ShowNotification("OpenDual Battery Warning", $"DualSense battery is low ({t.Battery}%). Please connect USB charging cable.");
+                                    }
+                                    else if (t.Battery > 20)
+                                    {
+                                        _lowBatteryWarned15 = false;
+                                        _criticalBatteryWarned5 = false;
+                                    }
+                                }
+                            }
                         }
 
                         if (BtnTriangle != null) HighlightButton(BtnTriangle, t.Triangle, "#00E676");
@@ -753,6 +831,13 @@ namespace OpenDualHub
                             TxtOverclockStatus.Text = "No Controller Connected";
                             TxtOverclockStatus.Foreground = (Brush)FindResource("TextSecondary");
                         }
+                        if (DashBatteryLowBadge != null) DashBatteryLowBadge.Visibility = Visibility.Collapsed;
+                        if (DashChargingBadge != null) DashChargingBadge.Visibility = Visibility.Collapsed;
+                        _hasInitializedBatteryState = false;
+                        _lastChargingState = false;
+                        _fullChargeNotified = false;
+                        _lowBatteryWarned15 = false;
+                        _criticalBatteryWarned5 = false;
                     }
                 }
                 finally

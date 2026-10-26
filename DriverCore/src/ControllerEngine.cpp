@@ -407,6 +407,7 @@ void ControllerEngine::OutputThread() {
             uint8_t audioHapticL = 0;
             uint8_t audioHapticR = 0;
             if (config.audioHapticsEnabled) {
+                m_audio.SetHapticParams(config.hapticIntensity, config.hapticStereo);
                 m_audio.GetHapticRumble(audioHapticL, audioHapticR, config.hapticIntensity, config.hapticCutoffHz, config.hapticStereo);
                 lRumble = (uint8_t)std::clamp((int)lRumble + (int)audioHapticL, 0, 255);
                 rRumble = (uint8_t)std::clamp((int)rRumble + (int)audioHapticR, 0, 255);

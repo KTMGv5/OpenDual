@@ -307,6 +307,12 @@
                                 <Border x:Name="DashBatteryLowBadge" Background="#33FF334B" BorderBrush="{StaticResource AccentRed}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
                                     <TextBlock Text="CRITICAL BATTERY (&lt;15%)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentRed}"/>
                                 </Border>
+                                <Border x:Name="DashChargingBadge" Background="#2200E676" BorderBrush="{StaticResource AccentGreen}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="⚡" FontSize="10" Foreground="{StaticResource AccentGreen}" Margin="0,0,4,0"/>
+                                        <TextBlock x:Name="TxtChargingBadge" Text="CHARGING" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                                    </StackPanel>
+                                </Border>
                                 <Border x:Name="DashMicBadge" Background="#33FF9800" CornerRadius="4" Padding="6,2" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
                                     <TextBlock Text="MIC MUTED" FontSize="10" FontWeight="Bold" Foreground="#FFA726"/>
                                 </Border>
@@ -1306,6 +1312,15 @@
                                     </StackPanel>
                                     <CheckBox x:Name="ChkLowBatteryWarn" Grid.Column="1" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="PowerSettings_Changed" Unchecked="PowerSettings_Changed"/>
                                 </Grid>
+
+                                <Grid Margin="0,12,0,6">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Battery Health &amp; Charging Desktop Notifications" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Delivers desktop notifications when charging begins, disconnects, battery drops below 15%, or finishes at 100%." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkBatteryNotifications" Grid.Column="1" Content="Enabled" FontWeight="SemiBold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
 
@@ -1320,7 +1335,7 @@
                                     <StackPanel Grid.Column="0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="Installed Version: " Foreground="{DynamicResource TextSecondary}"/>
-                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.2 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.3 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </StackPanel>
                                         <TextBlock x:Name="TxtUpdateStatus" Text="Up to date." FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,4,0,0"/>
                                     </StackPanel>
@@ -1359,7 +1374,7 @@
                     <TextBlock Text="  •  " FontSize="11" Foreground="{DynamicResource BorderColor}"/>
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
-                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.2" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.3" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>
