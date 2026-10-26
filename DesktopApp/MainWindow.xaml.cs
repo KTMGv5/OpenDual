@@ -87,6 +87,7 @@ namespace OpenDualHub
             _quickHud.OnAdjustGyroSens = AdjustGyroSensitivity;
             _quickHud.OnToggleGyro = ToggleGyroEnabled;
             _quickHud.OnToggleMic = ToggleMicMute;
+            _quickHud.OnHudScaleChanged = OnHudScaleChangedFromHud;
             _quickHud.GetActiveGameName = () => _gameDetector?.CurrentProcessName ?? "";
             _quickHud.GetActiveProfileName = () => _currentProfile?.Name ?? "Default Profile";
             UpdateResponsiveLayout(ActualWidth);
@@ -897,6 +898,33 @@ namespace OpenDualHub
             BtnInstallViGEm.IsEnabled = true;
             TxtDriverLog.Text = success ? "ViGEmBus Driver installed successfully!" : "ViGEmBus installation cancelled or failed.";
             RefreshDriverStatus();
+        }
+
+        private void CmbHudScale_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isInitialized || _quickHud == null || CmbHudScale?.SelectedItem is not ComboBoxItem item) return;
+            if (item.Tag is string tagStr && double.TryParse(tagStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double scale))
+            {
+                _quickHud.SetHudScale(scale);
+            }
+        }
+
+        private void OnHudScaleChangedFromHud(double scale)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (CmbHudScale == null) return;
+                for (int i = 0; i < CmbHudScale.Items.Count; i++)
+                {
+                    if (CmbHudScale.Items[i] is ComboBoxItem item && item.Tag is string tagStr &&
+                        double.TryParse(tagStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double s) &&
+                        Math.Abs(s - scale) < 0.05)
+                    {
+                        CmbHudScale.SelectedIndex = i;
+                        break;
+                    }
+                }
+            });
         }
 
         private void BtnPreviewQuickHud_Click(object sender, RoutedEventArgs e)

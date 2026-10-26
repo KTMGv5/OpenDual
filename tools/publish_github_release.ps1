@@ -55,19 +55,20 @@ OpenDual v1.5.0 introduces an interactive **In-Game Control Center HUD** inspire
 ### What's New in v1.5.0
 
 * **Interactive PS5 Control Center In-Game HUD**:
-  * **Persistent Overlay**: Summon with the PS button or system tray; stays open persistently until explicitly closed with Circle (○) or PS button (no auto-hide timeout when in HUD mode). Ephemeral toasts still auto-dismiss cleanly.
-  * **Zero Focus Stealing**: Built with Win32 `WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW` and topmost z-ordering—interact with controller shortcuts without pulling focus away from fullscreen games.
+  * **Persistent Overlay**: Summon with the PS button or system tray; stays open persistently until explicitly closed with Circle (O) or PS button (no auto-hide timeout when in HUD mode). Ephemeral toasts still auto-dismiss cleanly.
+  * **Zero Focus Stealing**: Built with Win32 `WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW` and topmost z-ordering - interact with controller shortcuts without pulling focus away from fullscreen games.
+  * **Adjustable HUD Scaling**: Dynamic scale modes (Compact 85%, Standard 100%, Large 115%, Couch/4K TV 130%) so the HUD is never clipped on high-DPI displays.
   * **5 Controller-Navigable Tiles**:
-    * **Tile 0 (Game & Profile)**: Displays active game executable and active profile; D-Pad ▲▼ cycles profiles, ✕ applies.
-    * **Tile 1 (Master Audio & Mic)**: Live Windows volume bar and endpoint name; D-Pad ▲▼ adjusts volume in ±5% steps, ✕ toggles Master Mute.
-    * **Tile 2 (6-Axis Gyro Aiming)**: Motion aiming status (Active ADS / Disabled) and live sensitivity; D-Pad ▲▼ adjusts sensitivity (±0.1x), ✕ toggles Gyro on/off.
+    * **Tile 0 (Game & Profile)**: Displays active game executable and active profile; D-Pad Up/Down cycles profiles, Cross (X) applies.
+    * **Tile 1 (Master Audio & Mic)**: Live Windows volume bar and endpoint name; D-Pad Up/Down adjusts volume in +/-5% steps, Cross (X) toggles Master Mute.
+    * **Tile 2 (6-Axis Gyro Aiming)**: Motion aiming status (Active ADS / Disabled) and live sensitivity; D-Pad Up/Down adjusts sensitivity (+/-0.1x), Cross (X) toggles Gyro on/off.
     * **Tile 3 (PC Hardware Specs)**: Zero-overhead CPU % utilization (`GetSystemTimes`), RAM load % and used GB / total GB (`GlobalMemoryStatusEx`).
-    * **Tile 4 (Touchpad & Haptics)**: Live touchpad sensitivity and stereo haptic summary; D-Pad ▲▼ adjusts sensitivity (±0.1x), ✕ toggles Touchpad on/off.
-  * **Universal Quick Actions**: Square (□) instantly toggles microphone mute from anywhere in the HUD. Mouse clicks and touch inputs are also fully supported.
+    * **Tile 4 (Touchpad & Haptics)**: Live touchpad sensitivity and stereo haptic summary; D-Pad Up/Down adjusts sensitivity (+/-0.1x), Cross (X) toggles Touchpad on/off.
+  * **Universal Quick Actions**: Square ([]) instantly toggles microphone mute from anywhere in the HUD. Mouse clicks and touch inputs are also fully supported.
   * **Input Debouncing**: Rate-limited controller repeats (320ms hold, 130ms tick) with edge-triggered button actions ensure rapid, accurate tile navigation.
 
 * **Touchpad Engine Overhaul (Minecraft & Inventory Safe)**:
-  * **Discrete Notched Scroll Mode**: Replaced high-frequency mouse wheel spam with discrete notching (`notchThreshold = 42.0f`, `scrollCooldownMs = 65ms`, standard `WHEEL_DELTA = 120`). Prevents hotbars from spinning uncontrollably in Minecraft, weapon wheels, and menus—each two-finger swipe advances cleanly one slot at a time.
+  * **Discrete Notched Scroll Mode**: Replaced high-frequency mouse wheel spam with discrete notching (`notchThreshold = 42.0f`, `scrollCooldownMs = 65ms`, standard `WHEEL_DELTA = 120`). Prevents hotbars from spinning uncontrollably in Minecraft, weapon wheels, and menus - each two-finger swipe advances cleanly one slot at a time.
   * **Micro-Jitter Deadzone & Dual-Slope Ballistics**: Filtered resting finger tremors (`std::abs(dx) <= 1 && std::abs(dy) <= 1`) with 1:1 linear tracking at low speeds for pinpoint 36x36 slot clicking, smoothly accelerating at higher velocities for rapid cross-screen travel.
 
 * **Live Touchpad Sensitivity Telemetry**:
@@ -80,10 +81,10 @@ OpenDual v1.5.0 introduces an interactive **In-Game Control Center HUD** inspire
 ---
 
 ### Included Signed Binaries
-* `OpenDualSetup.exe` — Standalone installer and uninstaller suite
-* `OpenDualHub.exe` — Desktop controller hub and configuration center
-* `OpenDualDriver.exe` — 1000Hz C++20 driver service engine
-* `OpenDual-v1.5.0.zip` — Portable release bundle
+* `OpenDualSetup.exe` - Standalone installer and uninstaller suite
+* `OpenDualHub.exe` - Desktop controller hub and configuration center
+* `OpenDualDriver.exe` - 1000Hz C++20 driver service engine
+* `OpenDual-v1.5.0.zip` - Portable release bundle
 
 All binaries are digitally signed with Authenticode SHA-256 signatures.
 "@

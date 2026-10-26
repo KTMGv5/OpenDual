@@ -1103,6 +1103,20 @@
                                     </StackPanel>
                                 </Grid>
 
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="HUD Display Scale &amp; Size" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Scale the Control Center overlay for high-DPI monitors, ultra-wide setups, or couch/TV gaming." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <ComboBox x:Name="CmbHudScale" Grid.Column="1" Width="180" SelectionChanged="CmbHudScale_SelectionChanged">
+                                        <ComboBoxItem Content="Compact (85%)" Tag="0.85"/>
+                                        <ComboBoxItem Content="Standard (100% - Default)" Tag="1.0" IsSelected="True"/>
+                                        <ComboBoxItem Content="Large (115%)" Tag="1.15"/>
+                                        <ComboBoxItem Content="Couch / 4K TV (130%)" Tag="1.30"/>
+                                    </ComboBox>
+                                </Grid>
+
                                 <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">

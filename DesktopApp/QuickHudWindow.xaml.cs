@@ -33,22 +33,30 @@ namespace OpenDualHub
         private bool _isVisibleToUser = false;
         private int _selectedTileIndex = 0;
 
+        // HUD Scaling presets (Compact, Standard, Large, Couch/4K)
+        private static readonly double[] _scales = new[] { 0.85, 1.0, 1.15, 1.30 };
+        private int _scaleIndex = 1; // Default: Standard 100%
+        private double _currentScale = 1.0;
+
         // Controller input edge detection & repeat debouncing
         private int _lastDpad = 8;
         private bool _lastCross = false;
         private bool _lastCircle = false;
         private bool _lastSquare = false;
+        private bool _lastR3 = false;
         private DateTime _lastDpadActionTime = DateTime.MinValue;
         private bool _dpadInRepeatMode = false;
 
         // Public callbacks & data hooks
         public bool IsVisibleToUser => _isVisibleToUser;
+        public double CurrentScale => _currentScale;
         public Action<int>? OnCycleProfile { get; set; }
         public Action<float>? OnAdjustTouchpadSens { get; set; }
         public Action? OnToggleTouchpad { get; set; }
         public Action<float>? OnAdjustGyroSens { get; set; }
         public Action? OnToggleGyro { get; set; }
         public Action? OnToggleMic { get; set; }
+        public Action<double>? OnHudScaleChanged { get; set; }
         public Func<string>? GetActiveGameName { get; set; }
         public Func<string>? GetActiveProfileName { get; set; }
 
@@ -85,6 +93,56 @@ namespace OpenDualHub
             SetWindowLong(helper.Handle, GWL_EXSTYLE, exStyle | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW);
         }
 
+        public void SetHudScale(double scale)
+        {
+            _currentScale = Math.Clamp(scale, 0.75, 1.50);
+            for (int i = 0; i < _scales.Length; i++)
+            {
+                if (Math.Abs(_scales[i] - _currentScale) < 0.05)
+                {
+                    _scaleIndex = i;
+                    break;
+                }
+            }
+
+            Dispatcher.Invoke(() =>
+            {
+                if (HudScaleTransform != null)
+                {
+                    HudScaleTransform.ScaleX = _currentScale;
+                    HudScaleTransform.ScaleY = _currentScale;
+                }
+                UpdateNavGuideText();
+                if (_isVisibleToUser)
+                {
+                    RepositionHud();
+                }
+            });
+
+            OnHudScaleChanged?.Invoke(_currentScale);
+        }
+
+        public void CycleHudScale()
+        {
+            _scaleIndex = (_scaleIndex + 1) % _scales.Length;
+            SetHudScale(_scales[_scaleIndex]);
+        }
+
+        private void RepositionHud()
+        {
+            UpdateLayout();
+            var screenWidth = SystemParameters.PrimaryScreenWidth;
+            var screenHeight = SystemParameters.PrimaryScreenHeight;
+
+            double w = ActualWidth > 0 ? ActualWidth : (1080 * _currentScale + 48);
+            double h = ActualHeight > 0 ? ActualHeight : (210 * _currentScale + 48);
+            Left = (screenWidth - w) / 2.0;
+            Top = screenHeight - h - 35.0;
+
+            var helper = new WindowInteropHelper(this);
+            SetWindowPos(helper.Handle, HWND_TOPMOST, (int)Left, (int)Top, (int)w, (int)h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        }
+
         public void SelectTile(int index)
         {
             _selectedTileIndex = Math.Clamp(index, 0, 4);
@@ -114,14 +172,23 @@ namespace OpenDualHub
         {
             if (TxtNavGuide == null) return;
 
+            string scaleLabel = _scaleIndex switch
+            {
+                0 => "85%",
+                1 => "100%",
+                2 => "115%",
+                3 => "130%",
+                _ => $"{(int)(_currentScale * 100)}%"
+            };
+
             TxtNavGuide.Text = _selectedTileIndex switch
             {
-                0 => "D-Pad ◄► Select Tile   •   ▲▼ Cycle Profile   •   ✕ Apply Profile   •   □ Mic Mute   •   ○ / PS Close",
-                1 => "D-Pad ◄► Select Tile   •   ▲▼ Master Volume ±5%   •   ✕ Master Mute   •   □ Mic Mute   •   ○ / PS Close",
-                2 => "D-Pad ◄► Select Tile   •   ▲▼ Gyro Sens ±0.1x   •   ✕ Toggle Gyro   •   □ Mic Mute   •   ○ / PS Close",
-                3 => "D-Pad ◄► Select Tile   •   ▲▼ Refresh PC Stats   •   ✕ Refresh Now   •   □ Mic Mute   •   ○ / PS Close",
-                4 => "D-Pad ◄► Select Tile   •   ▲▼ Touchpad Sens ±0.1x   •   ✕ Toggle Touchpad   •   □ Mic Mute   •   ○ / PS Close",
-                _ => "D-Pad ◄► Select Tile   •   ▲▼ Adjust Setting   •   ✕ Action   •   □ Mic Mute   •   ○ / PS Close"
+                0 => $"D-Pad ◄► Select Tile   •   ▲▼ Cycle Profile   •   ✕ Apply Profile   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
+                1 => $"D-Pad ◄► Select Tile   •   ▲▼ Master Volume ±5%   •   ✕ Toggle Mute   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
+                2 => $"D-Pad ◄► Select Tile   •   ▲▼ Gyro Sens ±0.1x   •   ✕ Toggle Gyro   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
+                3 => $"D-Pad ◄► Select Tile   •   ▲▼ Refresh PC Stats   •   ✕ Refresh Now   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
+                4 => $"D-Pad ◄► Select Tile   •   ▲▼ Touchpad Sens ±0.1x   •   ✕ Toggle Touchpad   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
+                _ => $"D-Pad ◄► Select Tile   •   ▲▼ Adjust Setting   •   ✕ Action   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close"
             };
         }
 
@@ -200,6 +267,12 @@ namespace OpenDualHub
                 OnToggleMic?.Invoke();
             }
 
+            // Leading edge for R3 (Right Stick Click) -> Cycle HUD Display Size
+            if (t.R3 && !_lastR3)
+            {
+                CycleHudScale();
+            }
+
             // Leading edge for Circle (○) -> Dismiss HUD
             if (t.Circle && !_lastCircle)
             {
@@ -210,6 +283,7 @@ namespace OpenDualHub
             _lastCross = t.Cross;
             _lastCircle = t.Circle;
             _lastSquare = t.Square;
+            _lastR3 = t.R3;
         }
 
         private void AdjustSelectedTile(int direction)
@@ -464,19 +538,12 @@ namespace OpenDualHub
         {
             _isVisibleToUser = true;
 
-            // Pinned at bottom center of primary screen
-            var screenWidth = SystemParameters.PrimaryScreenWidth;
-            var screenHeight = SystemParameters.PrimaryScreenHeight;
-            Left = (screenWidth - Width) / 2.0;
-            Top = screenHeight - Height - 50.0;
-
             if (!IsVisible)
             {
                 Show();
             }
 
-            var helper = new WindowInteropHelper(this);
-            SetWindowPos(helper.Handle, HWND_TOPMOST, (int)Left, (int)Top, (int)Width, (int)Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            RepositionHud();
 
             // Smooth fade-in
             var fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(180))
