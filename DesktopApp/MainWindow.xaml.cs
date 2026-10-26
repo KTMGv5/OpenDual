@@ -81,6 +81,14 @@ namespace OpenDualHub
             _trayManager.RightClick += ShowTrayContextMenu;
 
             _quickHud = new QuickHudWindow();
+            _quickHud.OnCycleProfile = CycleProfile;
+            _quickHud.OnAdjustTouchpadSens = AdjustTouchpadSensitivity;
+            _quickHud.OnToggleTouchpad = ToggleTouchpadEnabled;
+            _quickHud.OnAdjustGyroSens = AdjustGyroSensitivity;
+            _quickHud.OnToggleGyro = ToggleGyroEnabled;
+            _quickHud.OnToggleMic = ToggleMicMute;
+            _quickHud.GetActiveGameName = () => _gameDetector?.CurrentProcessName ?? "";
+            _quickHud.GetActiveProfileName = () => _currentProfile?.Name ?? "Default Profile";
             UpdateResponsiveLayout(ActualWidth);
 
             // Game-Specific Auto Profile Switching
@@ -592,6 +600,10 @@ namespace OpenDualHub
                         if (_quickHud != null)
                         {
                             _quickHud.UpdateState(t);
+                            if (_quickHud.IsVisibleToUser)
+                            {
+                                _quickHud.HandleControllerNavigation(t);
+                            }
                             if (t.PS && !_lastPsState && ChkEnableQuickHud?.IsChecked == true)
                             {
                                 _quickHud.ToggleOrRefresh();
@@ -1035,6 +1047,82 @@ namespace OpenDualHub
             {
                 _isProfileApplying = false;
             }
+        }
+
+        private void CycleProfile(int direction)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var profiles = _profileManager.Profiles;
+                if (profiles.Count == 0) return;
+                int currentIndex = 0;
+                if (_currentProfile != null)
+                {
+                    for (int i = 0; i < profiles.Count; i++)
+                    {
+                        if (profiles[i].Id == _currentProfile.Id)
+                        {
+                            currentIndex = i;
+                            break;
+                        }
+                    }
+                }
+                int nextIndex = (currentIndex + direction + profiles.Count) % profiles.Count;
+                ApplyProfile(profiles[nextIndex]);
+                if (CmbProfiles != null && nextIndex < CmbProfiles.Items.Count)
+                {
+                    CmbProfiles.SelectedIndex = nextIndex;
+                }
+            });
+        }
+
+        private void AdjustTouchpadSensitivity(float delta)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (SliderMouseSens != null)
+                {
+                    double current = SliderMouseSens.Value;
+                    double next = Math.Clamp(Math.Round(current + delta, 1), 0.2, 3.0);
+                    SliderMouseSens.Value = next;
+                }
+            });
+        }
+
+        private void ToggleTouchpadEnabled()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (ChkMouseEnabled != null)
+                {
+                    ChkMouseEnabled.IsChecked = !(ChkMouseEnabled.IsChecked == true);
+                }
+            });
+        }
+
+        private void AdjustGyroSensitivity(float delta)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (SliderGyroSensX != null)
+                {
+                    double current = SliderGyroSensX.Value;
+                    double next = Math.Clamp(Math.Round(current + delta, 1), 0.2, 4.0);
+                    SliderGyroSensX.Value = next;
+                    if (SliderGyroSensY != null) SliderGyroSensY.Value = next;
+                }
+            });
+        }
+
+        private void ToggleGyroEnabled()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (ChkEnableGyro != null)
+                {
+                    ChkEnableGyro.IsChecked = !(ChkEnableGyro.IsChecked == true);
+                }
+            });
         }
 
         private void BtnSaveProfile_Click(object sender, RoutedEventArgs e)

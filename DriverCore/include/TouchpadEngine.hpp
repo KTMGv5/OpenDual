@@ -36,6 +36,8 @@ private:
     float m_accX = 0.0f;
     float m_accY = 0.0f;
     float m_accScroll = 0.0f;
+    float m_accHScroll = 0.0f;
+    std::chrono::steady_clock::time_point m_lastScrollTime;
 };
 
 } // namespace DualDriver

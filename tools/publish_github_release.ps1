@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.4.1",
-    [string]$ReleaseName = "OpenDual v1.4.1 - Dynamic Audio Haptics & USB Audio Rumble Support",
+    [string]$TagName = "v1.5.0",
+    [string]$ReleaseName = "OpenDual v1.5.0 - Interactive In-Game HUD Control Center & Touchpad Notch Overhaul",
     [string]$DistDir = "dist"
 )
 
@@ -46,33 +46,44 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.4.1
+## Highlights in OpenDual v1.5.0
 
-This release resolves the audio-reactive haptics muting issue when controllers are selected as the default Windows audio output, adds dynamic real-time WASAPI endpoint migration, and includes full 6-axis gyro aiming, auto-profile switching, presets, and power saving.
+OpenDual v1.5.0 introduces an interactive **In-Game Control Center HUD** inspired by the PS5 dashboard, complete with controller-driven tile navigation and live PC hardware telemetry, plus an overhaul to the **Touchpad Engine** for clean, slot-by-slot inventory hotbar scrolling in games like Minecraft.
 
-### What's Fixed & Improved
-* **Dynamic Audio Endpoint Migration (`IMMNotificationClient`)**:
-  * WASAPI loopback capture now automatically tracks Windows default playback endpoint switches in real time without dropping haptics.
-  * Switching between Soundbars, TV speakers, wireless headphones, and the DualSense / DS4 headphone jack seamlessly updates the haptic stream within ~50ms.
-* **DualSense USB Audio Concurrent Rumble (`out[39] = 0x04`)**:
-  * DualSense firmware v2 compatible vibration flags (`DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2`) enable crisp, high-power tactile rumble concurrent with high-res USB Audio headphone playback.
-* **Multi-Channel & Native PS5 Haptic Blending**:
-  * Correctly processes 4-channel Quadraphonic streams (stereo headphone audio + native PS5 haptic voice-coil tracks) and 5.1/7.1 home theater LFE subwoofer channel isolation.
-* **Live Audio Endpoint UI Display**:
-  * Added live active render and capture device detection to the Audio tab in OpenDual Hub.
-* **6-Axis Gyro Aiming Engine (from v1.4.0)**:
-  * 1000Hz DualSense/DS4 gyro motion aiming with sub-pixel mouse injection, resting drift calibration, and ADS L2 / Touchpad activation.
-* **Game Auto-Profile Switching & Preset Library**:
-  * Background detector (<0.001% CPU) automatically switches profiles when games take focus.
-  * Tuned presets included: Competitive FPS, Sim Racing, Bow RPG, Flight Sim, and Balanced.
-* **Automatic Suite Updater**:
-  * 1-click silent background update downloading and in-place relaunch.
+---
+
+### What's New in v1.5.0
+
+* **Interactive PS5 Control Center In-Game HUD**:
+  * **Persistent Overlay**: Summon with the PS button or system tray; stays open persistently until explicitly closed with Circle (○) or PS button (no auto-hide timeout when in HUD mode). Ephemeral toasts still auto-dismiss cleanly.
+  * **Zero Focus Stealing**: Built with Win32 `WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW` and topmost z-ordering—interact with controller shortcuts without pulling focus away from fullscreen games.
+  * **5 Controller-Navigable Tiles**:
+    * **Tile 0 (Game & Profile)**: Displays active game executable and active profile; D-Pad ▲▼ cycles profiles, ✕ applies.
+    * **Tile 1 (Master Audio & Mic)**: Live Windows volume bar and endpoint name; D-Pad ▲▼ adjusts volume in ±5% steps, ✕ toggles Master Mute.
+    * **Tile 2 (6-Axis Gyro Aiming)**: Motion aiming status (Active ADS / Disabled) and live sensitivity; D-Pad ▲▼ adjusts sensitivity (±0.1x), ✕ toggles Gyro on/off.
+    * **Tile 3 (PC Hardware Specs)**: Zero-overhead CPU % utilization (`GetSystemTimes`), RAM load % and used GB / total GB (`GlobalMemoryStatusEx`).
+    * **Tile 4 (Touchpad & Haptics)**: Live touchpad sensitivity and stereo haptic summary; D-Pad ▲▼ adjusts sensitivity (±0.1x), ✕ toggles Touchpad on/off.
+  * **Universal Quick Actions**: Square (□) instantly toggles microphone mute from anywhere in the HUD. Mouse clicks and touch inputs are also fully supported.
+  * **Input Debouncing**: Rate-limited controller repeats (320ms hold, 130ms tick) with edge-triggered button actions ensure rapid, accurate tile navigation.
+
+* **Touchpad Engine Overhaul (Minecraft & Inventory Safe)**:
+  * **Discrete Notched Scroll Mode**: Replaced high-frequency mouse wheel spam with discrete notching (`notchThreshold = 42.0f`, `scrollCooldownMs = 65ms`, standard `WHEEL_DELTA = 120`). Prevents hotbars from spinning uncontrollably in Minecraft, weapon wheels, and menus—each two-finger swipe advances cleanly one slot at a time.
+  * **Micro-Jitter Deadzone & Dual-Slope Ballistics**: Filtered resting finger tremors (`std::abs(dx) <= 1 && std::abs(dy) <= 1`) with 1:1 linear tracking at low speeds for pinpoint 36x36 slot clicking, smoothly accelerating at higher velocities for rapid cross-screen travel.
+
+* **Live Touchpad Sensitivity Telemetry**:
+  * Bidirectional IPC sync for `mouseSens` and `scrollSens` between DriverCore and DesktopApp.
+
+* **Codebase Verification & Security**:
+  * MSVC C/C++ Static Code Analysis (`/p:RunCodeAnalysis=true`) passed with 0 warnings and 0 defects.
+  * Full .NET C# build passed with 0 warnings, 0 errors.
+
+---
 
 ### Included Signed Binaries
 * `OpenDualSetup.exe` — Standalone installer and uninstaller suite
 * `OpenDualHub.exe` — Desktop controller hub and configuration center
 * `OpenDualDriver.exe` — 1000Hz C++20 driver service engine
-* `OpenDual-v1.4.1.zip` — Portable release bundle
+* `OpenDual-v1.5.0.zip` — Portable release bundle
 
 All binaries are digitally signed with Authenticode SHA-256 signatures.
 "@

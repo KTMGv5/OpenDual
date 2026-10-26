@@ -175,7 +175,7 @@ namespace OpenDualHub
         {
             var inv = System.Globalization.CultureInfo.InvariantCulture;
             var json = $"{{\"ledR\":{cfg.R},\"ledG\":{cfg.G},\"ledB\":{cfg.B},\"rgbEffect\":{cfg.Effect},\"effectSpeed\":{cfg.Speed.ToString(inv)}," +
-                       $"\"mouseEnabled\":{(cfg.Mouse ? "true" : "false")},\"syncMicMute\":{(cfg.SyncMic ? "true" : "false")}," +
+                       $"\"mouseEnabled\":{(cfg.Mouse ? "true" : "false")},\"mouseSens\":{cfg.MouseSens.ToString(inv)},\"scrollSens\":{cfg.ScrollSens.ToString(inv)},\"syncMicMute\":{(cfg.SyncMic ? "true" : "false")}," +
                        $"\"ltMode\":{cfg.LtMode},\"rtMode\":{cfg.RtMode}," +
                        $"\"audioHaptics\":{(cfg.Haptic ? "true" : "false")},\"hapticIntensity\":{cfg.HapticIntensity.ToString(inv)},\"hapticCutoff\":{cfg.HapticCutoff},\"hapticStereo\":{(cfg.HapticStereo ? "true" : "false")}," +
                        $"\"audioTriggerKick\":{(cfg.AudioTriggerKick ? "true" : "false")},\"audioTriggerThreshold\":{cfg.AudioTriggerThreshold.ToString(inv)}," +

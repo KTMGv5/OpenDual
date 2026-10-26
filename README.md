@@ -1,7 +1,7 @@
 # OpenDual — PlayStation Controller Driver & Desktop Suite
 
 [![Code Analysis & Build Verification](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml/badge.svg)](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml)
-[![Release v1.4.1](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.4.1)
+[![Release v1.5.0](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.5.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Open-source, ultra-low-latency Windows driver service and desktop suite for PlayStation DualShock 4 and DualSense (PS5) controllers on Windows 10 & 11.**
@@ -34,12 +34,12 @@
 * **Dynamic Windows System Theme & Accent Color**:
   * Automatically follows Windows 10/11 system Dark and Light modes.
   * Dynamically extracts and adapts to your **Windows Accent Color** (Blue, Red, Green, Purple, Cyan, Orange, etc.) in real time via Win32 message hooks (`WM_SETTINGCHANGE`, `WM_DWMCOLORIZATIONCOLORCHANGED`).
-* **Touchpad Mouse & Gestures Engine**:
-  * Ballistic cursor movement with speed acceleration and sub-pixel accumulation.
-  * **Tap-To-Click**: Single-finger tap for Left Click, two-finger tap for Right Click.
-  * **Two-Finger Scrolling**: Smooth vertical and horizontal wheel scrolling.
+* **Touchpad Mouse & Precision Notch Scrolling**:
+  * **Discrete Notched Scroll Mode (Minecraft & Inventory Safe)**: Cleanly moves inventory hotbars, weapon selectors, and menus exactly one slot per physical two-finger swipe, eliminating frantic runaway scroll spinning.
+  * **Micro-Jitter Deadzone & Dual-Slope Ballistics**: Filters out tiny finger tremors for pinpoint 36x36 slot clicking, accelerating smoothly for swift cross-screen desktop navigation.
+  * **Tap-To-Click & Gestures**: Single-finger tap for Left Click, two-finger tap for Right Click, and two-finger smooth scrolling.
   * **Split Physical Click**: Left 75% zone triggers Left Click, Right 25% zone triggers Right Click.
-  * Configurable sensitivity sliders and on-the-fly controller hotkeys.
+  * Live touchpad sensitivity telemetry with on-the-fly controller shortcuts and Control Center HUD adjustments.
 * **RGB Lightbar Studio & Glow Speed Control**:
   * Full 24-bit RGB customization with live hex preview and presets.
   * Animated modes: **Solid Color**, **Breathing / Pulse**, **Rainbow 360° Spectrum**, and **Battery Level Gauge**.
@@ -60,10 +60,16 @@
 * **Audio-to-Trigger Mechanical Recoil Kick**:
   * Real-time audio transient spike detection tracks explosive gunshots, cannon fire, and grenade detonations.
   * Instantly pulses the DualSense adaptive trigger stepper motors for ~90-120ms with physical mechanical kickback.
-* **In-Game Virtual Quick HUD (PS Button Overlay)**:
-  * Floating, translucent, non-focus-stealing PS5 Control Center-inspired HUD overlay.
-  * Pops up when pressing the controller's **PS button** without minimizing or interrupting full-screen games.
-  * Displays live battery %, charging state, master audio volume, hardware mic status, and adaptive trigger profiles. Auto-fades after 3.5s or toggles off on next press.
+* **Interactive In-Game Control Center HUD (PS Button)**:
+  * Persistent, non-focus-stealing PS5-style overlay (`WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`) that pops up when pressing the **PS button** without minimizing or dropping focus in games.
+  * Stays open persistently until explicitly closed with Circle (○) or PS Button.
+  * **5 Controller-Navigable Tiles**:
+    * **Tile 0 (Game & Profile)**: Live active game name, profile badge, and trigger modes. D-Pad ▲▼ cycles profiles on the fly.
+    * **Tile 1 (Master Audio & Mic)**: Live Windows volume bar and endpoint name. D-Pad ▲▼ adjusts volume in ±5% steps; ✕ toggles master mute.
+    * **Tile 2 (6-Axis Gyro Aiming)**: Motion aiming status and sensitivity. D-Pad ▲▼ adjusts sensitivity in ±0.1x steps; ✕ toggles gyro on/off.
+    * **Tile 3 (PC Hardware Specs)**: Real-time CPU % utilization and RAM usage / total GB with zero overhead.
+    * **Tile 4 (Touchpad & Haptics)**: Live touchpad sensitivity and stereo haptic summary. D-Pad ▲▼ adjusts sensitivity; ✕ toggles touchpad.
+  * **Universal Quick Action**: Square (□) toggles mic mute from anywhere in the HUD. Mouse clicks and touch inputs are also fully supported.
 * **Windows System Tray & Background Residency**:
   * Minimizing OpenDual automatically docks it cleanly to the Windows notification area / system tray.
   * System tray context menu: Open Hub, Restart Driver Engine, Toggle Mic Mute, or Exit.
@@ -75,12 +81,6 @@
   * App Paths registration for quick launch via `Win + R` -> `opendual`.
   * Start Menu and Desktop shortcuts.
   * Clean uninstaller (`OpenDualUninstaller.exe` / `uninstall.bat`) that safely stops processes, removes registry entries, removes shortcuts, and cleans up files.
-  * Floating, translucent, non-focus-stealing PS5 Control Center-inspired HUD overlay.
-  * Pops up when pressing the controller's **PS button** without minimizing or interrupting full-screen games.
-  * Displays live battery %, charging state, master audio volume, hardware mic status, and adaptive trigger profiles. Auto-fades after 3.5s or toggles off on next press.
-* **Windows System Tray & Background Residency**:
-  * Minimizing OpenDual automatically docks it cleanly to the Windows notification area / system tray.
-  * System tray context menu: Open Hub, Restart Driver Engine, Toggle Mic Mute, or Exit.
 * **Aggressive Updater & In-Place Reinstaller**:
   * Cleanly force-terminates all running driver and hub instances before overwriting files.
   * Automatic retry mechanisms on file locks and automatic restart of driver and hub upon update completion.

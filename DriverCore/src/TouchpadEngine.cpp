@@ -18,7 +18,8 @@ void TouchpadEngine::Reset() {
     m_wasPadClicked = false;
     m_holdingLeftClick = false;
     m_holdingRightClick = false;
-    m_accX = m_accY = m_accScroll = 0.0f;
+    m_accX = m_accY = m_accScroll = m_accHScroll = 0.0f;
+    m_lastScrollTime = std::chrono::steady_clock::time_point{};
 }
 
 void TouchpadEngine::SendMouseMove(int dx, int dy) {
@@ -74,7 +75,7 @@ void TouchpadEngine::Process(const ControllerState& state, const ControllerConfi
     int x2 = state.touch2.x;
     int y2 = state.touch2.y;
 
-    // 1. Two-finger Scrolling
+    // 1. Two-finger Scrolling (Discrete Notched Mode for Minecraft Hotbars & Inventory)
     if (t1 && t2) {
         if (m_wasTouch1 && m_wasTouch2) {
             int dy1 = y1 - m_lastY1;
@@ -85,24 +86,31 @@ void TouchpadEngine::Process(const ControllerState& state, const ControllerConfi
             int dx2 = x2 - m_lastX2;
             int avgDx = (dx1 + dx2) / 2;
 
-            // Vertical scroll (invert so moving fingers down scrolls down)
-            if (std::abs(avgDy) > 2) {
-                m_accScroll += (-avgDy) * config.scrollSensitivity * 3.0f;
-                int scrollSteps = (int)(m_accScroll / 10.0f);
-                if (scrollSteps != 0) {
-                    SendMouseWheel(scrollSteps * WHEEL_DELTA / 6);
-                    m_accScroll -= scrollSteps * 10.0f;
-                }
+            m_accScroll += (float)(-avgDy) * config.scrollSensitivity;
+
+            auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastScrollTime).count();
+            const float notchThreshold = 42.0f; // clean physical gesture threshold
+            const int scrollCooldownMs = 65;    // tactile slot-by-slot wheel detent cadence
+
+            if (std::abs(m_accScroll) >= notchThreshold && nowMs >= scrollCooldownMs) {
+                int dir = (m_accScroll > 0) ? 1 : -1;
+                SendMouseWheel(dir * WHEEL_DELTA);
+                m_accScroll = 0.0f;
+                m_lastScrollTime = now;
             }
 
-            // Horizontal scroll
-            if (std::abs(avgDx) > 4) {
-                SendMouseHWheel((avgDx > 0 ? 1 : -1) * WHEEL_DELTA / 6);
+            // Horizontal scroll with detent
+            m_accHScroll += (float)avgDx * config.scrollSensitivity;
+            if (std::abs(m_accHScroll) >= notchThreshold && nowMs >= scrollCooldownMs) {
+                int dir = (m_accHScroll > 0) ? 1 : -1;
+                SendMouseHWheel(dir * WHEEL_DELTA);
+                m_accHScroll = 0.0f;
+                m_lastScrollTime = now;
             }
         }
         m_touch1Moved = true;
     }
-    // 2. Single-finger Cursor movement
+    // 2. Single-finger Cursor movement (High-Precision Inventory Targeting)
     else if (t1 && !t2) {
         if (!m_wasTouch1) {
             // Finger down
@@ -115,23 +123,31 @@ void TouchpadEngine::Process(const ControllerState& state, const ControllerConfi
             int dy = y1 - m_lastY1;
 
             // Check if finger moved beyond tap threshold
-            if (std::abs(x1 - m_startX1) > 15 || std::abs(y1 - m_startY1) > 15) {
+            if (std::abs(x1 - m_startX1) > 12 || std::abs(y1 - m_startY1) > 12) {
                 m_touch1Moved = true;
             }
 
-            // Apply ballistics & sensitivity with balanced base scaling (raw coords are 0..1920)
-            float baseScale = 0.28f;
+            // Anti-jitter micro-deadzone: prevents cursor dancing when hovering over inventory items
+            if (std::abs(dx) <= 1 && std::abs(dy) <= 1) {
+                dx = 0;
+                dy = 0;
+            }
+
+            // Natural inventory-tuned scaling (0.24f allows pixel-by-pixel slot control)
+            float baseScale = 0.24f;
             float fx = (float)dx * config.mouseSensitivity * baseScale;
             float fy = (float)dy * config.mouseSensitivity * baseScale;
 
             if (config.invertX) fx = -fx;
             if (config.invertY) fy = -fy;
 
-            // Speed acceleration curve (swipes move faster, slow movements are precise)
+            // Dual-curve ballistics:
+            // Fine movements (< 7.0f) have 100% linear 1:1 precision for inventory items
+            // Rapid swipes (> 7.0f) accelerate smoothly up to 2.0x for screen crossing
             float speed = std::sqrt(fx * fx + fy * fy);
-            if (speed > 5.0f) {
-                float accelFactor = 1.0f + (speed - 5.0f) * 0.04f;
-                if (accelFactor > 2.2f) accelFactor = 2.2f;
+            if (speed > 7.0f) {
+                float accelFactor = 1.0f + (speed - 7.0f) * 0.035f;
+                if (accelFactor > 2.0f) accelFactor = 2.0f;
                 fx *= accelFactor;
                 fy *= accelFactor;
             }
@@ -144,8 +160,8 @@ void TouchpadEngine::Process(const ControllerState& state, const ControllerConfi
 
             if (stepX != 0 || stepY != 0) {
                 SendMouseMove(stepX, stepY);
-                m_accX -= stepX;
-                m_accY -= stepY;
+                m_accX -= (float)stepX;
+                m_accY -= (float)stepY;
             }
         }
     }

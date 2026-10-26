@@ -35,6 +35,12 @@ namespace OpenDualHub.Models
         [JsonPropertyName("mouse")]
         public bool Mouse { get; set; } = true;
 
+        [JsonPropertyName("mouseSens")]
+        public float MouseSens { get; set; } = 1.2f;
+
+        [JsonPropertyName("scrollSens")]
+        public float ScrollSens { get; set; } = 1.0f;
+
         [JsonPropertyName("syncMic")]
         public bool SyncMic { get; set; } = true;
 

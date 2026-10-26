@@ -298,6 +298,8 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"effect\":" << (int)c.rgbEffect << ","
            << "\"speed\":" << c.effectSpeed << ","
            << "\"mouse\":" << (c.mouseEnabled ? "true" : "false") << ","
+           << "\"mouseSens\":" << c.mouseSensitivity << ","
+           << "\"scrollSens\":" << c.scrollSensitivity << ","
            << "\"syncMic\":" << (c.syncMicMute ? "true" : "false") << ","
            << "\"haptic\":" << (c.audioHapticsEnabled ? "true" : "false") << ","
            << "\"hapticIntensity\":" << c.hapticIntensity << ","
