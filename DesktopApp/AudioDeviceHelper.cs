@@ -106,9 +106,94 @@ namespace OpenDualHub
             [FieldOffset(8)] public IntPtr pwszVal;
         }
 
+        private static readonly PropertyKey PKEY_Device_DeviceDesc = new PropertyKey(new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), 2);
         private static readonly PropertyKey PKEY_Device_FriendlyName = new PropertyKey(new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), 14);
+        private static readonly PropertyKey PKEY_DeviceInterface_FriendlyName = new PropertyKey(new Guid("b3f8fa53-0004-438e-9003-51a46e139bfc"), 6);
+        private static readonly PropertyKey PKEY_Device_InstanceId = new PropertyKey(new Guid("b3f8fa53-0004-438e-9003-51a46e139bfc"), 2);
 
         private static string? _previousDefaultDeviceId = null;
+
+        private static string GetStoreString(IPropertyStore store, PropertyKey key)
+        {
+            try
+            {
+                if (store.GetValue(ref key, out var pv) == 0 && pv.pwszVal != IntPtr.Zero)
+                {
+                    return Marshal.PtrToStringUni(pv.pwszVal) ?? "";
+                }
+            }
+            catch { }
+            return "";
+        }
+
+        private static string GetDeviceDisplayName(IPropertyStore store)
+        {
+            string friendly = GetStoreString(store, PKEY_Device_FriendlyName);
+            if (!string.IsNullOrWhiteSpace(friendly)) return friendly;
+
+            string desc = GetStoreString(store, PKEY_Device_DeviceDesc);
+            string iface = GetStoreString(store, PKEY_DeviceInterface_FriendlyName);
+
+            if (!string.IsNullOrWhiteSpace(desc) && !string.IsNullOrWhiteSpace(iface))
+                return $"{desc} ({iface})";
+            if (!string.IsNullOrWhiteSpace(iface))
+                return iface;
+            if (!string.IsNullOrWhiteSpace(desc))
+                return desc;
+
+            return "Audio Output Device";
+        }
+
+        public static bool IsControllerDevice(string? deviceId, string? deviceName)
+        {
+            return IsControllerDevice(deviceId, deviceName, null);
+        }
+
+        private static bool IsControllerDevice(string? deviceId, string? deviceName, IPropertyStore? store)
+        {
+            if (!string.IsNullOrEmpty(deviceName))
+            {
+                if (deviceName.Contains("Wireless Controller", StringComparison.OrdinalIgnoreCase) ||
+                    deviceName.Contains("DualSense", StringComparison.OrdinalIgnoreCase) ||
+                    deviceName.Contains("DualShock", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(deviceId))
+            {
+                if (deviceId.Contains("054C", StringComparison.OrdinalIgnoreCase) ||
+                    deviceId.Contains("0CE6", StringComparison.OrdinalIgnoreCase) ||
+                    deviceId.Contains("0DF2", StringComparison.OrdinalIgnoreCase) ||
+                    deviceId.Contains("05C4", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            if (store != null)
+            {
+                string pnp = GetStoreString(store, PKEY_DeviceInterface_FriendlyName);
+                if (pnp.Contains("Wireless Controller", StringComparison.OrdinalIgnoreCase) ||
+                    pnp.Contains("DualSense", StringComparison.OrdinalIgnoreCase) ||
+                    pnp.Contains("DualShock", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                string inst = GetStoreString(store, PKEY_Device_InstanceId);
+                if (inst.Contains("054C", StringComparison.OrdinalIgnoreCase) ||
+                    inst.Contains("0CE6", StringComparison.OrdinalIgnoreCase) ||
+                    inst.Contains("0DF2", StringComparison.OrdinalIgnoreCase) ||
+                    inst.Contains("05C4", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         public static (string? id, string? name) FindControllerPlaybackDevice()
         {
@@ -122,19 +207,14 @@ namespace OpenDualHub
                     {
                         if (collection.Item(i, out var device) == 0 && device != null)
                         {
+                            device.GetId(out string id);
                             device.OpenPropertyStore(0 /* STGM_READ */, out var store);
                             if (store != null)
                             {
-                                var key = PKEY_Device_FriendlyName;
-                                if (store.GetValue(ref key, out var pv) == 0 && pv.pwszVal != IntPtr.Zero)
+                                string displayName = GetDeviceDisplayName(store);
+                                if (IsControllerDevice(id, displayName, store))
                                 {
-                                    string friendlyName = Marshal.PtrToStringUni(pv.pwszVal) ?? "";
-                                    if (friendlyName.Contains("Wireless Controller", StringComparison.OrdinalIgnoreCase) ||
-                                        friendlyName.Contains("DualSense", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        device.GetId(out string id);
-                                        return (id, friendlyName);
-                                    }
+                                    return (id, displayName);
                                 }
                             }
                         }
@@ -157,11 +237,7 @@ namespace OpenDualHub
                     string name = "Default Playback Device";
                     if (store != null)
                     {
-                        var key = PKEY_Device_FriendlyName;
-                        if (store.GetValue(ref key, out var pv) == 0 && pv.pwszVal != IntPtr.Zero)
-                        {
-                            name = Marshal.PtrToStringUni(pv.pwszVal) ?? name;
-                        }
+                        name = GetDeviceDisplayName(store);
                     }
                     return (id, name);
                 }

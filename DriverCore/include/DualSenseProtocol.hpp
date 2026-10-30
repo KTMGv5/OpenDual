@@ -154,11 +154,10 @@ public:
         // 0x02: Haptics Select
         // 0x04: Right Trigger Motor Enable
         // 0x08: Left Trigger Motor Enable
-        out[1] = 0x0F; 
-        if (config.speakerEnabled) {
-            out[1] |= 0x20; // DS_OUTPUT_VALID_FLAG0_SPEAKER_VOLUME_ENABLE
-            out[1] |= 0x80; // DS_OUTPUT_VALID_FLAG0_AUDIO_CONTROL_ENABLE
-        }
+        // 0x10: Headphone Volume Enable
+        // 0x20: Speaker Volume Enable
+        // 0x80: Audio Control Enable
+        out[1] = 0x0F | 0x10 | 0x20 | 0x80; 
 
         // valid_flag1:
         // 0x01: Mic Mute LED
@@ -176,8 +175,8 @@ public:
         // Speaker Volume (0..255): 100% when enabled, 0 when disabled
         out[6] = config.speakerEnabled ? 0xFF : 0x00;
 
-        // Audio Routing Flags: 0x00 = Headphone only, 0x02 = Both Headphone & Internal Speaker
-        out[8] = config.speakerEnabled ? 0x02 : 0x00;
+        // Audio Routing Flags: Bits 5..4 = Output Path (0x30 = Speaker + Headphone, 0x10 = Headphone only)
+        out[8] = config.speakerEnabled ? 0x30 : 0x10;
 
         // Mic Mute LED (0=off, 1=solid amber, 2=pulse)
         out[9] = micMuted ? 0x01 : 0x00;
@@ -208,10 +207,7 @@ public:
         out[0] = 0x31; // DualSense BT Output Report ID
         out[1] = 0x02; // Tag
 
-        out[2] = 0x0F; // valid_flag0 (rumble + triggers)
-        if (config.speakerEnabled) {
-            out[2] |= 0x20 | 0x80;
-        }
+        out[2] = 0x0F | 0x10 | 0x20 | 0x80; // valid_flag0 (rumble + triggers + headphone/speaker volume + audio control)
         out[3] = 0x35; // valid_flag1 (LEDs + lightbar)
 
         out[4] = rightRumble;
@@ -219,7 +215,7 @@ public:
 
         out[6] = 0x7F; // Headphone volume
         out[7] = config.speakerEnabled ? 0xFF : 0x00; // Speaker volume
-        out[9] = config.speakerEnabled ? 0x02 : 0x00; // Audio routing: both headphone & speaker
+        out[9] = config.speakerEnabled ? 0x30 : 0x10; // Audio routing: 0x30 = speaker active, 0x10 = headphone only
 
         out[10] = micMuted ? 0x01 : 0x00;
 

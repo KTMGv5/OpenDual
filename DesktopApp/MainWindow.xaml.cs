@@ -1092,27 +1092,19 @@ namespace OpenDualHub
                 var (curId, curName) = AudioDeviceHelper.GetDefaultPlaybackDevice();
                 if (!string.IsNullOrEmpty(curName))
                 {
-                    isController = curName.Contains("Wireless Controller", StringComparison.OrdinalIgnoreCase) ||
-                                   curName.Contains("DualSense", StringComparison.OrdinalIgnoreCase);
+                    isController = AudioDeviceHelper.IsControllerDevice(curId, curName);
                 }
 
                 if (TxtControllerSpeakerDev != null)
                 {
                     TxtControllerSpeakerDev.Text = isController
-                        ? $"Active Output: {curName} (DualSense Speaker / 3.5mm Jack)"
+                        ? $"Active Output: {curName} (DualSense Audio Active)"
                         : $"Active Output: {curName} (PC Audio)";
                 }
 
                 if (BtnToggleControllerSpeaker != null)
                 {
-                    BtnToggleControllerSpeaker.Content = isController ? "Revert Audio to PC Speakers" : "Route Game Audio to Controller";
-                }
-
-                if (ChkControllerSpeaker != null && ChkControllerSpeaker.IsChecked != isController)
-                {
-                    _isUpdatingUi = true;
-                    ChkControllerSpeaker.IsChecked = isController;
-                    _isUpdatingUi = false;
+                    BtnToggleControllerSpeaker.Content = isController ? "Revert Windows Audio to PC Speakers" : "Route Windows Audio to Controller";
                 }
             }
             catch { }
