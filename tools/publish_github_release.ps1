@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.6.2",
-    [string]$ReleaseName = "OpenDual v1.6.2 - Directional D-Pad Visualizer and Live Hub Version Synchronization",
+    [string]$TagName = "v1.6.3",
+    [string]$ReleaseName = "OpenDual v1.6.3 - Quadraphonic Haptic Audio Streaming and Battery & Charging Alerts",
     [string]$DistDir = "dist"
 )
 
@@ -46,27 +46,28 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.6.2
+## Highlights in OpenDual v1.6.3
 
-OpenDual v1.6.2 adds an interactive PlayStation Directional D-Pad visualizer and status indicators to the Controller Dashboard, and synchronizes version reporting dynamically throughout the Hub interface.
+OpenDual v1.6.3 introduces native DualSense Quadraphonic Haptic Audio Streaming (Channels 3 & 4) for high-fidelity voice-coil haptics while preserving crystal-clear headphone audio, alongside real-time Battery Health & Charging Desktop Notifications and live visual dashboard badges.
 
 ---
 
-### What's New and Fixed in v1.6.2
+### What's New and Improved in v1.6.3
 
-* **Interactive Directional D-Pad Visualizer & Telemetry**:
-  * Added a dedicated 4-way Directional D-Pad cross visualizer on the Controller Dashboard side-by-side with the Action Buttons, featuring authentic PlayStation directional styling (`^`, `<`, `>`, `v`) with a center junction hub.
-  * Added D-Pad status telemetry pills (`D-Up`, `D-Down`, `D-Left`, `D-Right`) in the controller buttons status bar.
-  * Real-time input illumination: Pressing any D-Pad direction immediately illuminates the visualizer in electric cyan (`#00E5FF`) and highlights the corresponding button pill.
-  * Added typed helper properties (`DPadUp`, `DPadDown`, `DPadLeft`, `DPadRight`) on `ControllerTelemetry` model for clean unified consumption across the app.
+* **Native DualSense Quadraphonic Haptic Audio Streaming**:
+  * Solved the DualSense hardware limitation where active controller audio mutes standard emulated HID rumble.
+  * DriverCore automatically attaches a WASAPI quadraphonic stream targeting Channels 3 & 4 (DualSense Voice-Coil Actuators), streaming 48kHz audio haptics without interfering with stereo headphone playback on Channels 1 & 2.
+  * System audio loopback (from speakers, soundbars, or headphones) continues delivering tactile rumble seamlessly across all audio output devices.
 
-* **Live Dynamic Version Synchronization**:
-  * Eliminated stale hardcoded version strings across the Hub application.
-  * The Installed Version header in Settings and the persistent footer status bar now bind dynamically to `UpdateChecker.CurrentAppVersion` (`v1.6.2`), guaranteeing that version displays are always in sync with releases.
+* **Real-Time Battery Health & Charging Desktop Notifications**:
+  * Live Charging Badges on the Dashboard and Quick HUD displaying live percentage and full charge status.
+  * Added desktop notification alerts for Charger Connected, Charger Disconnected, and Battery Full (100%).
+  * Staged low battery warnings (<15% Low, <5% Critical) to notify you before your controller powers down during gaming sessions.
+  * Configurable toggle under Settings: 'Battery Health & Charging Desktop Notifications'.
 
-* **Codebase Verification and Security**:
-  * Full .NET C# build passed with 0 warnings, 0 errors.
-  * Documentation and release notes verified with 0 non-ASCII characters.
+* **Codebase Verification & Security**:
+  * Authenticode code signing verified across all distributed executables.
+  * Clean MSVC C++20 and .NET 10 compilation with 0 warnings and 0 errors.
 
 ---
 
@@ -74,7 +75,7 @@ OpenDual v1.6.2 adds an interactive PlayStation Directional D-Pad visualizer and
 * OpenDualSetup.exe - Standalone installer and uninstaller suite
 * OpenDualHub.exe - Desktop controller hub and configuration center
 * OpenDualDriver.exe - 1000Hz C++20 driver service engine
-* OpenDual-v1.6.2.zip - Portable release bundle
+* OpenDual-v1.6.3.zip - Portable release bundle
 "@
 
 # 3. Check if release already exists
