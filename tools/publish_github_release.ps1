@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.6.5",
-    [string]$ReleaseName = "OpenDual v1.6.5 - Windows Master Volume Sync and Headphone Hotplug Stabilization",
+    [string]$TagName = "v1.6.6",
+    [string]$ReleaseName = "OpenDual v1.6.6 - Interactive Gyro Calibrator & Touchpad Volume Slider HUD",
     [string]$DistDir = "dist"
 )
 
@@ -46,33 +46,35 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.6.5
+## Highlights in OpenDual v1.6.6
 
-OpenDual v1.6.5 brings full hardware audio volume synchronization with the Windows master audio slider, seamless headphone hotplug detection, and gain stabilization to eliminate sudden volume shifts when disconnecting 3.5mm headphones.
+OpenDual v1.6.6 introduces two major new features: the **Interactive Gyro Aiming Calibrator** (a physical aim-and-shoot calibration wizard using the Cross button) and the **Touchpad Edge Volume Gesture with Floating Neon HUD** for seamless on-controller master audio control, along with full Windows volume synchronization and headphone hotplug stabilization.
 
 ---
 
-### What's New and Improved in v1.6.5
+### What's New and Improved in v1.6.6
+
+* **Feature 1: Interactive Gyro Aiming Calibrator ("Aim & Press Cross Target Wizard")**:
+  * An interactive target aiming arena window (`GyroCalibratorWindow`) designed to calibrate your gyroscope for any monitor or TV resolution (1080p, 1440p, 4K).
+  * Prompts the player to physically point the controller crosshair at 5 on-screen bullseye targets (Center, Far Right, Far Left, High, Low) and press Cross (X) to lock each point.
+  * Measures baseline zero-rate resting drift, axis alignment, and physical angular range of motion.
+  * Automatically calculates and applies optimal horizontal sensitivity, vertical sensitivity, and anti-jitter deadzone directly to your active controller profile.
+
+* **Feature 2: Touchpad Edge Volume Slider & Floating Neon Master Volume HUD**:
+  * Slide your finger vertically along the right edge of the DualSense touchpad to smoothly adjust Windows Master Volume up or down on the fly without pausing your game.
+  * A custom floating dark-glass volume HUD pill (`VolumeHudWindow`) with an animated neon cyan progress bar and speaker glyph appears on screen whenever volume changes.
+  * Focus-independent overlay (`WS_EX_NOACTIVATE`) that never steals window or game focus.
 
 * **Windows Master Volume Hardware DAC Synchronization**:
-  * DualSense hardware audio volume is now bound to the Windows master volume level via WASAPI `IAudioEndpointVolume`.
-  * Adjusting volume via the Windows taskbar slider, multimedia keyboard keys, or system mixer smoothly scales both the internal speaker and 3.5mm headphone audio output in real time.
-  * Eliminates the limitation where audio could only be adjusted within individual media applications.
+  * DualSense hardware audio volume is synchronized directly with Windows master volume via CoreAudio WASAPI `IAudioEndpointVolume`.
+  * Adjusting volume via the Windows taskbar slider, multimedia keyboard keys, system mixer, or touchpad gesture scales the hardware DAC for both internal speaker and 3.5mm headphones.
 
 * **Headphone Hotplug Detection & Gain Stabilization**:
-  * Real-time 3.5mm audio jack insertion and removal detection via controller status bitfield (`DS_STATUS1_HP_DETECT`).
-  * When controller speaker output is active, the headphone DAC stage is cleanly muted to prevent current draw across shared controller power rails.
-  * Gain normalization prevents the controller speaker from unexpectedly jumping in volume when the 3.5mm AUX headphone cable is detached.
+  * Live 3.5mm headphone detection using DualSense status report byte 54 (`DS_STATUS1_HP_DETECT`).
+  * Mutes the analog headphone stage when controller speaker mode is active, preventing current draw on the shared power rails and eliminating the volume jump when unplugging headphones.
 
 * **Pristine Stereo Headphone Audio**:
-  * Restored bit-accurate stereo headphone routing mode (0x00 `L_R_X`) when controller speaker output is disabled.
-
-* **Live Audio Dashboard Telemetry**:
-  * OpenDual Hub now presents real-time Windows master volume percentage and 3.5mm AUX connection state in the Controller Speaker panel.
-
-* **Streamlined Distribution Suite**:
-  * All binaries signed with Authenticode certificates.
-  * Available as standalone 1-click installer (`OpenDualSetup.exe`), standalone executables, and portable bundle (`OpenDual-v1.6.5.zip`).
+  * Bit-accurate stereo headphone routing mode (0x00 `L_R_X`) when controller speaker output is turned off.
 
 ---
 
@@ -80,7 +82,7 @@ OpenDual v1.6.5 brings full hardware audio volume synchronization with the Windo
 * OpenDualSetup.exe - Complete standalone installer and uninstaller suite (Recommended)
 * OpenDualHub.exe - Standalone GUI Controller Hub executable
 * OpenDualDriver.exe - Standalone 1000Hz C++20 Direct HID Driver engine
-* OpenDual-v1.6.5.zip - Portable bundle including all binaries and tools
+* OpenDual-v1.6.6.zip - Portable bundle including all binaries and tools
 "@
 
 # 3. Check if release already exists

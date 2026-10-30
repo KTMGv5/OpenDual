@@ -69,6 +69,7 @@ struct ControllerConfig {
     float mouseSensitivity = 1.2f;
     float scrollSensitivity = 1.0f;
     bool tapToClick = true;
+    bool touchpadVolumeGesture = true;  // Slide right edge of touchpad (x > 1650) to adjust master volume
     bool invertX = false;
     bool invertY = false;
 

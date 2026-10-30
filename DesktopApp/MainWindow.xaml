@@ -862,7 +862,10 @@
                                         <TextBlock Text="• Auto-calibrates resting sensor drift in real time when placed still on flat surfaces.&#x0a;• Microsecond &#x394;t integration &amp; display resolution scaling ensure 1:1 aiming across 1080p, 1440p, and 4K." FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
                                     </Border>
 
-                                    <Button x:Name="BtnResetGyroDrift" Content="Recalibrate Gyro Baseline" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" HorizontalAlignment="Left" Click="BtnResetGyroDrift_Click"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="BtnLaunchGyroCalibrator" Content="Launch Interactive Aim Calibrator" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource AccentSignature}" Foreground="#0A0E17" Margin="0,0,10,0" Click="BtnLaunchGyroCalibrator_Click"/>
+                                        <Button x:Name="BtnResetGyroDrift" Content="Recalibrate Gyro Baseline" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" Click="BtnResetGyroDrift_Click"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -900,6 +903,9 @@
                             </CheckBox>
                             <CheckBox x:Name="ChkSplitClick" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed">
                                 <TextBlock Text="Split Physical Click (Right 25% zone triggers Right Click)" TextWrapping="Wrap"/>
+                            </CheckBox>
+                            <CheckBox x:Name="ChkTouchpadVolGesture" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed">
+                                <TextBlock Text="Touchpad Volume Slider (Slide finger up/down on right edge to adjust Master Volume)" TextWrapping="Wrap"/>
                             </CheckBox>
                             <CheckBox x:Name="ChkInvertY" Content="Invert Y Axis Movement" FontSize="13" Foreground="{DynamicResource TextPrimary}" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed"/>
                         </StackPanel>
@@ -1375,7 +1381,7 @@
                                     <StackPanel Grid.Column="0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="Installed Version: " Foreground="{DynamicResource TextSecondary}"/>
-                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.5 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.6 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </StackPanel>
                                         <TextBlock x:Name="TxtUpdateStatus" Text="Up to date." FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,4,0,0"/>
                                     </StackPanel>
@@ -1414,7 +1420,7 @@
                     <TextBlock Text="  •  " FontSize="11" Foreground="{DynamicResource BorderColor}"/>
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
-                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.5" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.6" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>

@@ -18,7 +18,7 @@ void TouchpadEngine::Reset() {
     m_wasPadClicked = false;
     m_holdingLeftClick = false;
     m_holdingRightClick = false;
-    m_accX = m_accY = m_accScroll = m_accHScroll = 0.0f;
+    m_accX = m_accY = m_accScroll = m_accHScroll = m_accVolume = 0.0f;
     m_lastScrollTime = std::chrono::steady_clock::time_point{};
 }
 
@@ -122,46 +122,58 @@ void TouchpadEngine::Process(const ControllerState& state, const ControllerConfi
             int dx = x1 - m_lastX1;
             int dy = y1 - m_lastY1;
 
-            // Check if finger moved beyond tap threshold
-            if (std::abs(x1 - m_startX1) > 12 || std::abs(y1 - m_startY1) > 12) {
+            if (config.touchpadVolumeGesture && m_startX1 >= 1650) {
+                // Right-edge volume slider gesture: sliding finger vertically along right strip adjusts Master Volume
+                m_accVolume += (float)(-dy);
+                if (std::abs(m_accVolume) >= 32.0f) {
+                    WORD vk = (m_accVolume > 0) ? VK_VOLUME_UP : VK_VOLUME_DOWN;
+                    keybd_event((BYTE)vk, 0, 0, 0);
+                    keybd_event((BYTE)vk, 0, KEYEVENTF_KEYUP, 0);
+                    m_accVolume = 0.0f;
+                }
                 m_touch1Moved = true;
-            }
+            } else {
+                // Check if finger moved beyond tap threshold
+                if (std::abs(x1 - m_startX1) > 12 || std::abs(y1 - m_startY1) > 12) {
+                    m_touch1Moved = true;
+                }
 
-            // Anti-jitter micro-deadzone: prevents cursor dancing when hovering over inventory items
-            if (std::abs(dx) <= 1 && std::abs(dy) <= 1) {
-                dx = 0;
-                dy = 0;
-            }
+                // Anti-jitter micro-deadzone: prevents cursor dancing when hovering over inventory items
+                if (std::abs(dx) <= 1 && std::abs(dy) <= 1) {
+                    dx = 0;
+                    dy = 0;
+                }
 
-            // Natural inventory-tuned scaling (0.24f allows pixel-by-pixel slot control)
-            float baseScale = 0.24f;
-            float fx = (float)dx * config.mouseSensitivity * baseScale;
-            float fy = (float)dy * config.mouseSensitivity * baseScale;
+                // Natural inventory-tuned scaling (0.24f allows pixel-by-pixel slot control)
+                float baseScale = 0.24f;
+                float fx = (float)dx * config.mouseSensitivity * baseScale;
+                float fy = (float)dy * config.mouseSensitivity * baseScale;
 
-            if (config.invertX) fx = -fx;
-            if (config.invertY) fy = -fy;
+                if (config.invertX) fx = -fx;
+                if (config.invertY) fy = -fy;
 
-            // Dual-curve ballistics:
-            // Fine movements (< 7.0f) have 100% linear 1:1 precision for inventory items
-            // Rapid swipes (> 7.0f) accelerate smoothly up to 2.0x for screen crossing
-            float speed = std::sqrt(fx * fx + fy * fy);
-            if (speed > 7.0f) {
-                float accelFactor = 1.0f + (speed - 7.0f) * 0.035f;
-                if (accelFactor > 2.0f) accelFactor = 2.0f;
-                fx *= accelFactor;
-                fy *= accelFactor;
-            }
+                // Dual-curve ballistics:
+                // Fine movements (< 7.0f) have 100% linear 1:1 precision for inventory items
+                // Rapid swipes (> 7.0f) accelerate smoothly up to 2.0x for screen crossing
+                float speed = std::sqrt(fx * fx + fy * fy);
+                if (speed > 7.0f) {
+                    float accelFactor = 1.0f + (speed - 7.0f) * 0.035f;
+                    if (accelFactor > 2.0f) accelFactor = 2.0f;
+                    fx *= accelFactor;
+                    fy *= accelFactor;
+                }
 
-            m_accX += fx;
-            m_accY += fy;
+                m_accX += fx;
+                m_accY += fy;
 
-            int stepX = (int)m_accX;
-            int stepY = (int)m_accY;
+                int stepX = (int)m_accX;
+                int stepY = (int)m_accY;
 
-            if (stepX != 0 || stepY != 0) {
-                SendMouseMove(stepX, stepY);
-                m_accX -= (float)stepX;
-                m_accY -= (float)stepY;
+                if (stepX != 0 || stepY != 0) {
+                    SendMouseMove(stepX, stepY);
+                    m_accX -= (float)stepX;
+                    m_accY -= (float)stepY;
+                }
             }
         }
     }

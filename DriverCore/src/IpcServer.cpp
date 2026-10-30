@@ -189,6 +189,8 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getFloat("scrollSens", scrollSens)) { cfg.scrollSensitivity = scrollSens; changed = true; }
     if (getBool("mouseEnabled", mouseEn)) { cfg.mouseEnabled = mouseEn; changed = true; }
     if (getBool("tapToClick", tapClick)) { cfg.tapToClick = tapClick; changed = true; }
+    bool volGesture = true;
+    if (getBool("touchpadVolumeGesture", volGesture)) { cfg.touchpadVolumeGesture = volGesture; changed = true; }
     if (getBool("syncMicMute", syncMic)) { cfg.syncMicMute = syncMic; changed = true; }
 
     // Audio-Reactive Haptics
@@ -306,6 +308,7 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"mouse\":" << (c.mouseEnabled ? "true" : "false") << ","
            << "\"mouseSens\":" << c.mouseSensitivity << ","
            << "\"scrollSens\":" << c.scrollSensitivity << ","
+           << "\"volGesture\":" << (c.touchpadVolumeGesture ? "true" : "false") << ","
            << "\"syncMic\":" << (c.syncMicMute ? "true" : "false") << ","
            << "\"haptic\":" << (c.audioHapticsEnabled ? "true" : "false") << ","
            << "\"hapticIntensity\":" << c.hapticIntensity << ","

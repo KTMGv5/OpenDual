@@ -17,7 +17,10 @@ namespace OpenDualHub
 
         private readonly TrayIconManager _trayManager = new();
         private readonly MicToastWindow _micToast = new();
+        private readonly VolumeHudWindow _volumeHud = new();
+        private GyroCalibratorWindow? _gyroCalibrator;
         private bool? _lastMicMuted = null;
+        private float? _lastMasterVolume = null;
         private QuickHudWindow? _quickHud;
         private bool _lastPsState = false;
         private bool _hasShownTrayBalloon = false;
@@ -547,6 +550,16 @@ namespace OpenDualHub
                             TxtControllerAudioLiveInfo.Text = $"Windows Master Volume: {volPct}% • Headphone Jack: {hp}";
                         }
 
+                        // Master Volume Transition & Floating HUD
+                        if (_lastMasterVolume.HasValue && Math.Abs(_lastMasterVolume.Value - t.MasterVolume) > 0.015f)
+                        {
+                            _volumeHud?.ShowVolume(t.MasterVolume, false, t.RenderDev);
+                        }
+                        _lastMasterVolume = t.MasterVolume;
+
+                        // Forward telemetry to interactive Gyro Calibrator
+                        _gyroCalibrator?.UpdateTelemetry(t);
+
                         // Live Dynamic Color Box for Rainbow / Breathing / Multi-color effects
                         if (t.Config != null && ColorPreviewBox != null && TxtHexCode != null)
                         {
@@ -1053,11 +1066,21 @@ namespace OpenDualHub
             float mouseSens = (float)SliderMouseSens.Value;
             float scrollSens = (float)SliderScrollSens.Value;
             bool tapClick = ChkTapClick.IsChecked == true;
+            bool volGesture = ChkTouchpadVolGesture?.IsChecked == true;
 
             if (TxtMouseSensVal != null) TxtMouseSensVal.Text = $"{mouseSens:F1}x";
             if (TxtScrollSensVal != null) TxtScrollSensVal.Text = $"{scrollSens:F1}x";
 
-            _ipc.SetTouchpad(enabled, mouseSens, scrollSens, tapClick);
+            _ipc.SetTouchpad(enabled, mouseSens, scrollSens, tapClick, volGesture);
+
+            if (!_isProfileApplying && _currentProfile != null)
+            {
+                _currentProfile.Config.Mouse = enabled;
+                _currentProfile.Config.MouseSens = mouseSens;
+                _currentProfile.Config.ScrollSens = scrollSens;
+                _currentProfile.Config.VolGesture = volGesture;
+                _profileManager.SaveProfile(_currentProfile);
+            }
         }
         #endregion
 
@@ -1346,6 +1369,32 @@ namespace OpenDualHub
             Gyro_Changed(sender, e);
             if (FooterStatus != null) FooterStatus.Text = "Gyro resting baseline recalibrated. Keep controller still for 1 second.";
         }
+
+        private void BtnLaunchGyroCalibrator_Click(object sender, RoutedEventArgs e)
+        {
+            if (_gyroCalibrator == null || !_gyroCalibrator.IsLoaded)
+            {
+                _gyroCalibrator = new GyroCalibratorWindow();
+                _gyroCalibrator.OnCalibrationApplied = HandleCalibrationApplied;
+            }
+            _gyroCalibrator.Show();
+            _gyroCalibrator.Activate();
+        }
+
+        private void HandleCalibrationApplied(float sensX, float sensY, float deadzone)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (SliderGyroSensX != null) SliderGyroSensX.Value = sensX;
+                if (SliderGyroSensY != null) SliderGyroSensY.Value = sensY;
+                if (SliderGyroDeadzone != null) SliderGyroDeadzone.Value = deadzone;
+                if (ChkEnableGyro != null) ChkEnableGyro.IsChecked = true;
+
+                Gyro_Changed(this, new RoutedEventArgs());
+
+                _trayManager.ShowNotification("OpenDual Gyro Calibration Applied", $"Aim calibration active: X={sensX:F2}x, Y={sensY:F2}x, Deadzone={deadzone:F2}");
+            });
+        }
         #endregion
 
         #region Game Profiles & Presets
@@ -1441,6 +1490,7 @@ namespace OpenDualHub
                 if (ChkTriggerKick != null) ChkTriggerKick.IsChecked = prof.Config.AudioTriggerKick;
                 if (SliderTriggerThreshold != null) SliderTriggerThreshold.Value = prof.Config.AudioTriggerThreshold;
                 if (ChkControllerSpeaker != null) ChkControllerSpeaker.IsChecked = prof.Config.SpeakerEnabled;
+                if (ChkTouchpadVolGesture != null) ChkTouchpadVolGesture.IsChecked = prof.Config.VolGesture;
 
                 static int UnmapTriggerIndex(int triggerMode) => triggerMode switch
                 {

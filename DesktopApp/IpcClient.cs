@@ -125,12 +125,13 @@ namespace OpenDualHub
             SendCommand(json);
         }
 
-        public void SetTouchpad(bool enabled, float mouseSens, float scrollSens, bool tapToClick)
+        public void SetTouchpad(bool enabled, float mouseSens, float scrollSens, bool tapToClick, bool touchpadVolumeGesture = true)
         {
             var json = $"{{\"mouseEnabled\":{(enabled ? "true" : "false")}," +
                        $"\"mouseSens\":{mouseSens.ToString(System.Globalization.CultureInfo.InvariantCulture)}," +
                        $"\"scrollSens\":{scrollSens.ToString(System.Globalization.CultureInfo.InvariantCulture)}," +
-                       $"\"tapToClick\":{(tapToClick ? "true" : "false")}}}";
+                       $"\"tapToClick\":{(tapToClick ? "true" : "false")}," +
+                       $"\"touchpadVolumeGesture\":{(touchpadVolumeGesture ? "true" : "false")}}}";
             SendCommand(json);
         }
 
@@ -183,7 +184,7 @@ namespace OpenDualHub
         {
             var inv = System.Globalization.CultureInfo.InvariantCulture;
             var json = $"{{\"ledR\":{cfg.R},\"ledG\":{cfg.G},\"ledB\":{cfg.B},\"rgbEffect\":{cfg.Effect},\"effectSpeed\":{cfg.Speed.ToString(inv)}," +
-                       $"\"mouseEnabled\":{(cfg.Mouse ? "true" : "false")},\"mouseSens\":{cfg.MouseSens.ToString(inv)},\"scrollSens\":{cfg.ScrollSens.ToString(inv)},\"syncMicMute\":{(cfg.SyncMic ? "true" : "false")}," +
+                       $"\"mouseEnabled\":{(cfg.Mouse ? "true" : "false")},\"mouseSens\":{cfg.MouseSens.ToString(inv)},\"scrollSens\":{cfg.ScrollSens.ToString(inv)},\"touchpadVolumeGesture\":{(cfg.VolGesture ? "true" : "false")},\"syncMicMute\":{(cfg.SyncMic ? "true" : "false")}," +
                        $"\"ltMode\":{cfg.LtMode},\"rtMode\":{cfg.RtMode}," +
                        $"\"audioHaptics\":{(cfg.Haptic ? "true" : "false")},\"hapticIntensity\":{cfg.HapticIntensity.ToString(inv)},\"hapticCutoff\":{cfg.HapticCutoff},\"hapticStereo\":{(cfg.HapticStereo ? "true" : "false")}," +
                        $"\"audioTriggerKick\":{(cfg.AudioTriggerKick ? "true" : "false")},\"audioTriggerThreshold\":{cfg.AudioTriggerThreshold.ToString(inv)},\"speakerEnabled\":{(cfg.SpeakerEnabled ? "true" : "false")}," +

@@ -41,6 +41,9 @@ namespace OpenDualHub.Models
         [JsonPropertyName("scrollSens")]
         public float ScrollSens { get; set; } = 1.0f;
 
+        [JsonPropertyName("volGesture")]
+        public bool VolGesture { get; set; } = true;
+
         [JsonPropertyName("syncMic")]
         public bool SyncMic { get; set; } = true;
 
