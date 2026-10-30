@@ -279,6 +279,8 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
        << "\"padBtn\":" << (s.touchpadBtn ? "true" : "false") << ","
        << "\"micBtn\":" << (s.micBtn ? "true" : "false") << ","
        << "\"micMuted\":" << (s.micMuted ? "true" : "false") << ","
+       << "\"hpConnected\":" << (s.headphonesConnected ? "true" : "false") << ","
+       << "\"masterVol\":" << s.masterVolume << ","
        << "\"fnL\":" << (s.fnLeft ? "true" : "false") << ","
        << "\"fnR\":" << (s.fnRight ? "true" : "false") << ","
        << "\"padL\":" << (s.paddleLeft ? "true" : "false") << ","

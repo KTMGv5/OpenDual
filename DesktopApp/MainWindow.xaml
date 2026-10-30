@@ -945,6 +945,7 @@
                                 </Grid>
                                 <StackPanel x:Name="PanelSpeakerDetails" Margin="0,12,0,0">
                                     <TextBlock x:Name="TxtControllerSpeakerDev" Text="Active Output: Default PC Audio" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                    <TextBlock x:Name="TxtControllerAudioLiveInfo" Text="Windows Master Volume: 100% • Headphone AUX: Disconnected" FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,4,0,0"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                         <Button x:Name="BtnToggleControllerSpeaker" Content="Route Game Audio to Controller" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" Margin="0,0,10,0" Click="BtnToggleControllerSpeaker_Click"/>
                                         <Button x:Name="BtnOpenSoundSettings" Content="Open Windows Sound Settings" Style="{StaticResource PrimaryBtnStyle}" Background="#2200F5D4" Foreground="{DynamicResource AccentSignature}" Click="BtnOpenSoundSettings_Click"/>
@@ -1374,7 +1375,7 @@
                                     <StackPanel Grid.Column="0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="Installed Version: " Foreground="{DynamicResource TextSecondary}"/>
-                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.4 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.5 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </StackPanel>
                                         <TextBlock x:Name="TxtUpdateStatus" Text="Up to date." FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,4,0,0"/>
                                     </StackPanel>
@@ -1413,7 +1414,7 @@
                     <TextBlock Text="  •  " FontSize="11" Foreground="{DynamicResource BorderColor}"/>
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
-                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.4" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.5" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>

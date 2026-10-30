@@ -119,6 +119,14 @@ void AudioSubsystem::Shutdown() {
         m_pCaptureDev->Release();
         m_pCaptureDev = nullptr;
     }
+    if (m_pRenderVolume) {
+        m_pRenderVolume->Release();
+        m_pRenderVolume = nullptr;
+    }
+    if (m_pRenderDev) {
+        m_pRenderDev->Release();
+        m_pRenderDev = nullptr;
+    }
     if (m_pEnum) {
         m_pEnum->Release();
         m_pEnum = nullptr;
@@ -136,6 +144,14 @@ bool AudioSubsystem::RefreshDevices() {
     if (m_pCaptureDev) {
         m_pCaptureDev->Release();
         m_pCaptureDev = nullptr;
+    }
+    if (m_pRenderVolume) {
+        m_pRenderVolume->Release();
+        m_pRenderVolume = nullptr;
+    }
+    if (m_pRenderDev) {
+        m_pRenderDev->Release();
+        m_pRenderDev = nullptr;
     }
 
     {
@@ -201,29 +217,82 @@ bool AudioSubsystem::RefreshDevices() {
         }
     }
 
-    // Check Render device name
-    IMMDevice* pRender = nullptr;
-    if (SUCCEEDED(m_pEnum->GetDefaultAudioEndpoint(eRender, eConsole, &pRender)) && pRender) {
-        IPropertyStore* pStore = nullptr;
-        if (SUCCEEDED(pRender->OpenPropertyStore(STGM_READ, &pStore))) {
-            PROPVARIANT var;
-            PropVariantInit(&var);
-            if (SUCCEEDED(pStore->GetValue(PKEY_Device_FriendlyName, &var))) {
-                if (var.pwszVal) {
+    // Locate DualSense Render device or system default render endpoint
+    IMMDeviceCollection* pRenderCol = nullptr;
+    if (SUCCEEDED(m_pEnum->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pRenderCol))) {
+        UINT count = 0;
+        pRenderCol->GetCount(&count);
+        for (UINT i = 0; i < count; i++) {
+            IMMDevice* pDev = nullptr;
+            if (SUCCEEDED(pRenderCol->Item(i, &pDev))) {
+                IPropertyStore* pStore = nullptr;
+                if (SUCCEEDED(pDev->OpenPropertyStore(STGM_READ, &pStore))) {
+                    PROPVARIANT var;
+                    PropVariantInit(&var);
+                    if (SUCCEEDED(pStore->GetValue(PKEY_Device_FriendlyName, &var)) && var.pwszVal) {
+                        std::wstring name = var.pwszVal;
+                        if (name.find(L"DualSense") != std::wstring::npos || name.find(L"Wireless Controller") != std::wstring::npos) {
+                            m_hasDualSenseAudio = true;
+                            std::lock_guard<std::mutex> lock(m_hapticMutex);
+                            m_renderDeviceName = name;
+                            m_pRenderDev = pDev;
+                            m_pRenderDev->AddRef();
+                            PropVariantClear(&var);
+                            pStore->Release();
+                            pDev->Release();
+                            break;
+                        }
+                    }
+                    PropVariantClear(&var);
+                    pStore->Release();
+                }
+                pDev->Release();
+            }
+        }
+        pRenderCol->Release();
+    }
+
+    // Fall back to system default render endpoint if no specific controller render endpoint found
+    if (!m_pRenderDev) {
+        m_pEnum->GetDefaultAudioEndpoint(eRender, eMultimedia, &m_pRenderDev);
+    }
+
+    if (m_pRenderDev) {
+        m_pRenderDev->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)&m_pRenderVolume);
+        if (m_renderDeviceName.empty()) {
+            IPropertyStore* pStore = nullptr;
+            if (SUCCEEDED(m_pRenderDev->OpenPropertyStore(STGM_READ, &pStore))) {
+                PROPVARIANT var;
+                PropVariantInit(&var);
+                if (SUCCEEDED(pStore->GetValue(PKEY_Device_FriendlyName, &var)) && var.pwszVal) {
                     std::lock_guard<std::mutex> lock(m_hapticMutex);
                     m_renderDeviceName = var.pwszVal;
                 }
                 PropVariantClear(&var);
+                pStore->Release();
             }
-            pStore->Release();
         }
-        pRender->Release();
     }
-
-
 
     m_currentMicMuted = IsSystemMicMuted();
     return true;
+}
+
+float AudioSubsystem::GetMasterVolumeScalar() {
+    if (m_defaultDeviceChanged.exchange(false)) {
+        RefreshDevices();
+    }
+    std::lock_guard<std::mutex> lock(m_hapticMutex);
+    if (!m_pRenderVolume) return 1.0f;
+    BOOL muted = FALSE;
+    if (SUCCEEDED(m_pRenderVolume->GetMute(&muted)) && muted) {
+        return 0.0f;
+    }
+    float vol = 1.0f;
+    if (SUCCEEDED(m_pRenderVolume->GetMasterVolumeLevelScalar(&vol))) {
+        return std::clamp(vol, 0.0f, 1.0f);
+    }
+    return 1.0f;
 }
 
 bool AudioSubsystem::IsSystemMicMuted() {

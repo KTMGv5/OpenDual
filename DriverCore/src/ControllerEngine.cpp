@@ -458,12 +458,16 @@ void ControllerEngine::OutputThread() {
                 activeCfg.ledB = 0;
             }
 
+            // Retrieve live Windows Master Volume for hardware DAC attenuation
+            float masterVol = m_audio.GetMasterVolumeScalar();
+            state.masterVolume = masterVol;
+
             if (state.model == ControllerModel::DualSense || state.model == ControllerModel::DualSenseEdge) {
                 if (state.connection == ConnectionType::USB) {
-                    DualSenseProtocol::BuildOutputReportUSB(outBuf, sizeof(outBuf), activeCfg, lRumble, rRumble, micMuted);
+                    DualSenseProtocol::BuildOutputReportUSB(outBuf, sizeof(outBuf), activeCfg, lRumble, rRumble, micMuted, masterVol, state.headphonesConnected);
                     m_device.WriteReport(outBuf, 48, 10);
                 } else {
-                    DualSenseProtocol::BuildOutputReportBT(outBuf, sizeof(outBuf), activeCfg, lRumble, rRumble, micMuted);
+                    DualSenseProtocol::BuildOutputReportBT(outBuf, sizeof(outBuf), activeCfg, lRumble, rRumble, micMuted, masterVol, state.headphonesConnected);
                     m_device.WriteReport(outBuf, 78, 10);
                 }
             } else if (state.model == ControllerModel::DualShock4_v1 || state.model == ControllerModel::DualShock4_v2) {

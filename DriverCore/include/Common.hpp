@@ -167,6 +167,10 @@ struct ControllerState {
     // Mic hardware status
     bool micMuted = false;
 
+    // Audio jack status & Windows master volume
+    bool headphonesConnected = false;
+    float masterVolume = 1.0f;
+
     // Audio-Reactive Haptics live output levels (0..255)
     uint8_t hapticMotorL = 0;
     uint8_t hapticMotorR = 0;

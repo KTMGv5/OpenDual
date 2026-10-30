@@ -115,6 +115,9 @@ public:
     // Set system microphone mute state
     void SetSystemMicMute(bool mute);
 
+    // Windows Master Volume sync (IAudioEndpointVolume)
+    float GetMasterVolumeScalar();
+
     // Audio-Reactive Haptics
     bool StartLoopback();
     void StopLoopback();
@@ -141,6 +144,8 @@ private:
     IMMDeviceEnumerator* m_pEnum = nullptr;
     IMMDevice* m_pCaptureDev = nullptr;
     IAudioEndpointVolume* m_pCaptureVolume = nullptr;
+    IMMDevice* m_pRenderDev = nullptr;
+    IAudioEndpointVolume* m_pRenderVolume = nullptr;
 
     bool m_initialized = false;
     bool m_hasDualSenseAudio = false;

@@ -104,6 +104,9 @@ public:
         state.batteryPercent = (batRaw >= 10) ? 100 : batRaw * 10;
         state.isCharging = (p[53] & 0x10) != 0;
 
+        // Headphone Jack Detection: status[1] bit 0 (DS_STATUS1_HP_DETECT)
+        state.headphonesConnected = (p[54] & 0x01) != 0;
+
         return true;
     }
 
@@ -143,7 +146,7 @@ public:
         }
     }
 
-    static void BuildOutputReportUSB(uint8_t* out, size_t outLen, const ControllerConfig& config, uint8_t leftRumble, uint8_t rightRumble, bool micMuted) {
+    static void BuildOutputReportUSB(uint8_t* out, size_t outLen, const ControllerConfig& config, uint8_t leftRumble, uint8_t rightRumble, bool micMuted, float masterVol = 1.0f, bool hpConnected = false) {
         if (outLen < 48) return;
         std::memset(out, 0, outLen);
 
@@ -170,13 +173,25 @@ public:
         out[3] = rightRumble;
         out[4] = leftRumble;
 
-        // Headphone Volume (0..127): Set to max (0x7F)
-        out[5] = 0x7F;
-        // Speaker Volume (0..255): 100% when enabled, 0 when disabled
-        out[6] = config.speakerEnabled ? 0xFF : 0x00;
+        // Hardware volume scaling mapped from Windows master volume (0.0 .. 1.0f)
+        uint8_t hpVol = (uint8_t)std::clamp((int)(masterVol * 127.0f), 0, 127);
+        uint8_t spkVol = (uint8_t)std::clamp((int)(masterVol * 255.0f), 0, 255);
 
-        // Audio Routing Flags: Bits 5..4 = Output Path (0x30 = Speaker + Headphone, 0x10 = Headphone only)
-        out[8] = config.speakerEnabled ? 0x30 : 0x10;
+        if (config.speakerEnabled) {
+            // Speaker Output Enabled:
+            // Route Right audio channel to internal mono speaker (0x30 = X_X_R: headphone DAC muted)
+            out[8] = 0x30;
+            // Mute headphone DAC volume so analog headphone load does not sag the shared internal power rail
+            out[5] = 0x00;
+            // Calibrate gain when aux unplugged vs plugged to prevent perceived volume jump
+            out[6] = hpConnected ? spkVol : (uint8_t)(spkVol * 0.82f);
+        } else {
+            // Headphone Output:
+            // Route pristine stereo audio to 3.5mm jack (0x00 = L_R_X: stereo headphones, speaker disabled)
+            out[8] = 0x00;
+            out[5] = hpVol;
+            out[6] = 0x00;
+        }
 
         // Mic Mute LED (0=off, 1=solid amber, 2=pulse)
         out[9] = micMuted ? 0x01 : 0x00;
@@ -200,7 +215,7 @@ public:
         out[47] = config.ledB;
     }
 
-    static void BuildOutputReportBT(uint8_t* out, size_t outLen, const ControllerConfig& config, uint8_t leftRumble, uint8_t rightRumble, bool micMuted) {
+    static void BuildOutputReportBT(uint8_t* out, size_t outLen, const ControllerConfig& config, uint8_t leftRumble, uint8_t rightRumble, bool micMuted, float masterVol = 1.0f, bool hpConnected = false) {
         if (outLen < 78) return;
         std::memset(out, 0, outLen);
 
@@ -213,9 +228,18 @@ public:
         out[4] = rightRumble;
         out[5] = leftRumble;
 
-        out[6] = 0x7F; // Headphone volume
-        out[7] = config.speakerEnabled ? 0xFF : 0x00; // Speaker volume
-        out[9] = config.speakerEnabled ? 0x30 : 0x10; // Audio routing: 0x30 = speaker active, 0x10 = headphone only
+        uint8_t hpVol = (uint8_t)std::clamp((int)(masterVol * 127.0f), 0, 127);
+        uint8_t spkVol = (uint8_t)std::clamp((int)(masterVol * 255.0f), 0, 255);
+
+        if (config.speakerEnabled) {
+            out[9] = 0x30;
+            out[6] = 0x00;
+            out[7] = hpConnected ? spkVol : (uint8_t)(spkVol * 0.82f);
+        } else {
+            out[9] = 0x00;
+            out[6] = hpVol;
+            out[7] = 0x00;
+        }
 
         out[10] = micMuted ? 0x01 : 0x00;
 

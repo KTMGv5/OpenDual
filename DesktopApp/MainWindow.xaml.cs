@@ -540,6 +540,13 @@ namespace OpenDualHub
                             }
                         }
 
+                        if (TxtControllerAudioLiveInfo != null)
+                        {
+                            int volPct = (int)Math.Round(t.MasterVolume * 100f);
+                            string hp = t.HeadphonesConnected ? "Connected (3.5mm AUX)" : "Unplugged";
+                            TxtControllerAudioLiveInfo.Text = $"Windows Master Volume: {volPct}% • Headphone Jack: {hp}";
+                        }
+
                         // Live Dynamic Color Box for Rainbow / Breathing / Multi-color effects
                         if (t.Config != null && ColorPreviewBox != null && TxtHexCode != null)
                         {

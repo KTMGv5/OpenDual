@@ -220,6 +220,12 @@ namespace OpenDualHub.Models
         [JsonPropertyName("micMuted")]
         public bool MicMuted { get; set; }
 
+        [JsonPropertyName("hpConnected")]
+        public bool HeadphonesConnected { get; set; }
+
+        [JsonPropertyName("masterVol")]
+        public float MasterVolume { get; set; } = 1.0f;
+
         [JsonPropertyName("fnL")]
         public bool FnLeft { get; set; }
 

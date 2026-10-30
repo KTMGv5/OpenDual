@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.6.4",
-    [string]$ReleaseName = "OpenDual v1.6.4 - 6-Axis Gyro Aiming Overhaul, DualSense Speaker Output, and Mic Mute Toast",
+    [string]$TagName = "v1.6.5",
+    [string]$ReleaseName = "OpenDual v1.6.5 - Windows Master Volume Sync and Headphone Hotplug Stabilization",
     [string]$DistDir = "dist"
 )
 
@@ -46,42 +46,33 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.6.4
+## Highlights in OpenDual v1.6.5
 
-OpenDual v1.6.4 introduces a complete 6-Axis Gyro Aiming Overhaul, native DualSense physical speaker audio output with hardware control, on-screen Microphone Mute / Unmute OSD toast notifications, and refined audio-reactive haptics defaults.
+OpenDual v1.6.5 brings full hardware audio volume synchronization with the Windows master audio slider, seamless headphone hotplug detection, and gain stabilization to eliminate sudden volume shifts when disconnecting 3.5mm headphones.
 
 ---
 
-### What's New and Improved in v1.6.4
+### What's New and Improved in v1.6.5
 
-* **Complete 6-Axis Gyro Aiming Overhaul**:
-  * Precision Gyroscope motion aiming supporting both Mouse Emulation and Right Stick Emulation.
-  * Coordinate Space selection: Local (Standard Controller), Player Space (natural tilt aiming), and World Space.
-  * Fixed inversion and axis mapping across all display resolutions.
-  * Activation Modes: Always On, Hold to Aim (L2 ADS / Touchpad / R1 / L1), Inverted, and Toggle.
-  * Real-time calibration and hardware anti-drift rejection filter.
+* **Windows Master Volume Hardware DAC Synchronization**:
+  * DualSense hardware audio volume is now bound to the Windows master volume level via WASAPI `IAudioEndpointVolume`.
+  * Adjusting volume via the Windows taskbar slider, multimedia keyboard keys, or system mixer smoothly scales both the internal speaker and 3.5mm headphone audio output in real time.
+  * Eliminates the limitation where audio could only be adjusted within individual media applications.
 
-* **DualSense Hardware Internal Speaker Route**:
-  * Route game and voice audio directly to the DualSense physical internal speaker with hardware volume control.
-  * Automatically sets DualSense HID flags (valid_flag0 0x20/0x80, audio flags 0x02) to unmute the internal speaker hardware.
-  * Seamless one-click audio device switching between PC speakers and controller speaker.
+* **Headphone Hotplug Detection & Gain Stabilization**:
+  * Real-time 3.5mm audio jack insertion and removal detection via controller status bitfield (`DS_STATUS1_HP_DETECT`).
+  * When controller speaker output is active, the headphone DAC stage is cleanly muted to prevent current draw across shared controller power rails.
+  * Gain normalization prevents the controller speaker from unexpectedly jumping in volume when the 3.5mm AUX headphone cable is detached.
 
-* **On-Screen Mic Muted / Unmuted Toast Overlay**:
-  * OpenDual signature dark glass floating OSD pill with drop shadow and smooth fade animations.
-  * Instant visual feedback when pressing the DualSense hardware mic mute button (Amber glowing border for Muted, Neon Green for Unmuted).
-  * Runs as a non-activating overlay that never steals window or game focus.
+* **Pristine Stereo Headphone Audio**:
+  * Restored bit-accurate stereo headphone routing mode (0x00 `L_R_X`) when controller speaker output is disabled.
 
-* **Refined Audio-Reactive Haptics & Recoil Defaults**:
-  * Audio haptics disabled by default to prevent unwanted rumble.
-  * Default intensity set to sweet-spot 30%, 40 Hz sub-bass cutoff filter, and 20% recoil transient threshold.
-  * Default profile tuned for PlayStation 5 balanced experience with custom rainbow RGB.
+* **Live Audio Dashboard Telemetry**:
+  * OpenDual Hub now presents real-time Windows master volume percentage and 3.5mm AUX connection state in the Controller Speaker panel.
 
-* **Streamlined Distribution & Standalone Installer**:
-  * Single-file OpenDualSetup.exe has the 1000Hz C++20 driver engine, Desktop Hub, and assets embedded directly inside it for true 1-click standalone installation.
-  * Automatically registers OpenDualDriver to run on Windows startup as a background driver service.
-  * Clean uninstaller wipes all binaries, shortcuts, registry keys, and AppData configuration directories with zero leftover batch files.
-  * Full signed suite with standalone executables, self-contained setup, and portable zip.
-  * MSVC C++20 and .NET 10 compilation with Authenticode digital signatures.
+* **Streamlined Distribution Suite**:
+  * All binaries signed with Authenticode certificates.
+  * Available as standalone 1-click installer (`OpenDualSetup.exe`), standalone executables, and portable bundle (`OpenDual-v1.6.5.zip`).
 
 ---
 
@@ -89,7 +80,7 @@ OpenDual v1.6.4 introduces a complete 6-Axis Gyro Aiming Overhaul, native DualSe
 * OpenDualSetup.exe - Complete standalone installer and uninstaller suite (Recommended)
 * OpenDualHub.exe - Standalone GUI Controller Hub executable
 * OpenDualDriver.exe - Standalone 1000Hz C++20 Direct HID Driver engine
-* OpenDual-v1.6.4.zip - Portable bundle including all binaries and tools
+* OpenDual-v1.6.5.zip - Portable bundle including all binaries and tools
 "@
 
 # 3. Check if release already exists
