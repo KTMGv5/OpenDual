@@ -60,12 +60,8 @@ mkdir dist\Assets
 
 copy /y build_core\Release\OpenDualDriver.exe dist\
 copy /y DesktopApp\bin\Release\net10.0-windows\win-x64\publish\OpenDualHub.exe dist\
-copy /y DesktopApp\bin\Release\net10.0-windows\win-x64\publish\OpenDualHub.pdb dist\
 copy /y Installer\bin\Release\net10.0-windows\win-x64\publish\OpenDualSetup.exe dist\
-copy /y Installer\bin\Release\net10.0-windows\win-x64\publish\OpenDualSetup.exe dist\OpenDualUninstaller.exe
 copy /y DesktopApp\Assets\* dist\Assets\
-copy /y setup.bat dist\
-copy /y uninstall.bat dist\
 
 echo [5/6] Signing Authenticode binaries in .\dist\...
 powershell -NoProfile -ExecutionPolicy Bypass -File "tools\sign_binaries.ps1" -TargetDir "dist"

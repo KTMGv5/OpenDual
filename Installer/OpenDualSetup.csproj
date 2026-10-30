@@ -12,4 +12,19 @@
     <FileVersion>1.6.4.0</FileVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\build_core\Release\OpenDualDriver.exe" Condition="Exists('..\build_core\Release\OpenDualDriver.exe')">
+      <LogicalName>Embedded.OpenDualDriver.exe</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\DesktopApp\bin\Release\net10.0-windows\win-x64\publish\OpenDualHub.exe" Condition="Exists('..\DesktopApp\bin\Release\net10.0-windows\win-x64\publish\OpenDualHub.exe')">
+      <LogicalName>Embedded.OpenDualHub.exe</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\DesktopApp\Assets\app.ico" Condition="Exists('..\DesktopApp\Assets\app.ico')">
+      <LogicalName>Embedded.app.ico</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\DesktopApp\Assets\logo.png" Condition="Exists('..\DesktopApp\Assets\logo.png')">
+      <LogicalName>Embedded.logo.png</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

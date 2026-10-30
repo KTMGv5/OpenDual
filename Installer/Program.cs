@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Windows;
 using Microsoft.Win32;
 
@@ -18,17 +19,37 @@ namespace OpenDualSetup
         [STAThread]
         public static void Main(string[] args)
         {
-            bool isUninstall = args.Any(a => a.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)) ||
-                               Process.GetCurrentProcess().ProcessName.Contains("uninstall", StringComparison.OrdinalIgnoreCase);
             bool isSilent = args.Any(a => a.Equals("--silent", StringComparison.OrdinalIgnoreCase) ||
                                           a.Equals("--quiet", StringComparison.OrdinalIgnoreCase) ||
                                           a.Equals("-q", StringComparison.OrdinalIgnoreCase));
 
-            string installDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "OpenDual");
+            string installDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Programs", "OpenDual");
+
+            string appDataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "OpenDual");
+
+            // 1. Check if running detached cleanup from temp
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i].Equals("--cleanup-from-temp", StringComparison.OrdinalIgnoreCase) && i + 2 < args.Length)
+                {
+                    string targetToWipe = args[i + 1];
+                    string appDataToWipe = args[i + 2];
+                    RunTempCleanup(targetToWipe, appDataToWipe, isSilent);
+                    return;
+                }
+            }
+
+            // 2. Check if uninstallation request
+            bool isUninstall = args.Any(a => a.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)) ||
+                               Process.GetCurrentProcess().ProcessName.Contains("uninstall", StringComparison.OrdinalIgnoreCase);
 
             if (isUninstall)
             {
-                RunUninstallation(installDir, isSilent);
+                RunUninstallation(installDir, appDataDir, isSilent);
             }
             else
             {
@@ -43,7 +64,7 @@ namespace OpenDualSetup
                 if (!silent)
                 {
                     var prompt = MessageBox.Show(
-                        $"Welcome to {AppFullName} Setup!\n\nThis will install OpenDual into:\n{targetDir}\n\n• High-performance 1000Hz direct HID driver\n• Precision touchpad mouse & audio controls\n• Full system theme & accent color integration\n• Registered in Windows Installed Apps\n\nDo you want to continue?",
+                        $"Welcome to {AppFullName} Setup!\n\nThis will install OpenDual into:\n{targetDir}\n\n- High-performance 1000Hz direct HID driver\n- Precision touchpad mouse & audio controls\n- DualSense 6-axis gyro motion aiming\n- Registered in Windows Installed Apps\n- Starts automatically with Windows\n\nDo you want to continue?",
                         "OpenDual Setup",
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Information);
@@ -51,47 +72,35 @@ namespace OpenDualSetup
                     if (prompt != MessageBoxResult.Yes) return;
                 }
 
-                // 1. Kill any existing instances
+                // 1. Kill any existing running instances
                 StopProcesses();
 
-                // 2. Prepare target directory
+                // 2. Prepare target directories
                 if (!Directory.Exists(targetDir))
                 {
                     Directory.CreateDirectory(targetDir);
                 }
 
+                string assetsDir = Path.Combine(targetDir, "Assets");
+                if (!Directory.Exists(assetsDir))
+                {
+                    Directory.CreateDirectory(assetsDir);
+                }
+
                 string sourceDir = AppDomain.CurrentDomain.BaseDirectory;
 
-                // 3. Copy files to target
-                string[] filesToCopy = new string[]
-                {
-                    "OpenDualHub.exe",
-                    "OpenDualHub.dll",
-                    "OpenDualHub.deps.json",
-                    "OpenDualHub.runtimeconfig.json",
-                    "OpenDualHub.pdb",
-                    "OpenDualDriver.exe"
-                };
+                // 3. Extract Embedded Binaries and Assets (or fallback to adjacent files)
+                string driverExe = Path.Combine(targetDir, "OpenDualDriver.exe");
+                string hubExe = Path.Combine(targetDir, "OpenDualHub.exe");
+                string icoDst = Path.Combine(assetsDir, "app.ico");
+                string logoDst = Path.Combine(assetsDir, "logo.png");
 
-                foreach (var file in filesToCopy)
-                {
-                    string src = Path.Combine(sourceDir, file);
-                    SafeCopyFile(src, Path.Combine(targetDir, file));
-                }
+                ExtractResource("Embedded.OpenDualDriver.exe", driverExe, Path.Combine(sourceDir, "OpenDualDriver.exe"));
+                ExtractResource("Embedded.OpenDualHub.exe", hubExe, Path.Combine(sourceDir, "OpenDualHub.exe"));
+                ExtractResource("Embedded.app.ico", icoDst, Path.Combine(sourceDir, "Assets", "app.ico"));
+                ExtractResource("Embedded.logo.png", logoDst, Path.Combine(sourceDir, "Assets", "logo.png"));
 
-                // Copy Assets directory if present
-                string srcAssets = Path.Combine(sourceDir, "Assets");
-                string dstAssets = Path.Combine(targetDir, "Assets");
-                if (Directory.Exists(srcAssets))
-                {
-                    if (!Directory.Exists(dstAssets)) Directory.CreateDirectory(dstAssets);
-                    foreach (var f in Directory.GetFiles(srcAssets))
-                    {
-                        SafeCopyFile(f, Path.Combine(dstAssets, Path.GetFileName(f)));
-                    }
-                }
-
-                // Copy self as OpenDualUninstaller.exe into target
+                // 4. Copy self as OpenDualUninstaller.exe into target
                 string currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? "";
                 string uninstallerDst = Path.Combine(targetDir, "OpenDualUninstaller.exe");
                 if (File.Exists(currentExe))
@@ -99,26 +108,22 @@ namespace OpenDualSetup
                     try { SafeCopyFile(currentExe, uninstallerDst); } catch { }
                 }
 
-                // Create standalone uninstall.bat script as backup uninstaller
-                CreateUninstallScript(targetDir);
+                // 5. Ensure ViGEmBus driver is installed for Xbox 360 virtual gamepad emulation
+                EnsureViGEmBusInstalled();
 
-                // 4. Calculate total size in KB
+                // 6. Register in Windows Registry (Add/Remove Programs, App Paths, Run Auto-Start)
                 long totalBytes = Directory.GetFiles(targetDir, "*.*", SearchOption.AllDirectories)
                     .Select(f => new FileInfo(f).Length).Sum();
                 int estimatedSizeKb = (int)(totalBytes / 1024);
 
-                // 5. Register in Windows Registry (HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenDual)
                 RegisterInRegistry(targetDir, estimatedSizeKb);
-
-                // 6. Register App Paths for Win+R / cmd "opendual" launch
                 RegisterAppPaths(targetDir);
+                RegisterAutoStart(driverExe);
 
-                // 7. Create Shortcuts (Start Menu & Desktop)
-                string mainExe = Path.Combine(targetDir, "OpenDualHub.exe");
-                string driverExe = Path.Combine(targetDir, "OpenDualDriver.exe");
-                CreateShortcuts(mainExe);
+                // 7. Create Start Menu and Desktop Shortcuts
+                CreateShortcuts(hubExe);
 
-                // 8. Relaunch OpenDual Driver and Hub
+                // 8. Launch OpenDual Driver Service (hidden) and Hub
                 if (File.Exists(driverExe))
                 {
                     try
@@ -134,13 +139,13 @@ namespace OpenDualSetup
                     catch { }
                 }
 
-                if (File.Exists(mainExe))
+                if (File.Exists(hubExe))
                 {
                     try
                     {
                         Process.Start(new ProcessStartInfo
                         {
-                            FileName = mainExe,
+                            FileName = hubExe,
                             WorkingDirectory = targetDir,
                             UseShellExecute = true
                         });
@@ -151,7 +156,7 @@ namespace OpenDualSetup
                 if (!silent)
                 {
                     MessageBox.Show(
-                        $"{AppFullName} has been installed and updated successfully!\n\nAll previous driver instances were cleanly replaced and the suite has been restarted.\nShortcuts created on Desktop and Start Menu.",
+                        $"{AppFullName} has been installed and started successfully!\n\nDriver service is running and configured to start with Windows.\nShortcuts created on Desktop and Start Menu.",
                         "OpenDual Setup",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
@@ -166,14 +171,14 @@ namespace OpenDualSetup
             }
         }
 
-        private static void RunUninstallation(string targetDir, bool silent)
+        private static void RunUninstallation(string targetDir, string appDataDir, bool silent)
         {
             try
             {
                 if (!silent)
                 {
                     var confirm = MessageBox.Show(
-                        $"Are you sure you want to completely uninstall {AppFullName} from your system?",
+                        $"Are you sure you want to completely uninstall {AppFullName} from your system?\n\nThis will remove all installed binaries, driver services, shortcuts, and AppData settings.",
                         "OpenDual Uninstaller",
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Question);
@@ -181,31 +186,89 @@ namespace OpenDualSetup
                     if (confirm != MessageBoxResult.Yes) return;
                 }
 
+                string currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                bool isRunningFromTarget = !string.IsNullOrEmpty(currentExe) &&
+                                          currentExe.StartsWith(targetDir, StringComparison.OrdinalIgnoreCase);
+
+                if (isRunningFromTarget)
+                {
+                    // Copy self to %TEMP% and relaunch detached so targetDir is not locked
+                    string tempExe = Path.Combine(Path.GetTempPath(), "OpenDualUninstaller.exe");
+                    try
+                    {
+                        File.Copy(currentExe, tempExe, true);
+                    }
+                    catch { }
+
+                    string silentArg = silent ? "--silent" : "";
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = tempExe,
+                        Arguments = $"--cleanup-from-temp \"{targetDir}\" \"{appDataDir}\" {silentArg}",
+                        UseShellExecute = false
+                    });
+
+                    // Exit immediately to release file lock
+                    Environment.Exit(0);
+                    return;
+                }
+
+                // If not running from target (e.g. running from temp or standalone), run cleanup directly
+                RunTempCleanup(targetDir, appDataDir, silent);
+            }
+            catch (Exception ex)
+            {
+                if (!silent)
+                {
+                    MessageBox.Show($"Uninstallation failed: {ex.Message}", "OpenDual Uninstaller Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private static void RunTempCleanup(string targetDir, string appDataDir, bool silent)
+        {
+            try
+            {
+                // Brief pause to allow the launching uninstaller process to fully exit
+                Thread.Sleep(600);
+
                 // 1. Terminate running driver and hub
                 StopProcesses();
 
                 // 2. Remove Shortcuts
                 RemoveShortcuts();
 
-                // 3. Remove Registry entries
+                // 3. Remove Registry entries (Add/Remove programs, App Paths, Run auto-start)
                 UnregisterFromRegistry();
 
-                // 4. Remove installation directory via detached self-deleting batch
-                string tempBatch = Path.Combine(Path.GetTempPath(), "opendual_cleanup.bat");
-                string cleanupScript =
-                    "@echo off\r\n" +
-                    "timeout /t 1 /nobreak >nul\r\n" +
-                    $"rmdir /s /q \"{targetDir}\"\r\n" +
-                    $"del /f /q \"{tempBatch}\"\r\n";
-                File.WriteAllText(tempBatch, cleanupScript);
-
-                Process.Start(new ProcessStartInfo
+                // 4. Delete Installation directory cleanly
+                if (Directory.Exists(targetDir))
                 {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c \"{tempBatch}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                });
+                    for (int attempt = 1; attempt <= 6; attempt++)
+                    {
+                        try
+                        {
+                            Directory.Delete(targetDir, true);
+                            break;
+                        }
+                        catch (IOException)
+                        {
+                            StopProcesses();
+                            Thread.Sleep(300 * attempt);
+                        }
+                        catch { break; }
+                    }
+                }
+
+                // 5. Delete AppData settings and profiles folder cleanly
+                if (Directory.Exists(appDataDir))
+                {
+                    try
+                    {
+                        Directory.Delete(appDataDir, true);
+                    }
+                    catch { }
+                }
 
                 if (!silent)
                 {
@@ -220,16 +283,92 @@ namespace OpenDualSetup
             {
                 if (!silent)
                 {
-                    MessageBox.Show($"Uninstallation failed: {ex.Message}", "OpenDual Uninstaller Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Cleanup failed: {ex.Message}", "OpenDual Uninstaller Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private static bool ExtractResource(string resourceName, string targetPath, string fallbackSource)
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                using var stream = assembly.GetManifestResourceStream(resourceName);
+                if (stream != null && stream.Length > 0)
+                {
+                    string? dir = Path.GetDirectoryName(targetPath);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+
+                    using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                    stream.CopyTo(fs);
+                    return true;
+                }
+            }
+            catch { }
+
+            // Fallback to disk copy if running before resource embedding
+            if (File.Exists(fallbackSource))
+            {
+                try
+                {
+                    SafeCopyFile(fallbackSource, targetPath);
+                    return true;
+                }
+                catch { }
+            }
+
+            return false;
+        }
+
+        private static void EnsureViGEmBusInstalled()
+        {
+            try
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\ViGEmBus");
+                if (key != null) return; // Already installed and operational
+
+                // Attempt 1: winget silent install
+                var wingetPsi = new ProcessStartInfo
+                {
+                    FileName = "winget.exe",
+                    Arguments = "install --id ViGEm.ViGEmBus --accept-package-agreements --accept-source-agreements -h",
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+                using var wingetProc = Process.Start(wingetPsi);
+                wingetProc?.WaitForExit(35000);
+
+                using var verifyKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\ViGEmBus");
+                if (verifyKey != null) return;
+
+                // Attempt 2: Download official ViGEmBus installer and run silently
+                string tempInstaller = Path.Combine(Path.GetTempPath(), "ViGEmBus_Setup.exe");
+                using var client = new System.Net.Http.HttpClient();
+                var data = client.GetByteArrayAsync("https://github.com/nefarius/ViGEmBus/releases/download/v1.22.0/ViGEmBus_1.22.0_x64_x86_arm64.exe").GetAwaiter().GetResult();
+                File.WriteAllBytes(tempInstaller, data);
+
+                var instPsi = new ProcessStartInfo
+                {
+                    FileName = tempInstaller,
+                    Arguments = "/quiet /norestart",
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                using var instProc = Process.Start(instPsi);
+                instProc?.WaitForExit(35000);
+
+                try { File.Delete(tempInstaller); } catch { }
+            }
+            catch { }
         }
 
         private static void StopProcesses()
         {
             string[] procNames = new string[] { "OpenDualDriver", "OpenDualHub" };
-            
-            // 1. Force terminate via Process API
+
             foreach (var name in procNames)
             {
                 foreach (var p in Process.GetProcessesByName(name))
@@ -243,7 +382,6 @@ namespace OpenDualSetup
                 }
             }
 
-            // 2. Force terminate via Windows taskkill command line
             foreach (var name in procNames)
             {
                 try
@@ -262,7 +400,7 @@ namespace OpenDualSetup
                 catch { }
             }
 
-            System.Threading.Thread.Sleep(300);
+            Thread.Sleep(300);
         }
 
         private static void SafeCopyFile(string src, string dst)
@@ -280,7 +418,7 @@ namespace OpenDualSetup
                 {
                     if (attempt == 6) throw;
                     StopProcesses();
-                    System.Threading.Thread.Sleep(200 * attempt);
+                    Thread.Sleep(200 * attempt);
                 }
             }
         }
@@ -305,7 +443,7 @@ namespace OpenDualSetup
             key.SetValue("NoModify", 1, RegistryValueKind.DWord);
             key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
             key.SetValue("Comments", "High-Performance Direct HID PlayStation Controller Driver & Desktop Suite");
-            key.SetValue("URLInfoAbout", "https://github.com/OpenDual/OpenDual");
+            key.SetValue("URLInfoAbout", "https://github.com/KTMGv5/OpenDual");
         }
 
         private static void RegisterAppPaths(string installDir)
@@ -324,6 +462,19 @@ namespace OpenDualSetup
             }
         }
 
+        private static void RegisterAutoStart(string driverExe)
+        {
+            try
+            {
+                using var runKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
+                if (runKey != null && File.Exists(driverExe))
+                {
+                    runKey.SetValue("OpenDualDriver", $"\"{driverExe}\"");
+                }
+            }
+            catch { }
+        }
+
         private static void UnregisterFromRegistry()
         {
             try
@@ -336,6 +487,13 @@ namespace OpenDualSetup
             {
                 Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\App Paths\OpenDualHub.exe", false);
                 Registry.CurrentUser.DeleteSubKeyTree(@"Software\Microsoft\Windows\CurrentVersion\App Paths\OpenDual.exe", false);
+            }
+            catch { }
+
+            try
+            {
+                using var runKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
+                runKey?.DeleteValue("OpenDualDriver", false);
             }
             catch { }
         }
@@ -403,31 +561,6 @@ namespace OpenDualSetup
                 shortcutType.InvokeMember("Save", BindingFlags.InvokeMethod, null, shortcut, null);
             }
             catch { }
-        }
-
-        private static void CreateUninstallScript(string installDir)
-        {
-            string uninstallBat = Path.Combine(installDir, "uninstall.bat");
-            string content =
-                "@echo off\r\n" +
-                "echo =========================================================\r\n" +
-                "echo   OpenDual PlayStation Controller Suite - Uninstaller\r\n" +
-                "echo =========================================================\r\n" +
-                "if exist \"%~dp0OpenDualUninstaller.exe\" (\r\n" +
-                "    start \"\" \"%~dp0OpenDualUninstaller.exe\"\r\n" +
-                ") else (\r\n" +
-                "    echo Stopping OpenDual services...\r\n" +
-                "    taskkill /f /im OpenDualHub.exe >nul 2>&1\r\n" +
-                "    taskkill /f /im OpenDualDriver.exe >nul 2>&1\r\n" +
-                "    reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenDual\" /f >nul 2>&1\r\n" +
-                "    reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\OpenDualHub.exe\" /f >nul 2>&1\r\n" +
-                "    reg delete \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\OpenDual.exe\" /f >nul 2>&1\r\n" +
-                "    del /f /q \"%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\OpenDual.lnk\" >nul 2>&1\r\n" +
-                "    del /f /q \"%USERPROFILE%\\Desktop\\OpenDual.lnk\" >nul 2>&1\r\n" +
-                "    echo Uninstall complete.\r\n" +
-                "    pause\r\n" +
-                ")\r\n";
-            File.WriteAllText(uninstallBat, content);
         }
     }
 }

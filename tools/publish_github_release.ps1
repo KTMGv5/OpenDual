@@ -76,8 +76,11 @@ OpenDual v1.6.4 introduces a complete 6-Axis Gyro Aiming Overhaul, native DualSe
   * Default intensity set to sweet-spot 30%, 40 Hz sub-bass cutoff filter, and 20% recoil transient threshold.
   * Default profile tuned for PlayStation 5 balanced experience with custom rainbow RGB.
 
-* **Streamlined Distribution**:
-  * Exactly two signed release assets: OpenDualSetup.exe installer and OpenDual-v1.6.4.zip portable archive.
+* **Streamlined Distribution & Standalone Installer**:
+  * Single-file OpenDualSetup.exe has the 1000Hz C++20 driver engine, Desktop Hub, and assets embedded directly inside it for true 1-click standalone installation.
+  * Automatically registers OpenDualDriver to run on Windows startup as a background driver service.
+  * Clean uninstaller wipes all binaries, shortcuts, registry keys, and AppData configuration directories with zero leftover batch files.
+  * Exactly two signed release assets: OpenDualSetup.exe standalone installer and OpenDual-v1.6.4.zip portable bundle.
   * MSVC C++20 and .NET 10 compilation with Authenticode digital signatures.
 
 ---

@@ -87,13 +87,15 @@
   * Minimizing OpenDual automatically docks it cleanly to the Windows notification area / system tray.
   * System tray context menu: Open Hub, Restart Driver Engine, Toggle Mic Mute, or Exit.
 * **Automated Authenticode Code Signing Suite**:
-  * Includes automated scripts (`tools\sign_binaries.bat` and `tools\create_codesign_cert.ps1`) to stamp binaries with SHA-256 digital signatures and RFC 3161 timestamps.
+  * Includes automated scripts (`tools\sign_binaries.ps1` and `tools\create_codesign_cert.ps1`) to stamp binaries with SHA-256 digital signatures and RFC 3161 timestamps.
   * Complete [Code Signing & SmartScreen Guide](docs/CODE_SIGNING_GUIDE.md) explaining local trust and commercial CA distribution.
 * **Clean Windows Setup & Uninstaller Suite**:
+  * Standalone, self-contained single-file installer (`OpenDualSetup.exe`) with all driver engines, hub binaries, and assets embedded directly inside.
+  * Configures `OpenDualDriver` to automatically start on Windows boot as a high-performance background driver service.
   * Registered in Windows Registry (`HKCU\...\Uninstall\OpenDual`) and Windows Settings (Installed Apps / Add or Remove Programs).
   * App Paths registration for quick launch via `Win + R` -> `opendual`.
   * Start Menu and Desktop shortcuts.
-  * Clean uninstaller (`OpenDualUninstaller.exe` / `uninstall.bat`) that safely stops processes, removes registry entries, removes shortcuts, and cleans up files.
+  * Clean uninstaller that safely stops processes, unregisters startup services, removes registry entries, removes shortcuts, and cleans up all installation and AppData directories.
 * **Aggressive Updater & In-Place Reinstaller**:
   * Cleanly force-terminates all running driver and hub instances before overwriting files.
   * Automatic retry mechanisms on file locks and automatic restart of driver and hub upon update completion.
@@ -114,24 +116,21 @@
 ## Quick Start & Installation
 
 ### 1. Install to Windows (Recommended)
-Run `setup.bat` or launch:
+Launch the standalone installer:
 ```cmd
-.\dist\OpenDualSetup.exe
+OpenDualSetup.exe
 ```
-This installs OpenDual into `%LocalAppData%\Programs\OpenDual`, creates Desktop and Start Menu shortcuts, and registers the app in Windows Settings (Installed Apps).
+This unpacks OpenDual into `%LocalAppData%\Programs\OpenDual`, automatically registers the `OpenDualDriver` background service to start on boot, creates Desktop and Start Menu shortcuts, and registers the app in Windows Installed Apps.
 
 ### 2. Standalone Portable Run
 Run directly without installing:
 ```cmd
-.\dist\OpenDualHub.exe
+OpenDualHub.exe
 ```
 
 ### 3. Uninstalling
 Open **Windows Settings** -> **Apps** -> **Installed Apps**, locate **OpenDual PlayStation Controller Suite**, and click **Uninstall**.
-Or run:
-```cmd
-.\uninstall.bat
-```
+This stops all driver services, unregisters startup keys, removes shortcuts, and cleanly removes all installed files and AppData settings.
 
 ### 4. Controller Hotkeys (Adjust without opening the app)
 * **Hold PS Button + D-Pad Up**: Increase touchpad sensitivity (+0.1x)

@@ -26,7 +26,7 @@ if (-not $cert) {
 Write-Host "`n[OpenDual] Signing binaries in: $TargetDir" -ForegroundColor Cyan
 Write-Host "[OpenDual] Certificate: $($cert.Subject) [Thumbprint: $($cert.Thumbprint)]" -ForegroundColor Gray
 
-$filesToSign = @("OpenDualSetup.exe", "OpenDualHub.exe", "OpenDualDriver.exe", "OpenDualUninstaller.exe")
+$filesToSign = @("OpenDualSetup.exe", "OpenDualHub.exe", "OpenDualDriver.exe")
 
 foreach ($file in $filesToSign) {
     $fullPath = Join-Path $TargetDir $file
