@@ -15,3 +15,5 @@ Installer/obj/
 *.zip
 
 scratch/
+out/
+DriverCore/out/

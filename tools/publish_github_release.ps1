@@ -80,13 +80,15 @@ OpenDual v1.6.4 introduces a complete 6-Axis Gyro Aiming Overhaul, native DualSe
   * Single-file OpenDualSetup.exe has the 1000Hz C++20 driver engine, Desktop Hub, and assets embedded directly inside it for true 1-click standalone installation.
   * Automatically registers OpenDualDriver to run on Windows startup as a background driver service.
   * Clean uninstaller wipes all binaries, shortcuts, registry keys, and AppData configuration directories with zero leftover batch files.
-  * Exactly two signed release assets: OpenDualSetup.exe standalone installer and OpenDual-v1.6.4.zip portable bundle.
+  * Full signed suite with standalone executables, self-contained setup, and portable zip.
   * MSVC C++20 and .NET 10 compilation with Authenticode digital signatures.
 
 ---
 
 ### Included Signed Assets
 * OpenDualSetup.exe - Complete standalone installer and uninstaller suite (Recommended)
+* OpenDualHub.exe - Standalone GUI Controller Hub executable
+* OpenDualDriver.exe - Standalone 1000Hz C++20 Direct HID Driver engine
 * OpenDual-v1.6.4.zip - Portable bundle including all binaries and tools
 "@
 
@@ -138,6 +140,8 @@ $uploadBase = $uploadUrlTemplate -replace '\{\?name,label\}', ''
 
 $assetsToUpload = @(
     "OpenDualSetup.exe",
+    "OpenDualHub.exe",
+    "OpenDualDriver.exe",
     "OpenDual-$TagName.zip"
 )
 

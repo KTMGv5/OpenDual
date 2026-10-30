@@ -103,8 +103,16 @@ namespace OpenDualHub
         private struct PropVariant
         {
             [FieldOffset(0)] public ushort vt;
+            [FieldOffset(2)] public ushort wReserved1;
+            [FieldOffset(4)] public ushort wReserved2;
+            [FieldOffset(6)] public ushort wReserved3;
             [FieldOffset(8)] public IntPtr pwszVal;
         }
+
+        [DllImport("ole32.dll")]
+        private static extern int PropVariantClear(ref PropVariant pvar);
+
+        private const ushort VT_LPWSTR = 31;
 
         private static readonly PropertyKey PKEY_Device_DeviceDesc = new PropertyKey(new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), 2);
         private static readonly PropertyKey PKEY_Device_FriendlyName = new PropertyKey(new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), 14);
@@ -115,14 +123,22 @@ namespace OpenDualHub
 
         private static string GetStoreString(IPropertyStore store, PropertyKey key)
         {
+            PropVariant pv = default;
             try
             {
-                if (store.GetValue(ref key, out var pv) == 0 && pv.pwszVal != IntPtr.Zero)
+                if (store.GetValue(ref key, out pv) == 0)
                 {
-                    return Marshal.PtrToStringUni(pv.pwszVal) ?? "";
+                    if (pv.vt == VT_LPWSTR && pv.pwszVal != IntPtr.Zero)
+                    {
+                        return Marshal.PtrToStringUni(pv.pwszVal) ?? "";
+                    }
                 }
             }
             catch { }
+            finally
+            {
+                try { PropVariantClear(ref pv); } catch { }
+            }
             return "";
         }
 
