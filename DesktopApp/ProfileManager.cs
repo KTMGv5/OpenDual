@@ -151,16 +151,17 @@ namespace OpenDualHub
                     Id = "builtin-default",
                     Name = "PlayStation 5 Balanced",
                     ProcessNames = "",
-                    Description = "Standard PlayStation 5 experience with balanced haptics and default resistance.",
+                    Description = "Standard PlayStation 5 experience with Rainbow RGB, standard game rumble haptics, and default resistance.",
                     IsBuiltIn = true,
                     Config = new ConfigDto
                     {
-                        R = 0, G = 120, B = 255, Effect = 0, Speed = 1.0f,
+                        R = 0, G = 120, B = 255, Effect = 2, Speed = 1.0f,
                         Mouse = true, SyncMic = true,
                         LtMode = 0, RtMode = 0,
-                        Haptic = true, HapticIntensity = 1.0f, HapticCutoff = 100, HapticStereo = true,
-                        AudioTriggerKick = false, AudioTriggerThreshold = 0.45f,
-                        Gyro = false, GyroMode = 1, GyroSensX = 1.0f, GyroSensY = 1.0f,
+                        Haptic = false, HapticIntensity = 0.30f, HapticCutoff = 40, HapticStereo = true,
+                        AudioTriggerKick = false, AudioTriggerThreshold = 0.20f,
+                        SpeakerEnabled = false,
+                        Gyro = false, GyroMode = 0, GyroOutputMode = 0, GyroSpace = 0, GyroSensX = 1.0f, GyroSensY = 1.0f,
                         IdleTimeout = 10, LowBatWarn = true
                     }
                 },
@@ -178,7 +179,7 @@ namespace OpenDualHub
                         LtMode = 6, RtMode = 6, // TriggerStop (Hair trigger)
                         Haptic = true, HapticIntensity = 1.2f, HapticCutoff = 120, HapticStereo = true,
                         AudioTriggerKick = true, AudioTriggerThreshold = 0.38f,
-                        Gyro = true, GyroMode = 1, GyroSensX = 1.4f, GyroSensY = 1.4f, GyroDeadzone = 18, GyroSmooth = 0.20f,
+                        Gyro = true, GyroMode = 1, GyroOutputMode = 0, GyroSpace = 0, GyroSensX = 1.4f, GyroSensY = 1.4f, GyroDeadzone = 3, GyroSmooth = 0.20f,
                         IdleTimeout = 15, LowBatWarn = true
                     }
                 },
@@ -214,7 +215,7 @@ namespace OpenDualHub
                         LtMode = 5, RtMode = 1, // L2: Bow, R2: Rigid Resistance
                         Haptic = true, HapticIntensity = 1.15f, HapticCutoff = 110, HapticStereo = true,
                         AudioTriggerKick = true, AudioTriggerThreshold = 0.42f,
-                        Gyro = true, GyroMode = 1, GyroSensX = 1.1f, GyroSensY = 1.1f, GyroDeadzone = 20, GyroSmooth = 0.25f,
+                        Gyro = true, GyroMode = 1, GyroOutputMode = 0, GyroSpace = 0, GyroSensX = 1.1f, GyroSensY = 1.1f, GyroDeadzone = 3, GyroSmooth = 0.20f,
                         IdleTimeout = 10, LowBatWarn = true
                     }
                 },
@@ -232,7 +233,7 @@ namespace OpenDualHub
                         LtMode = 1, RtMode = 1, // Rigid flight throttle resistance
                         Haptic = true, HapticIntensity = 1.0f, HapticCutoff = 90, HapticStereo = true,
                         AudioTriggerKick = false, AudioTriggerThreshold = 0.45f,
-                        Gyro = true, GyroMode = 0, GyroSensX = 1.0f, GyroSensY = 1.0f, GyroDeadzone = 15, GyroSmooth = 0.35f,
+                        Gyro = true, GyroMode = 0, GyroOutputMode = 1, GyroSpace = 0, GyroSensX = 1.0f, GyroSensY = 1.0f, GyroDeadzone = 2, GyroSmooth = 0.25f,
                         IdleTimeout = 30, LowBatWarn = true
                     }
                 }

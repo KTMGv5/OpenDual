@@ -16,6 +16,8 @@ namespace OpenDualHub
         private bool _isInitialized = false;
 
         private readonly TrayIconManager _trayManager = new();
+        private readonly MicToastWindow _micToast = new();
+        private bool? _lastMicMuted = null;
         private QuickHudWindow? _quickHud;
         private bool _lastPsState = false;
         private bool _hasShownTrayBalloon = false;
@@ -120,6 +122,7 @@ namespace OpenDualHub
             _gameDetector.Start();
 
             PopulateProfilesList();
+            UpdateSpeakerUi();
 
             // Background update check (non-blocking)
             _ = CheckForUpdatesSilentlyAsync();
@@ -175,6 +178,7 @@ namespace OpenDualHub
         {
             _gameDetector?.Dispose();
             _trayManager.Dispose();
+            _micToast?.Close();
             _quickHud?.Close();
             _overclockAssistant?.Close();
             _captureBar?.Close();
@@ -318,6 +322,7 @@ namespace OpenDualHub
             _gameDetector?.Dispose();
             _ipc.Dispose();
             _trayManager.Dispose();
+            _micToast?.Close();
             _quickHud?.Close();
             _overclockAssistant?.Close();
             _captureBar?.Close();
@@ -422,6 +427,7 @@ namespace OpenDualHub
             HideAllViews();
             if (ViewAudio != null) ViewAudio.Visibility = Visibility.Visible;
             EnsureNavTabVisible(TabAudio);
+            UpdateSpeakerUi();
         }
 
         private void Nav_Profiles_Checked(object sender, RoutedEventArgs e)
@@ -510,7 +516,29 @@ namespace OpenDualHub
 
                         _overclockAssistant?.UpdateTelemetry(t);
 
-                        if (DashMicBadge != null) DashMicBadge.Visibility = t.MicMuted ? Visibility.Visible : Visibility.Collapsed;
+                        // Mic Mute Transition & Toast
+                        if (_lastMicMuted.HasValue && _lastMicMuted.Value != t.MicMuted)
+                        {
+                            _micToast?.ShowStatus(t.MicMuted);
+                        }
+                        _lastMicMuted = t.MicMuted;
+
+                        if (DashMicBadge != null)
+                        {
+                            DashMicBadge.Visibility = Visibility.Visible;
+                            if (t.MicMuted)
+                            {
+                                DashMicBadge.Background = new SolidColorBrush(Color.FromArgb(50, 255, 152, 0));
+                                DashMicBadge.BorderBrush = new SolidColorBrush(Color.FromRgb(255, 167, 38));
+                                if (TxtDashMicBadge != null) { TxtDashMicBadge.Text = "MIC MUTED"; TxtDashMicBadge.Foreground = new SolidColorBrush(Color.FromRgb(255, 167, 38)); }
+                            }
+                            else
+                            {
+                                DashMicBadge.Background = new SolidColorBrush(Color.FromArgb(40, 0, 230, 118));
+                                DashMicBadge.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 230, 118));
+                                if (TxtDashMicBadge != null) { TxtDashMicBadge.Text = "MIC ACTIVE"; TxtDashMicBadge.Foreground = new SolidColorBrush(Color.FromRgb(0, 230, 118)); }
+                            }
+                        }
 
                         // Live Dynamic Color Box for Rainbow / Breathing / Multi-color effects
                         if (t.Config != null && ColorPreviewBox != null && TxtHexCode != null)
@@ -579,12 +607,12 @@ namespace OpenDualHub
                         {
                             BadgeGyroAiming.Visibility = t.GyroActive ? Visibility.Visible : Visibility.Collapsed;
                         }
-                        if (BarGyroZ != null) BarGyroZ.Value = Math.Clamp(Math.Abs((int)t.GyroZ), 0, 500);
-                        if (BarGyroX != null) BarGyroX.Value = Math.Clamp(Math.Abs((int)t.GyroX), 0, 500);
                         if (BarGyroY != null) BarGyroY.Value = Math.Clamp(Math.Abs((int)t.GyroY), 0, 500);
-                        if (TxtGyroYaw != null) TxtGyroYaw.Text = $"Yaw: {t.GyroZ:+0000;-0000;0}";
+                        if (BarGyroX != null) BarGyroX.Value = Math.Clamp(Math.Abs((int)t.GyroX), 0, 500);
+                        if (BarGyroZ != null) BarGyroZ.Value = Math.Clamp(Math.Abs((int)t.GyroZ), 0, 500);
+                        if (TxtGyroYaw != null) TxtGyroYaw.Text = $"Yaw: {t.GyroY:+0000;-0000;0}";
                         if (TxtGyroPitch != null) TxtGyroPitch.Text = $"Pitch: {t.GyroX:+0000;-0000;0}";
-                        if (TxtGyroRoll != null) TxtGyroRoll.Text = $"Roll: {t.GyroY:+0000;-0000;0}";
+                        if (TxtGyroRoll != null) TxtGyroRoll.Text = $"Roll: {t.GyroZ:+0000;-0000;0}";
 
                         // Live Charging & Low Battery Badges
                         if (DashChargingBadge != null)
@@ -1034,6 +1062,62 @@ namespace OpenDualHub
             _ipc.SetMicSync(sync);
         }
 
+        private void ControllerSpeaker_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_isInitialized || _isUpdatingUi) return;
+            bool enable = ChkControllerSpeaker?.IsChecked == true;
+            _ipc.SetSpeakerOutput(enable);
+            AudioDeviceHelper.RouteAudioToController(enable);
+            UpdateSpeakerUi();
+        }
+
+        private void BtnToggleControllerSpeaker_Click(object sender, RoutedEventArgs e)
+        {
+            if (ChkControllerSpeaker != null)
+            {
+                ChkControllerSpeaker.IsChecked = !(ChkControllerSpeaker.IsChecked == true);
+            }
+        }
+
+        private void BtnOpenSoundSettings_Click(object sender, RoutedEventArgs e)
+        {
+            AudioDeviceHelper.OpenSoundSettings();
+        }
+
+        private void UpdateSpeakerUi()
+        {
+            try
+            {
+                bool isController = false;
+                var (curId, curName) = AudioDeviceHelper.GetDefaultPlaybackDevice();
+                if (!string.IsNullOrEmpty(curName))
+                {
+                    isController = curName.Contains("Wireless Controller", StringComparison.OrdinalIgnoreCase) ||
+                                   curName.Contains("DualSense", StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (TxtControllerSpeakerDev != null)
+                {
+                    TxtControllerSpeakerDev.Text = isController
+                        ? $"Active Output: {curName} (DualSense Speaker / 3.5mm Jack)"
+                        : $"Active Output: {curName} (PC Audio)";
+                }
+
+                if (BtnToggleControllerSpeaker != null)
+                {
+                    BtnToggleControllerSpeaker.Content = isController ? "Revert Audio to PC Speakers" : "Route Game Audio to Controller";
+                }
+
+                if (ChkControllerSpeaker != null && ChkControllerSpeaker.IsChecked != isController)
+                {
+                    _isUpdatingUi = true;
+                    ChkControllerSpeaker.IsChecked = isController;
+                    _isUpdatingUi = false;
+                }
+            }
+            catch { }
+        }
+
         private void AudioHaptics_Changed(object sender, RoutedEventArgs e)
         {
             if (!_isInitialized || _isUpdatingUi || ChkAudioHaptics == null || SliderHapticIntensity == null || SliderHapticCutoff == null) return;
@@ -1241,19 +1325,21 @@ namespace OpenDualHub
 
             bool enabled = ChkEnableGyro?.IsChecked == true;
             int mode = CmbGyroMode?.SelectedIndex ?? 1;
+            int outputMode = CmbGyroOutput?.SelectedIndex ?? 0;
+            int space = CmbGyroSpace?.SelectedIndex ?? 0;
             float sensX = (float)(SliderGyroSensX?.Value ?? 1.0);
             float sensY = (float)(SliderGyroSensY?.Value ?? 1.0);
             bool invX = ChkGyroInvertX?.IsChecked == true;
             bool invY = ChkGyroInvertY?.IsChecked == true;
-            int deadzone = (int)(SliderGyroDeadzone?.Value ?? 20);
-            float smooth = (float)(SliderGyroSmooth?.Value ?? 0.25);
+            int deadzone = (int)(SliderGyroDeadzone?.Value ?? 3);
+            float smooth = (float)(SliderGyroSmooth?.Value ?? 0.20);
 
             if (TxtGyroSensXVal != null) TxtGyroSensXVal.Text = $"{sensX:F1}x";
             if (TxtGyroSensYVal != null) TxtGyroSensYVal.Text = $"{sensY:F1}x";
-            if (TxtGyroDeadzoneVal != null) TxtGyroDeadzoneVal.Text = $"{deadzone}";
+            if (TxtGyroDeadzoneVal != null) TxtGyroDeadzoneVal.Text = $"{deadzone} deg/s";
             if (TxtGyroSmoothVal != null) TxtGyroSmoothVal.Text = $"{(int)(smooth * 100)}%";
 
-            _ipc.SetGyro(enabled, mode, sensX, sensY, invX, invY, deadzone, smooth);
+            _ipc.SetGyro(enabled, mode, outputMode, space, sensX, sensY, invX, invY, deadzone, smooth);
         }
 
         private void BtnResetGyroDrift_Click(object sender, RoutedEventArgs e)
@@ -1341,6 +1427,8 @@ namespace OpenDualHub
                 if (TxtDashProfileName != null) TxtDashProfileName.Text = prof.Name;
                 if (ChkEnableGyro != null) ChkEnableGyro.IsChecked = prof.Config.Gyro;
                 if (CmbGyroMode != null) CmbGyroMode.SelectedIndex = prof.Config.GyroMode;
+                if (CmbGyroOutput != null) CmbGyroOutput.SelectedIndex = prof.Config.GyroOutputMode;
+                if (CmbGyroSpace != null) CmbGyroSpace.SelectedIndex = prof.Config.GyroSpace;
                 if (SliderGyroSensX != null) SliderGyroSensX.Value = prof.Config.GyroSensX;
                 if (SliderGyroSensY != null) SliderGyroSensY.Value = prof.Config.GyroSensY;
                 if (ChkGyroInvertX != null) ChkGyroInvertX.IsChecked = prof.Config.GyroInvertX;
@@ -1353,6 +1441,7 @@ namespace OpenDualHub
                 if (SliderHapticCutoff != null) SliderHapticCutoff.Value = prof.Config.HapticCutoff;
                 if (ChkTriggerKick != null) ChkTriggerKick.IsChecked = prof.Config.AudioTriggerKick;
                 if (SliderTriggerThreshold != null) SliderTriggerThreshold.Value = prof.Config.AudioTriggerThreshold;
+                if (ChkControllerSpeaker != null) ChkControllerSpeaker.IsChecked = prof.Config.SpeakerEnabled;
 
                 static int UnmapTriggerIndex(int triggerMode) => triggerMode switch
                 {
@@ -1469,6 +1558,7 @@ namespace OpenDualHub
                         CaptureCurrentConfig(copy.Config);
                         _profileManager.SaveProfile(copy);
                         PopulateProfilesList();
+            UpdateSpeakerUi();
                         SelectProfileInCombo(copy.Id);
                         MessageBox.Show($"Built-in preset saved as new custom profile: '{copy.Name}'", "Profile Saved", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
@@ -1480,6 +1570,7 @@ namespace OpenDualHub
                         CaptureCurrentConfig(prof.Config);
                         _profileManager.SaveProfile(prof);
                         PopulateProfilesList();
+            UpdateSpeakerUi();
                         SelectProfileInCombo(prof.Id);
                         MessageBox.Show($"Profile '{prof.Name}' updated successfully.", "Profile Saved", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
@@ -1506,18 +1597,21 @@ namespace OpenDualHub
             cfg.LtMode = MapTriggerMode(ComboLTMode?.SelectedIndex ?? 0);
             cfg.RtMode = MapTriggerMode(ComboRTMode?.SelectedIndex ?? 0);
             cfg.Haptic = ChkAudioHaptics?.IsChecked == true;
-            cfg.HapticIntensity = (float)(SliderHapticIntensity?.Value ?? 1.0);
-            cfg.HapticCutoff = (int)(SliderHapticCutoff?.Value ?? 100);
+            cfg.HapticIntensity = (float)(SliderHapticIntensity?.Value ?? 0.30);
+            cfg.HapticCutoff = (int)(SliderHapticCutoff?.Value ?? 40);
             cfg.AudioTriggerKick = ChkTriggerKick?.IsChecked == true;
-            cfg.AudioTriggerThreshold = (float)(SliderTriggerThreshold?.Value ?? 0.45);
+            cfg.AudioTriggerThreshold = (float)(SliderTriggerThreshold?.Value ?? 0.20);
+            cfg.SpeakerEnabled = ChkControllerSpeaker?.IsChecked == true;
             cfg.Gyro = ChkEnableGyro?.IsChecked == true;
             cfg.GyroMode = CmbGyroMode?.SelectedIndex ?? 1;
+            cfg.GyroOutputMode = CmbGyroOutput?.SelectedIndex ?? 0;
+            cfg.GyroSpace = CmbGyroSpace?.SelectedIndex ?? 0;
             cfg.GyroSensX = (float)(SliderGyroSensX?.Value ?? 1.0);
             cfg.GyroSensY = (float)(SliderGyroSensY?.Value ?? 1.0);
             cfg.GyroInvertX = ChkGyroInvertX?.IsChecked == true;
             cfg.GyroInvertY = ChkGyroInvertY?.IsChecked == true;
-            cfg.GyroDeadzone = (int)(SliderGyroDeadzone?.Value ?? 20);
-            cfg.GyroSmooth = (float)(SliderGyroSmooth?.Value ?? 0.25);
+            cfg.GyroDeadzone = (int)(SliderGyroDeadzone?.Value ?? 3);
+            cfg.GyroSmooth = (float)(SliderGyroSmooth?.Value ?? 0.20);
             cfg.IdleTimeout = CmbIdleTimeout?.SelectedIndex switch { 1 => 5, 2 => 10, 3 => 15, 4 => 30, _ => 0 };
             cfg.LowBatWarn = ChkLowBatteryWarn?.IsChecked == true;
         }
@@ -1544,6 +1638,7 @@ namespace OpenDualHub
                     var copy = prof.Clone(prof.Name + " (Copy)");
                     _profileManager.SaveProfile(copy);
                     PopulateProfilesList();
+            UpdateSpeakerUi();
                     SelectProfileInCombo(copy.Id);
                 }
             }
@@ -1560,6 +1655,7 @@ namespace OpenDualHub
                     {
                         _profileManager.DeleteProfile(id);
                         PopulateProfilesList();
+            UpdateSpeakerUi();
                     }
                 }
             }
@@ -1600,6 +1696,7 @@ namespace OpenDualHub
                     string json = System.IO.File.ReadAllText(ofd.FileName);
                     var imported = _profileManager.ImportProfile(json);
                     PopulateProfilesList();
+            UpdateSpeakerUi();
                     SelectProfileInCombo(imported.Id);
                     MessageBox.Show($"Profile '{imported.Name}' imported successfully!", "Import", MessageBoxButton.OK, MessageBoxImage.Information);
                 }

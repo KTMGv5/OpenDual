@@ -12,7 +12,7 @@ namespace OpenDualSetup
     {
         private const string AppName = "OpenDual";
         private const string AppFullName = "OpenDual PlayStation Controller Suite";
-        private const string AppVersion = "1.6.3";
+        private const string AppVersion = "1.6.4";
         private const string AppPublisher = "OpenDual Team";
 
         [STAThread]

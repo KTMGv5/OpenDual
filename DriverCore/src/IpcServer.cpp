@@ -200,13 +200,17 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getBool("hapticStereo", hapStereo)) { cfg.hapticStereo = hapStereo; changed = true; }
     if (getBool("audioTriggerKick", trigKick)) { cfg.audioTriggerKick = trigKick; changed = true; }
     if (getFloat("audioTriggerThreshold", trigThresh)) { cfg.audioTriggerThreshold = trigThresh; changed = true; }
+    bool spkEn = false;
+    if (getBool("speakerEnabled", spkEn)) { cfg.speakerEnabled = spkEn; changed = true; }
 
     // 6-Axis Gyro Motion Aiming
     bool gyroEn = false, gyroInvX = false, gyroInvY = false;
-    int gyroMode = 1, gyroDzone = 20;
-    float gSensX = 1.0f, gSensY = 1.0f, gSmooth = 0.25f;
+    int gyroMode = 1, gyroOutMode = 0, gyroSp = 0, gyroDzone = 3;
+    float gSensX = 1.0f, gSensY = 1.0f, gSmooth = 0.20f;
     if (getBool("gyroEnabled", gyroEn)) { cfg.gyroEnabled = gyroEn; changed = true; }
     if (getInt("gyroMode", gyroMode)) { cfg.gyroTriggerMode = gyroMode; changed = true; }
+    if (getInt("gyroOutputMode", gyroOutMode)) { cfg.gyroOutputMode = gyroOutMode; changed = true; }
+    if (getInt("gyroSpace", gyroSp)) { cfg.gyroSpace = gyroSp; changed = true; }
     if (getFloat("gyroSensX", gSensX)) { cfg.gyroSensX = gSensX; changed = true; }
     if (getFloat("gyroSensY", gSensY)) { cfg.gyroSensY = gSensY; changed = true; }
     if (getBool("gyroInvertX", gyroInvX)) { cfg.gyroInvertX = gyroInvX; changed = true; }
@@ -307,8 +311,11 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"hapticStereo\":" << (c.hapticStereo ? "true" : "false") << ","
            << "\"audioTriggerKick\":" << (c.audioTriggerKick ? "true" : "false") << ","
            << "\"audioTriggerThreshold\":" << c.audioTriggerThreshold << ","
+           << "\"speakerEnabled\":" << (c.speakerEnabled ? "true" : "false") << ","
            << "\"gyro\":" << (c.gyroEnabled ? "true" : "false") << ","
            << "\"gyroMode\":" << c.gyroTriggerMode << ","
+           << "\"gyroOutputMode\":" << c.gyroOutputMode << ","
+           << "\"gyroSpace\":" << c.gyroSpace << ","
            << "\"gyroSensX\":" << c.gyroSensX << ","
            << "\"gyroSensY\":" << c.gyroSensY << ","
            << "\"gyroInvertX\":" << (c.gyroInvertX ? "true" : "false") << ","

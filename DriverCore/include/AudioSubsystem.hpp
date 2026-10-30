@@ -132,43 +132,18 @@ public:
         return m_captureDeviceName;
     }
     bool HasDualSenseAudio() const { return m_hasDualSenseAudio; }
-    bool HasDualSenseRender() const { return m_hasDualSenseRender.load(); }
-    bool IsDualSenseDefaultRender() const { return m_isDefaultRenderDualSense.load(); }
-
-    void SetHapticParams(float intensity, bool stereo) {
-        m_hapticIntensity.store(intensity);
-        m_hapticStereo.store(stereo);
-    }
 
 private:
     bool RefreshDevices();
     void LoopbackCaptureThread();
     void ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORMATEX* pFormat);
 
-    bool StartDualSenseHapticRender();
-    void StopDualSenseHapticRender();
-    void WriteHapticSamples(const float* pSamplesL, const float* pSamplesR, UINT32 numFrames);
-
     IMMDeviceEnumerator* m_pEnum = nullptr;
     IMMDevice* m_pCaptureDev = nullptr;
     IAudioEndpointVolume* m_pCaptureVolume = nullptr;
 
-    // DualSense Quadraphonic Haptics Render Endpoint (Channels 2 & 3)
-    IMMDevice* m_pDualSenseRenderDev = nullptr;
-    IAudioClient* m_pDualSenseRenderClient = nullptr;
-    IAudioRenderClient* m_pDualSenseAudioRender = nullptr;
-    WAVEFORMATEX* m_pDualSenseFormat = nullptr;
-    UINT32 m_dualsenseBufferSize = 0;
-
     bool m_initialized = false;
     bool m_hasDualSenseAudio = false;
-    std::atomic<bool> m_hasDualSenseRender{ false };
-    std::atomic<bool> m_isDefaultRenderDualSense{ false };
-    std::atomic<float> m_hapticIntensity{ 1.0f };
-    std::atomic<bool> m_hapticStereo{ true };
-
-    std::vector<float> m_waveBufL;
-    std::vector<float> m_waveBufR;
 
     std::wstring m_renderDeviceName;
     std::wstring m_captureDeviceName;

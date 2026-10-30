@@ -27,7 +27,7 @@ namespace OpenDualHub.Models
         public int B { get; set; } = 255;
 
         [JsonPropertyName("effect")]
-        public int Effect { get; set; } = 0;
+        public int Effect { get; set; } = 2;
 
         [JsonPropertyName("speed")]
         public float Speed { get; set; } = 1.0f;
@@ -54,10 +54,10 @@ namespace OpenDualHub.Models
         public bool Haptic { get; set; } = false;
 
         [JsonPropertyName("hapticIntensity")]
-        public float HapticIntensity { get; set; } = 1.0f;
+        public float HapticIntensity { get; set; } = 0.30f;
 
         [JsonPropertyName("hapticCutoff")]
-        public int HapticCutoff { get; set; } = 100;
+        public int HapticCutoff { get; set; } = 40;
 
         [JsonPropertyName("hapticStereo")]
         public bool HapticStereo { get; set; } = true;
@@ -66,7 +66,10 @@ namespace OpenDualHub.Models
         public bool AudioTriggerKick { get; set; } = false;
 
         [JsonPropertyName("audioTriggerThreshold")]
-        public float AudioTriggerThreshold { get; set; } = 0.45f;
+        public float AudioTriggerThreshold { get; set; } = 0.20f;
+
+        [JsonPropertyName("speakerEnabled")]
+        public bool SpeakerEnabled { get; set; } = false;
 
         // 6-Axis Gyro Aiming
         [JsonPropertyName("gyro")]
@@ -74,6 +77,12 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("gyroMode")]
         public int GyroMode { get; set; } = 1;
+
+        [JsonPropertyName("gyroOutputMode")]
+        public int GyroOutputMode { get; set; } = 0;
+
+        [JsonPropertyName("gyroSpace")]
+        public int GyroSpace { get; set; } = 0;
 
         [JsonPropertyName("gyroSensX")]
         public float GyroSensX { get; set; } = 1.0f;
@@ -88,10 +97,10 @@ namespace OpenDualHub.Models
         public bool GyroInvertY { get; set; } = false;
 
         [JsonPropertyName("gyroDeadzone")]
-        public int GyroDeadzone { get; set; } = 20;
+        public int GyroDeadzone { get; set; } = 3;
 
         [JsonPropertyName("gyroSmooth")]
-        public float GyroSmooth { get; set; } = 0.25f;
+        public float GyroSmooth { get; set; } = 0.20f;
 
         // Power Management & Battery
         [JsonPropertyName("idleTimeout")]

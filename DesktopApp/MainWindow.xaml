@@ -313,8 +313,8 @@
                                         <TextBlock x:Name="TxtChargingBadge" Text="CHARGING" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
                                     </StackPanel>
                                 </Border>
-                                <Border x:Name="DashMicBadge" Background="#33FF9800" CornerRadius="4" Padding="6,2" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
-                                    <TextBlock Text="MIC MUTED" FontSize="10" FontWeight="Bold" Foreground="#FFA726"/>
+                                <Border x:Name="DashMicBadge" Background="#33FF9800" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
+                                    <TextBlock x:Name="TxtDashMicBadge" Text="MIC MUTED" FontSize="10" FontWeight="Bold" Foreground="#FFA726"/>
                                 </Border>
                             </WrapPanel>
                             <TextBlock x:Name="DashConnInfo" Text="Active USB Connection • Direct Win32 Overlapped High-Priority Driver" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
@@ -610,7 +610,7 @@
 
                                 <!-- Effect Mode -->
                                 <TextBlock Text="Lighting Effect Mode" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,6,0,6"/>
-                                <ComboBox x:Name="ComboEffect" SelectedIndex="0" SelectionChanged="ComboEffect_SelectionChanged" Margin="0,0,0,16">
+                                <ComboBox x:Name="ComboEffect" SelectedIndex="2" SelectionChanged="ComboEffect_SelectionChanged" Margin="0,0,0,16">
                                     <ComboBoxItem Content="Solid Color"/>
                                     <ComboBoxItem Content="Breathing / Gentle Pulse"/>
                                     <ComboBoxItem Content="Rainbow Cycle (360° Spectrum)"/>
@@ -767,11 +767,26 @@
 
                                     <!-- Activation Mode -->
                                     <TextBlock Text="Activation Condition" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                    <ComboBox x:Name="CmbGyroMode" SelectionChanged="Gyro_Changed" Margin="0,0,0,18">
-                                        <ComboBoxItem Content="Hold L2 (Aim Down Sights - ADS)" IsSelected="True"/>
-                                        <ComboBoxItem Content="Always On (Continuous Aiming)"/>
+                                    <ComboBox x:Name="CmbGyroMode" SelectionChanged="Gyro_Changed" Margin="0,0,0,14">
+                                        <ComboBoxItem Content="Always On (Continuous Aiming)" IsSelected="True"/>
+                                        <ComboBoxItem Content="Hold L2 (Aim Down Sights - ADS)"/>
                                         <ComboBoxItem Content="Touchpad Touch (Aim while resting thumb)"/>
                                         <ComboBoxItem Content="Hold R2 (Fire Aim)"/>
+                                    </ComboBox>
+
+                                    <!-- Output Mode -->
+                                    <TextBlock Text="Output Target" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <ComboBox x:Name="CmbGyroOutput" SelectionChanged="Gyro_Changed" Margin="0,0,0,14">
+                                        <ComboBoxItem Content="Mouse Cursor (Desktop / PC Games)" IsSelected="True"/>
+                                        <ComboBoxItem Content="Right Thumbstick (Virtual Xbox Gamepad)"/>
+                                    </ComboBox>
+
+                                    <!-- Gyro Space / Fusion Mode -->
+                                    <TextBlock Text="Tracking Space &amp; Sensor Fusion" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <ComboBox x:Name="CmbGyroSpace" SelectionChanged="Gyro_Changed" Margin="0,0,0,16">
+                                        <ComboBoxItem Content="Player Space (Auto-Tilt Fusion - Recommended)" IsSelected="True"/>
+                                        <ComboBoxItem Content="Yaw Only (Flat / Compass)"/>
+                                        <ComboBoxItem Content="Roll Only (Steering Wheel)"/>
                                     </ComboBox>
 
                                     <!-- Sensitivity X -->
@@ -798,17 +813,17 @@
 
                                     <!-- Deadzone & Smoothing -->
                                     <Grid Margin="0,0,0,12">
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Sensor Deadzone" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                        <Slider x:Name="SliderGyroDeadzone" Grid.Column="1" Minimum="0" Maximum="60" Value="20" IsSnapToTickEnabled="True" TickFrequency="2" ValueChanged="Gyro_Changed"/>
-                                        <TextBlock x:Name="TxtGyroDeadzoneVal" Grid.Column="2" Text="20" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Deadzone (deg/s)" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Slider x:Name="SliderGyroDeadzone" Grid.Column="1" Minimum="0" Maximum="20" Value="3" IsSnapToTickEnabled="True" TickFrequency="1" ValueChanged="Gyro_Changed"/>
+                                        <TextBlock x:Name="TxtGyroDeadzoneVal" Grid.Column="2" Text="3 deg/s" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
 
                                     <Grid Margin="0,0,0,6">
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Motion Smoothing" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                        <Slider x:Name="SliderGyroSmooth" Grid.Column="1" Minimum="0.0" Maximum="0.80" Value="0.25" IsSnapToTickEnabled="True" TickFrequency="0.05" ValueChanged="Gyro_Changed"/>
-                                        <TextBlock x:Name="TxtGyroSmoothVal" Grid.Column="2" Text="25%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        <Slider x:Name="SliderGyroSmooth" Grid.Column="1" Minimum="0.0" Maximum="0.80" Value="0.20" IsSnapToTickEnabled="True" TickFrequency="0.05" ValueChanged="Gyro_Changed"/>
+                                        <TextBlock x:Name="TxtGyroSmoothVal" Grid.Column="2" Text="20%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -818,15 +833,15 @@
                                 <StackPanel>
                                     <TextBlock Text="LIVE DUALSENSE IMU TELEMETRY" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
 
-                                    <!-- Yaw Progress -->
+                                    <!-- Yaw Progress (Y) -->
                                     <Grid Margin="0,0,0,10">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="80"/><ColumnDefinition Width="*"/><ColumnDefinition Width="100"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Yaw (Z):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
-                                        <ProgressBar x:Name="BarGyroZ" Grid.Column="1" Height="10" Minimum="0" Maximum="500" Value="0" Foreground="{DynamicResource AccentSignature}" Background="#1F283B" BorderThickness="0" Margin="4,0"/>
+                                        <TextBlock Text="Yaw (Y):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ProgressBar x:Name="BarGyroY" Grid.Column="1" Height="10" Minimum="0" Maximum="500" Value="0" Foreground="{DynamicResource AccentSignature}" Background="#1F283B" BorderThickness="0" Margin="4,0"/>
                                         <TextBlock x:Name="TxtGyroYaw" Grid.Column="2" Text="Yaw: +0000" FontSize="11" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
 
-                                    <!-- Pitch Progress -->
+                                    <!-- Pitch Progress (X) -->
                                     <Grid Margin="0,0,0,10">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="80"/><ColumnDefinition Width="*"/><ColumnDefinition Width="100"/></Grid.ColumnDefinitions>
                                         <TextBlock Text="Pitch (X):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
@@ -834,17 +849,17 @@
                                         <TextBlock x:Name="TxtGyroPitch" Grid.Column="2" Text="Pitch: +0000" FontSize="11" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
 
-                                    <!-- Roll Progress -->
+                                    <!-- Roll Progress (Z) -->
                                     <Grid Margin="0,0,0,16">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="80"/><ColumnDefinition Width="*"/><ColumnDefinition Width="100"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Roll (Y):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
-                                        <ProgressBar x:Name="BarGyroY" Grid.Column="1" Height="10" Minimum="0" Maximum="500" Value="0" Foreground="{StaticResource AccentMagenta}" Background="#1F283B" BorderThickness="0" Margin="4,0"/>
+                                        <TextBlock Text="Roll (Z):" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ProgressBar x:Name="BarGyroZ" Grid.Column="1" Height="10" Minimum="0" Maximum="500" Value="0" Foreground="{StaticResource AccentMagenta}" Background="#1F283B" BorderThickness="0" Margin="4,0"/>
                                         <TextBlock x:Name="TxtGyroRoll" Grid.Column="2" Text="Roll: +0000" FontSize="11" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
 
                                     <!-- Calibration info -->
                                     <Border Background="{DynamicResource BgCardHover}" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
-                                        <TextBlock Text="• Auto-calibrates resting sensor drift in real time when placed still on flat surfaces.&#x0a;• High-precision sub-pixel mouse translation ensures seamless tracking in competitive shooters." FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="• Auto-calibrates resting sensor drift in real time when placed still on flat surfaces.&#x0a;• Microsecond &#x394;t integration &amp; display resolution scaling ensure 1:1 aiming across 1080p, 1440p, and 4K." FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap"/>
                                     </Border>
 
                                     <Button x:Name="BtnResetGyroDrift" Content="Recalibrate Gyro Baseline" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" HorizontalAlignment="Left" Click="BtnResetGyroDrift_Click"/>
@@ -914,6 +929,30 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Controller Speaker Audio Output Card -->
+                        <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,0,18">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                                        <TextBlock Text="CONTROLLER SPEAKER AUDIO OUTPUT" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
+                                        <TextBlock Text="Use your DualSense built-in speaker and 3.5mm headphone jack as a Windows audio playback device. When turned off (default), PC and game audio remain on your primary computer speakers or headset." TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkControllerSpeaker" Grid.Column="1" Content="Enable Speaker" FontSize="13" FontWeight="Bold" IsChecked="False" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="ControllerSpeaker_Changed" Unchecked="ControllerSpeaker_Changed"/>
+                                </Grid>
+                                <StackPanel x:Name="PanelSpeakerDetails" Margin="0,12,0,0">
+                                    <TextBlock x:Name="TxtControllerSpeakerDev" Text="Active Output: Default PC Audio" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Button x:Name="BtnToggleControllerSpeaker" Content="Route Game Audio to Controller" Style="{StaticResource PrimaryBtnStyle}" Background="{DynamicResource HeaderAccent}" Margin="0,0,10,0" Click="BtnToggleControllerSpeaker_Click"/>
+                                        <Button x:Name="BtnOpenSoundSettings" Content="Open Windows Sound Settings" Style="{StaticResource PrimaryBtnStyle}" Background="#2200F5D4" Foreground="{DynamicResource AccentSignature}" Click="BtnOpenSoundSettings_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Audio-Reactive Haptic Bass Rumble Card -->
                         <Border Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,0,18">
                             <StackPanel>
@@ -926,23 +965,23 @@
                                         <TextBlock Text="AUDIO-REACTIVE HAPTIC BASS RUMBLE (WASAPI LOOPBACK)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
                                         <TextBlock Text="Captures Windows system and game audio in real time, isolates low-frequency explosions, footsteps, engine revs, and gunshots, and routes them directly to the controller's voice-coil haptic motors." TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                                     </StackPanel>
-                                    <CheckBox x:Name="ChkAudioHaptics" Grid.Column="1" Content="Enable Haptics" FontSize="13" FontWeight="Bold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
+                                    <CheckBox x:Name="ChkAudioHaptics" Grid.Column="1" Content="Enable Haptics" FontSize="13" FontWeight="Bold" IsChecked="False" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
                                 </Grid>
 
                                 <!-- Haptic Intensity Slider -->
                                 <Grid Margin="0,12,0,8">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="60"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Vibration Intensity" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                    <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.0" Maximum="2.0" Value="1.0" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
-                                    <TextBlock x:Name="TxtHapticIntensityVal" Grid.Column="2" Text="100%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <Slider x:Name="SliderHapticIntensity" Grid.Column="1" Minimum="0.0" Maximum="2.0" Value="0.30" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
+                                    <TextBlock x:Name="TxtHapticIntensityVal" Grid.Column="2" Text="30%" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
 
                                 <!-- Low-Pass Bass Cutoff Slider (4th-Order 24dB/oct Surgical Filter) -->
                                 <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="*"/><ColumnDefinition Width="140"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="Bass Cutoff Filter" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                    <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="40" Maximum="250" Value="100" IsSnapToTickEnabled="True" TickFrequency="10" SmallChange="10" LargeChange="20" ValueChanged="AudioHaptics_Changed"/>
-                                    <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="100 Hz (Punchy)" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <Slider x:Name="SliderHapticCutoff" Grid.Column="1" Minimum="40" Maximum="250" Value="40" IsSnapToTickEnabled="True" TickFrequency="10" SmallChange="10" LargeChange="20" ValueChanged="AudioHaptics_Changed"/>
+                                    <TextBlock x:Name="TxtHapticCutoffVal" Grid.Column="2" Text="40 Hz (Sub-Bass)" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
 
                                 <!-- Audio-to-Trigger Mechanical Recoil Kick -->
@@ -962,8 +1001,8 @@
                                         <Grid Margin="0,4,0,0">
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/><ColumnDefinition Width="50"/></Grid.ColumnDefinitions>
                                             <TextBlock Text="Recoil Transient Sensitivity" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
-                                            <Slider x:Name="SliderTriggerThreshold" Grid.Column="1" Minimum="0.15" Maximum="0.85" Value="0.45" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
-                                            <TextBlock x:Name="TxtTriggerThresholdVal" Grid.Column="2" Text="45%" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            <Slider x:Name="SliderTriggerThreshold" Grid.Column="1" Minimum="0.15" Maximum="0.85" Value="0.20" IsSnapToTickEnabled="True" TickFrequency="0.05" SmallChange="0.05" LargeChange="0.1" ValueChanged="AudioHaptics_Changed"/>
+                                            <TextBlock x:Name="TxtTriggerThresholdVal" Grid.Column="2" Text="20%" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>
@@ -1335,7 +1374,7 @@
                                     <StackPanel Grid.Column="0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="Installed Version: " Foreground="{DynamicResource TextSecondary}"/>
-                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.3 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock x:Name="TxtInstalledVersion" Text="v1.6.4 (Latest Release)" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                         </StackPanel>
                                         <TextBlock x:Name="TxtUpdateStatus" Text="Up to date." FontSize="11" Foreground="{DynamicResource AccentSignature}" Margin="0,4,0,0"/>
                                     </StackPanel>
@@ -1374,7 +1413,7 @@
                     <TextBlock Text="  •  " FontSize="11" Foreground="{DynamicResource BorderColor}"/>
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
-                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.3" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock x:Name="TxtFooterVersion" Grid.Column="1" Text="OpenDual Suite v1.6.4" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>

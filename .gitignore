@@ -13,3 +13,5 @@ Installer/obj/
 *.tmp
 *.log
 *.zip
+
+scratch/

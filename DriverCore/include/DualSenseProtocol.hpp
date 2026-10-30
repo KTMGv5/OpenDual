@@ -3,6 +3,7 @@
 #include "Common.hpp"
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 namespace DualDriver {
 
@@ -106,6 +107,42 @@ public:
         return true;
     }
 
+    static void FormatTriggerPayload(uint8_t* p, const TriggerConfig& tc) {
+        std::memset(p, 0, 11);
+        switch (tc.mode) {
+        case TriggerMode::Off:
+            p[0] = 0x00;
+            break;
+        case TriggerMode::Rigid:
+            p[0] = 0x01; // Continuous resistance
+            p[1] = tc.startPos;
+            p[2] = tc.force;
+            break;
+        case TriggerMode::Pulse:
+            p[0] = 0x02; // Section pulse
+            p[1] = tc.startPos;
+            p[2] = (tc.endPos > tc.startPos) ? tc.endPos : 255;
+            p[3] = tc.force;
+            break;
+        case TriggerMode::Bow:
+            p[0] = 0x22; // DualSense Native Bow Effect (0x22)
+            p[1] = (uint8_t)std::clamp((int)(tc.startPos / 32), 0, 6);       // Start zone (0..6)
+            p[2] = (uint8_t)std::clamp((int)(p[1] + 4), 2, 8);               // End snap zone (2..8)
+            p[3] = (uint8_t)std::clamp((int)(tc.force / 32), 1, 8);          // Pull resistance strength (1..8)
+            p[4] = (uint8_t)std::clamp((int)(tc.force / 32), 1, 8);          // Snap-back force (1..8)
+            break;
+        case TriggerMode::TriggerStop:
+            p[0] = 0x02; // Section hard stop
+            p[1] = (tc.startPos > 0) ? tc.startPos : 25; // Instant barrier
+            p[2] = 255;  // Barrier end
+            p[3] = 255;  // Max resistance
+            break;
+        default:
+            p[0] = 0x00;
+            break;
+        }
+    }
+
     static void BuildOutputReportUSB(uint8_t* out, size_t outLen, const ControllerConfig& config, uint8_t leftRumble, uint8_t rightRumble, bool micMuted) {
         if (outLen < 48) return;
         std::memset(out, 0, outLen);
@@ -117,9 +154,11 @@ public:
         // 0x02: Haptics Select
         // 0x04: Right Trigger Motor Enable
         // 0x08: Left Trigger Motor Enable
-        // NOTE: DO NOT set 0x10 (headphone volume enable) or 0x20/0x40/0x80! Setting them overrides
-        // and silences the headphone DAC. Leaving them unset lets Windows USB Audio control volume natively.
         out[1] = 0x0F; 
+        if (config.speakerEnabled) {
+            out[1] |= 0x20; // DS_OUTPUT_VALID_FLAG0_SPEAKER_VOLUME_ENABLE
+            out[1] |= 0x80; // DS_OUTPUT_VALID_FLAG0_AUDIO_CONTROL_ENABLE
+        }
 
         // valid_flag1:
         // 0x01: Mic Mute LED
@@ -132,26 +171,22 @@ public:
         out[3] = rightRumble;
         out[4] = leftRumble;
 
-        // Headphone Volume (0..127): Set to max (0x7F) and speaker to max (0xFF) as safeguard
+        // Headphone Volume (0..127): Set to max (0x7F)
         out[5] = 0x7F;
-        out[6] = 0xFF;
+        // Speaker Volume (0..255): 100% when enabled, 0 when disabled
+        out[6] = config.speakerEnabled ? 0xFF : 0x00;
+
+        // Audio Routing Flags: 0x00 = Headphone only, 0x02 = Both Headphone & Internal Speaker
+        out[8] = config.speakerEnabled ? 0x02 : 0x00;
 
         // Mic Mute LED (0=off, 1=solid amber, 2=pulse)
         out[9] = micMuted ? 0x01 : 0x00;
 
         // Right Trigger
-        out[11] = (uint8_t)config.rightTrigger.mode;
-        out[12] = config.rightTrigger.startPos;
-        out[13] = config.rightTrigger.force;
-        out[14] = config.rightTrigger.frequency;
-        out[15] = config.rightTrigger.endPos;
+        FormatTriggerPayload(&out[11], config.rightTrigger);
 
         // Left Trigger
-        out[22] = (uint8_t)config.leftTrigger.mode;
-        out[23] = config.leftTrigger.startPos;
-        out[24] = config.leftTrigger.force;
-        out[25] = config.leftTrigger.frequency;
-        out[26] = config.leftTrigger.endPos;
+        FormatTriggerPayload(&out[22], config.leftTrigger);
 
         // valid_flag2 (out[39]):
         // 0x04: DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2 (ensures rumble fires even with active USB Audio)
@@ -173,28 +208,26 @@ public:
         out[0] = 0x31; // DualSense BT Output Report ID
         out[1] = 0x02; // Tag
 
-        out[2] = 0x0F; // valid_flag0 (rumble + triggers, no audio mute)
+        out[2] = 0x0F; // valid_flag0 (rumble + triggers)
+        if (config.speakerEnabled) {
+            out[2] |= 0x20 | 0x80;
+        }
         out[3] = 0x35; // valid_flag1 (LEDs + lightbar)
 
         out[4] = rightRumble;
         out[5] = leftRumble;
 
-        out[6] = 0x7F; // Headphone volume safeguard
-        out[7] = 0xFF; // Speaker volume safeguard
+        out[6] = 0x7F; // Headphone volume
+        out[7] = config.speakerEnabled ? 0xFF : 0x00; // Speaker volume
+        out[9] = config.speakerEnabled ? 0x02 : 0x00; // Audio routing: both headphone & speaker
 
         out[10] = micMuted ? 0x01 : 0x00;
 
-        out[12] = (uint8_t)config.rightTrigger.mode;
-        out[13] = config.rightTrigger.startPos;
-        out[14] = config.rightTrigger.force;
-        out[15] = config.rightTrigger.frequency;
-        out[16] = config.rightTrigger.endPos;
+        // Right Trigger
+        FormatTriggerPayload(&out[12], config.rightTrigger);
 
-        out[23] = (uint8_t)config.leftTrigger.mode;
-        out[24] = config.leftTrigger.startPos;
-        out[25] = config.leftTrigger.force;
-        out[26] = config.leftTrigger.frequency;
-        out[27] = config.leftTrigger.endPos;
+        // Left Trigger
+        FormatTriggerPayload(&out[23], config.leftTrigger);
 
         // valid_flag2 (out[40] in Bluetooth report):
         // 0x04: DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2

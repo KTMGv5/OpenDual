@@ -188,10 +188,12 @@ void VirtualGamepad::Update(const ControllerState& state) {
 
     // Analog Sticks (-32768..32767)
     // Invert LY/RY back to standard Xbox format (up = positive, right = positive)
+    float combinedRx = std::clamp(state.rx + state.gyroStickX, -1.0f, 1.0f);
+    float combinedRy = std::clamp(state.ry + state.gyroStickY, -1.0f, 1.0f);
     report.sThumbLX = (SHORT)std::clamp(state.lx * 32767.0f, -32768.0f, 32767.0f);
     report.sThumbLY = (SHORT)std::clamp(state.ly * 32767.0f, -32768.0f, 32767.0f);
-    report.sThumbRX = (SHORT)std::clamp(state.rx * 32767.0f, -32768.0f, 32767.0f);
-    report.sThumbRY = (SHORT)std::clamp(state.ry * 32767.0f, -32768.0f, 32767.0f);
+    report.sThumbRX = (SHORT)std::clamp(combinedRx * 32767.0f, -32768.0f, 32767.0f);
+    report.sThumbRY = (SHORT)std::clamp(combinedRy * 32767.0f, -32768.0f, 32767.0f);
 
     fn_vigem_target_x360_send(m_client, m_target, report);
 }

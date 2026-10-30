@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.6.3",
-    [string]$ReleaseName = "OpenDual v1.6.3 - Quadraphonic Haptic Audio Streaming and Battery & Charging Alerts",
+    [string]$TagName = "v1.6.4",
+    [string]$ReleaseName = "OpenDual v1.6.4 - 6-Axis Gyro Aiming Overhaul, DualSense Speaker Output, and Mic Mute Toast",
     [string]$DistDir = "dist"
 )
 
@@ -46,36 +46,45 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.6.3
+## Highlights in OpenDual v1.6.4
 
-OpenDual v1.6.3 introduces native DualSense Quadraphonic Haptic Audio Streaming (Channels 3 & 4) for high-fidelity voice-coil haptics while preserving crystal-clear headphone audio, alongside real-time Battery Health & Charging Desktop Notifications and live visual dashboard badges.
-
----
-
-### What's New and Improved in v1.6.3
-
-* **Native DualSense Quadraphonic Haptic Audio Streaming**:
-  * Solved the DualSense hardware limitation where active controller audio mutes standard emulated HID rumble.
-  * DriverCore automatically attaches a WASAPI quadraphonic stream targeting Channels 3 & 4 (DualSense Voice-Coil Actuators), streaming 48kHz audio haptics without interfering with stereo headphone playback on Channels 1 & 2.
-  * System audio loopback (from speakers, soundbars, or headphones) continues delivering tactile rumble seamlessly across all audio output devices.
-
-* **Real-Time Battery Health & Charging Desktop Notifications**:
-  * Live Charging Badges on the Dashboard and Quick HUD displaying live percentage and full charge status.
-  * Added desktop notification alerts for Charger Connected, Charger Disconnected, and Battery Full (100%).
-  * Staged low battery warnings (<15% Low, <5% Critical) to notify you before your controller powers down during gaming sessions.
-  * Configurable toggle under Settings: 'Battery Health & Charging Desktop Notifications'.
-
-* **Codebase Verification & Security**:
-  * Authenticode code signing verified across all distributed executables.
-  * Clean MSVC C++20 and .NET 10 compilation with 0 warnings and 0 errors.
+OpenDual v1.6.4 introduces a complete 6-Axis Gyro Aiming Overhaul, native DualSense physical speaker audio output with hardware control, on-screen Microphone Mute / Unmute OSD toast notifications, and refined audio-reactive haptics defaults.
 
 ---
 
-### Included Signed Binaries
-* OpenDualSetup.exe - Standalone installer and uninstaller suite
-* OpenDualHub.exe - Desktop controller hub and configuration center
-* OpenDualDriver.exe - 1000Hz C++20 driver service engine
-* OpenDual-v1.6.3.zip - Portable release bundle
+### What's New and Improved in v1.6.4
+
+* **Complete 6-Axis Gyro Aiming Overhaul**:
+  * Precision Gyroscope motion aiming supporting both Mouse Emulation and Right Stick Emulation.
+  * Coordinate Space selection: Local (Standard Controller), Player Space (natural tilt aiming), and World Space.
+  * Fixed inversion and axis mapping across all display resolutions.
+  * Activation Modes: Always On, Hold to Aim (L2 ADS / Touchpad / R1 / L1), Inverted, and Toggle.
+  * Real-time calibration and hardware anti-drift rejection filter.
+
+* **DualSense Hardware Internal Speaker Route**:
+  * Route game and voice audio directly to the DualSense physical internal speaker with hardware volume control.
+  * Automatically sets DualSense HID flags (valid_flag0 0x20/0x80, audio flags 0x02) to unmute the internal speaker hardware.
+  * Seamless one-click audio device switching between PC speakers and controller speaker.
+
+* **On-Screen Mic Muted / Unmuted Toast Overlay**:
+  * OpenDual signature dark glass floating OSD pill with drop shadow and smooth fade animations.
+  * Instant visual feedback when pressing the DualSense hardware mic mute button (Amber glowing border for Muted, Neon Green for Unmuted).
+  * Runs as a non-activating overlay that never steals window or game focus.
+
+* **Refined Audio-Reactive Haptics & Recoil Defaults**:
+  * Audio haptics disabled by default to prevent unwanted rumble.
+  * Default intensity set to sweet-spot 30%, 40 Hz sub-bass cutoff filter, and 20% recoil transient threshold.
+  * Default profile tuned for PlayStation 5 balanced experience with custom rainbow RGB.
+
+* **Streamlined Distribution**:
+  * Exactly two signed release assets: OpenDualSetup.exe installer and OpenDual-v1.6.4.zip portable archive.
+  * MSVC C++20 and .NET 10 compilation with Authenticode digital signatures.
+
+---
+
+### Included Signed Assets
+* OpenDualSetup.exe - Complete standalone installer and uninstaller suite (Recommended)
+* OpenDual-v1.6.4.zip - Portable bundle including all binaries and tools
 "@
 
 # 3. Check if release already exists
@@ -125,10 +134,8 @@ if ($existingRelease) {
 $uploadBase = $uploadUrlTemplate -replace '\{\?name,label\}', ''
 
 $assetsToUpload = @(
-    "OpenDual-$TagName.zip",
     "OpenDualSetup.exe",
-    "OpenDualHub.exe",
-    "OpenDualDriver.exe"
+    "OpenDual-$TagName.zip"
 )
 
 # Fetch existing assets to avoid 422 duplicate errors

@@ -106,12 +106,6 @@ bool AudioSubsystem::Initialize() {
 
 void AudioSubsystem::Shutdown() {
     StopLoopback();
-    StopDualSenseHapticRender();
-
-    if (m_pDualSenseRenderDev) {
-        m_pDualSenseRenderDev->Release();
-        m_pDualSenseRenderDev = nullptr;
-    }
 
     if (m_pEnum) {
         m_pEnum->UnregisterEndpointNotificationCallback(&m_notifyClient);
@@ -226,38 +220,7 @@ bool AudioSubsystem::RefreshDevices() {
         pRender->Release();
     }
 
-    bool isDsDefault = (m_renderDeviceName.find(L"DualSense") != std::wstring::npos || 
-                        m_renderDeviceName.find(L"Wireless Controller") != std::wstring::npos);
-    m_isDefaultRenderDualSense.store(isDsDefault);
 
-    // Enumerate Render endpoints to find the DualSense 4-channel haptics endpoint
-    IMMDeviceCollection* pRenderCol = nullptr;
-    if (SUCCEEDED(m_pEnum->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pRenderCol)) && pRenderCol) {
-        UINT count = 0;
-        pRenderCol->GetCount(&count);
-        for (UINT i = 0; i < count; i++) {
-            IMMDevice* pDev = nullptr;
-            if (SUCCEEDED(pRenderCol->Item(i, &pDev))) {
-                IPropertyStore* pStore = nullptr;
-                if (SUCCEEDED(pDev->OpenPropertyStore(STGM_READ, &pStore))) {
-                    PROPVARIANT var;
-                    PropVariantInit(&var);
-                    if (SUCCEEDED(pStore->GetValue(PKEY_Device_FriendlyName, &var)) && var.pwszVal) {
-                        std::wstring name = var.pwszVal;
-                        if (name.find(L"DualSense") != std::wstring::npos || name.find(L"Wireless Controller") != std::wstring::npos) {
-                            m_pDualSenseRenderDev = pDev;
-                            pDev->AddRef();
-                        }
-                        PropVariantClear(&var);
-                    }
-                    pStore->Release();
-                }
-                pDev->Release();
-                if (m_pDualSenseRenderDev) break;
-            }
-        }
-        pRenderCol->Release();
-    }
 
     m_currentMicMuted = IsSystemMicMuted();
     return true;
@@ -406,8 +369,7 @@ void AudioSubsystem::LoopbackCaptureThread() {
         m_filterL.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
         m_filterR.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
 
-        // Initialize 4-channel DualSense haptics render stream
-        StartDualSenseHapticRender();
+
 
         // Dynamic capture loop on active endpoint
         while (m_loopbackRunning && !m_defaultDeviceChanged.load()) {
@@ -440,8 +402,6 @@ void AudioSubsystem::LoopbackCaptureThread() {
             Sleep(8); // High update rate (~120Hz)
         }
 
-        StopDualSenseHapticRender();
-
         pClient->Stop();
         pCapture->Release();
         CoTaskMemFree(pFormat);
@@ -454,132 +414,6 @@ void AudioSubsystem::LoopbackCaptureThread() {
     }
 
     if (hr == S_OK || hr == S_FALSE) CoUninitialize();
-}
-
-bool AudioSubsystem::StartDualSenseHapticRender() {
-    StopDualSenseHapticRender();
-    if (!m_pDualSenseRenderDev) return false;
-
-    HRESULT hr = m_pDualSenseRenderDev->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, (void**)&m_pDualSenseRenderClient);
-    if (FAILED(hr) || !m_pDualSenseRenderClient) return false;
-
-    hr = m_pDualSenseRenderClient->GetMixFormat(&m_pDualSenseFormat);
-    if (FAILED(hr) || !m_pDualSenseFormat || m_pDualSenseFormat->nChannels < 4) {
-        if (m_pDualSenseFormat) {
-            CoTaskMemFree(m_pDualSenseFormat);
-            m_pDualSenseFormat = nullptr;
-        }
-        m_pDualSenseRenderClient->Release();
-        m_pDualSenseRenderClient = nullptr;
-        return false;
-    }
-
-    REFERENCE_TIME hnsBufferDuration = 1000000; // 100ms
-    hr = m_pDualSenseRenderClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, hnsBufferDuration, 0, m_pDualSenseFormat, NULL);
-    if (FAILED(hr)) {
-        StopDualSenseHapticRender();
-        return false;
-    }
-
-    hr = m_pDualSenseRenderClient->GetService(__uuidof(IAudioRenderClient), (void**)&m_pDualSenseAudioRender);
-    if (FAILED(hr) || !m_pDualSenseAudioRender) {
-        StopDualSenseHapticRender();
-        return false;
-    }
-
-    m_pDualSenseRenderClient->GetBufferSize(&m_dualsenseBufferSize);
-    hr = m_pDualSenseRenderClient->Start();
-    if (FAILED(hr)) {
-        StopDualSenseHapticRender();
-        return false;
-    }
-
-    m_hasDualSenseRender.store(true);
-    return true;
-}
-
-void AudioSubsystem::StopDualSenseHapticRender() {
-    m_hasDualSenseRender.store(false);
-    if (m_pDualSenseRenderClient) {
-        m_pDualSenseRenderClient->Stop();
-    }
-    if (m_pDualSenseAudioRender) {
-        m_pDualSenseAudioRender->Release();
-        m_pDualSenseAudioRender = nullptr;
-    }
-    if (m_pDualSenseFormat) {
-        CoTaskMemFree(m_pDualSenseFormat);
-        m_pDualSenseFormat = nullptr;
-    }
-    if (m_pDualSenseRenderClient) {
-        m_pDualSenseRenderClient->Release();
-        m_pDualSenseRenderClient = nullptr;
-    }
-    m_dualsenseBufferSize = 0;
-}
-
-void AudioSubsystem::WriteHapticSamples(const float* pSamplesL, const float* pSamplesR, UINT32 numFrames) {
-    if (!m_pDualSenseAudioRender || !m_pDualSenseRenderClient || !m_pDualSenseFormat || numFrames == 0) return;
-
-    UINT32 padding = 0;
-    if (FAILED(m_pDualSenseRenderClient->GetCurrentPadding(&padding))) return;
-
-    UINT32 available = (m_dualsenseBufferSize > padding) ? (m_dualsenseBufferSize - padding) : 0;
-    UINT32 toWrite = (std::min)(numFrames, available);
-    if (toWrite == 0) return;
-
-    BYTE* pData = nullptr;
-    if (FAILED(m_pDualSenseAudioRender->GetBuffer(toWrite, &pData)) || !pData) return;
-
-    int channels = m_pDualSenseFormat->nChannels;
-    float intensity = m_hapticIntensity.load();
-    bool stereo = m_hapticStereo.load();
-
-    bool isFloat = (m_pDualSenseFormat->wFormatTag == WAVE_FORMAT_IEEE_FLOAT);
-    if (m_pDualSenseFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        WAVEFORMATEXTENSIBLE* pExt = (WAVEFORMATEXTENSIBLE*)m_pDualSenseFormat;
-        if (pExt->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) isFloat = true;
-    }
-
-    if (isFloat && m_pDualSenseFormat->wBitsPerSample == 32) {
-        float* pOut = (float*)pData;
-        for (UINT32 i = 0; i < toWrite; i++) {
-            float sL = pSamplesL[i] * intensity;
-            float sR = pSamplesR[i] * intensity;
-            if (!stereo) {
-                float mono = (std::max)(std::abs(sL), std::abs(sR));
-                sL = mono;
-                sR = mono;
-            }
-            // Channels 0 & 1: Headphones (SILENT - never interfere with user's audio)
-            pOut[i * channels + 0] = 0.0f;
-            pOut[i * channels + 1] = 0.0f;
-            // Channels 2 & 3: DualSense Voice-Coil Actuators
-            if (channels >= 4) {
-                pOut[i * channels + 2] = std::clamp(sL, -1.0f, 1.0f);
-                pOut[i * channels + 3] = std::clamp(sR, -1.0f, 1.0f);
-            }
-        }
-    } else if (m_pDualSenseFormat->wBitsPerSample == 16) {
-        int16_t* pOut = (int16_t*)pData;
-        for (UINT32 i = 0; i < toWrite; i++) {
-            float sL = pSamplesL[i] * intensity;
-            float sR = pSamplesR[i] * intensity;
-            if (!stereo) {
-                float mono = (std::max)(std::abs(sL), std::abs(sR));
-                sL = mono;
-                sR = mono;
-            }
-            pOut[i * channels + 0] = 0;
-            pOut[i * channels + 1] = 0;
-            if (channels >= 4) {
-                pOut[i * channels + 2] = (int16_t)(std::clamp(sL, -1.0f, 1.0f) * 32767.0f);
-                pOut[i * channels + 3] = (int16_t)(std::clamp(sR, -1.0f, 1.0f) * 32767.0f);
-            }
-        }
-    }
-
-    m_pDualSenseAudioRender->ReleaseBuffer(toWrite, 0);
 }
 
 void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORMATEX* pFormat) {
@@ -602,8 +436,7 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
         }
     }
 
-    m_waveBufL.resize(numFrames);
-    m_waveBufR.resize(numFrames);
+
 
     float localPeakL = 0.0f;
     float localPeakR = 0.0f;
@@ -632,8 +465,6 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
 
             float fL = m_filterL.Process(sL);
             float fR = m_filterR.Process(sR);
-            m_waveBufL[i] = fL;
-            m_waveBufR[i] = fR;
 
             float aL = std::abs(fL);
             float aR = std::abs(fR);
@@ -661,8 +492,6 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
 
             float fL = m_filterL.Process(sL);
             float fR = m_filterR.Process(sR);
-            m_waveBufL[i] = fL;
-            m_waveBufR[i] = fR;
 
             float aL = std::abs(fL);
             float aR = std::abs(fR);
@@ -684,8 +513,6 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
 
             float fL = m_filterL.Process(sL);
             float fR = m_filterR.Process(sR);
-            m_waveBufL[i] = fL;
-            m_waveBufR[i] = fR;
 
             float aL = std::abs(fL);
             float aR = std::abs(fR);
@@ -700,8 +527,6 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
 
             float fL = m_filterL.Process(sL);
             float fR = m_filterR.Process(sR);
-            m_waveBufL[i] = fL;
-            m_waveBufR[i] = fR;
 
             float aL = std::abs(fL);
             float aR = std::abs(fR);
@@ -710,9 +535,7 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
         }
     }
 
-    if (m_hasDualSenseRender.load()) {
-        WriteHapticSamples(m_waveBufL.data(), m_waveBufR.data(), numFrames);
-    }
+
 
     std::lock_guard<std::mutex> lock(m_hapticMutex);
     // Instant attack on rising peaks, fast musical release on decay (~60ms)

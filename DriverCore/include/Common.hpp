@@ -54,7 +54,7 @@ struct ControllerConfig {
     uint8_t ledG = 120;
     uint8_t ledB = 255;         // Default PlayStation Blue
     uint8_t brightness = 255;
-    RgbEffect rgbEffect = RgbEffect::Solid;
+    RgbEffect rgbEffect = RgbEffect::Rainbow;
     float effectSpeed = 1.0f;
 
     // Player LEDs (DualSense)
@@ -74,22 +74,25 @@ struct ControllerConfig {
 
     // Audio & Mic Mute Sync
     bool syncMicMute = true;
-    bool audioHapticsEnabled = true;
-    float hapticIntensity = 1.0f;       // 0.0 to 2.0 (0% to 200%)
-    int hapticCutoffHz = 100;           // 60 to 200 Hz low-pass
+    bool audioHapticsEnabled = false;
+    float hapticIntensity = 0.30f;      // 0.0 to 2.0 (User default: 30%)
+    int hapticCutoffHz = 40;            // 40 Hz low-pass (User default: 40 Hz)
     bool hapticStereo = true;           // True = directional stereo, False = combined mono
     bool audioTriggerKick = false;      // Audio-to-trigger mechanical recoil kick
-    float audioTriggerThreshold = 0.45f;// Transient spike threshold (0.1 to 1.0)
+    float audioTriggerThreshold = 0.20f;// Transient spike threshold (User default: 20%)
+    bool speakerEnabled = false;        // Controller speaker hardware audio output (Default: OFF)
 
     // 6-Axis Gyro Motion Aiming
     bool gyroEnabled = false;
     int gyroTriggerMode = 1;            // 0 = Always On, 1 = Hold L2 (ADS), 2 = Touchpad Touch, 3 = Hold R2
+    int gyroOutputMode = 0;             // 0 = Mouse Cursor (Sub-Pixel Mouse), 1 = Right Thumbstick (R-Stick Camera)
+    int gyroSpace = 0;                  // 0 = Player Space (Auto-Tilt Fusion), 1 = Yaw Only, 2 = Roll Only
     float gyroSensX = 1.0f;             // 0.1 to 5.0
     float gyroSensY = 1.0f;             // 0.1 to 5.0
     bool gyroInvertX = false;
     bool gyroInvertY = false;
-    int gyroDeadzone = 20;              // Sensor deadzone (0..100)
-    float gyroSmooth = 0.25f;           // Smoothing factor (0.0 to 0.9)
+    int gyroDeadzone = 3;               // Sensor deadzone in deg/s (default 3 deg/s)
+    float gyroSmooth = 0.20f;           // Smoothing factor (0.0 to 0.85)
 
     // Power Management & Battery
     int idleTimeoutMinutes = 10;        // 0 = Never, 5, 10, 15, 30 min
@@ -148,6 +151,8 @@ struct ControllerState {
 
     // Gyro & Activity status
     bool gyroActive = false;
+    float gyroStickX = 0.0f;
+    float gyroStickY = 0.0f;
     bool isIdle = false;
 
     // Battery
