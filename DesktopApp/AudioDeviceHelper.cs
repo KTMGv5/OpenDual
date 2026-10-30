@@ -99,7 +99,7 @@ namespace OpenDualHub
             public PropertyKey(Guid g, uint id) { fmtid = g; pid = id; }
         }
 
-        [StructLayout(LayoutKind.Explicit)]
+        [StructLayout(LayoutKind.Explicit, Size = 24)]
         private struct PropVariant
         {
             [FieldOffset(0)] public ushort vt;
@@ -107,6 +107,7 @@ namespace OpenDualHub
             [FieldOffset(4)] public ushort wReserved2;
             [FieldOffset(6)] public ushort wReserved3;
             [FieldOffset(8)] public IntPtr pwszVal;
+            [FieldOffset(16)] public long dummy;
         }
 
         [DllImport("ole32.dll")]
