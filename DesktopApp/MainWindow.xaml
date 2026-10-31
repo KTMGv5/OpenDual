@@ -236,8 +236,19 @@
         <!-- PlayStation 3 Dynamic Ethereal Wave Background -->
         <local:Ps3WaveBackground Grid.RowSpan="3" x:Name="Ps3Background" Panel.ZIndex="0"/>
 
-        <!-- PS3 XMB HOMESCREEN TOP NAVIGATION BAR -->
-        <Border Grid.Row="0" Panel.ZIndex="1" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="14,0">
+        <!-- PlayStation 3 Authentic Cross Media Bar (XMB) Primary Interface -->
+        <local:Ps3XmbView x:Name="XmbView" Grid.RowSpan="3" Panel.ZIndex="5" Visibility="Visible"/>
+
+        <!-- Legacy / Classic Expanded Layout (Preserved for element references, hidden by default) -->
+        <Grid x:Name="ViewClassicLayout" Grid.RowSpan="3" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="64"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="36"/>
+            </Grid.RowDefinitions>
+
+            <!-- PS5 HOMESCREEN TOP NAVIGATION BAR -->
+            <Border Grid.Row="0" Panel.ZIndex="1" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="14,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -1461,5 +1472,6 @@
                 <TextBlock x:Name="TxtFooterVersion" Grid.Column="2" Text="OpenDual Suite v1.6.6" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
+        </Grid>
     </Grid>
 </Window>

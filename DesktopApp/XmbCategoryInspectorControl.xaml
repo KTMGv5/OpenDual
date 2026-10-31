@@ -1,0 +1,326 @@
+<UserControl x:Class="OpenDualHub.XmbCategoryInspectorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="680">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="AccentSignature" Color="#00F5D4"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#2979FF"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#00E676"/>
+        <SolidColorBrush x:Key="AccentAmber" Color="#FFA000"/>
+        <SolidColorBrush x:Key="AccentRed" Color="#FF334B"/>
+        <SolidColorBrush x:Key="AccentMagenta" Color="#FF007F"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#9AACC4"/>
+        <SolidColorBrush x:Key="BgCard" Color="#CC0E1422"/>
+        <SolidColorBrush x:Key="SlotBg" Color="#B0080C14"/>
+        <SolidColorBrush x:Key="PillBg" Color="#1F283B"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#352979FF"/>
+
+        <Style x:Key="XmbOptionBtn" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="Background" Value="#1C2740"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="XmbToggle" TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="Background" Value="#1C2740"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Brd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Brd" Property="Background" Value="{StaticResource AccentSignature}"/>
+                                <Setter Property="Foreground" Value="#080B13"/>
+                                <Setter TargetName="Brd" Property="BorderBrush" Value="#00F5D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="6">
+
+            <!-- 1. TRIGGERS PANEL -->
+            <StackPanel x:Name="PanelTriggers" Visibility="Collapsed">
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="⚡ ADAPTIVE TRIGGER ENGINE" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Configure force-feedback resistance profiles for L2 and R2 motor worm gears." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,12"/>
+
+                        <!-- Left Trigger (L2) -->
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,6">
+                                    <TextBlock Text="LEFT TRIGGER (L2 - AIM / BRAKE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtL2ModeBadge" Text="Rigid Section Snap" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <WrapPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Button Content="Off (Linear)" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="0"/>
+                                    <Button Content="Game Specific SDK" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="1"/>
+                                    <Button Content="Rigid Section Snap" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="2"/>
+                                    <Button Content="Compound Bow" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="3"/>
+                                    <Button Content="Machine Gun Recoil" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="4"/>
+                                </WrapPanel>
+                                <ProgressBar x:Name="BarL2Inspector" Height="6" Minimum="0" Maximum="100" Value="0" Background="#141B2B" Foreground="{StaticResource AccentSignature}" BorderThickness="0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right Trigger (R2) -->
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,6">
+                                    <TextBlock Text="RIGHT TRIGGER (R2 - FIRE / THROTTLE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtR2ModeBadge" Text="Game Specific SDK" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <WrapPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Button Content="Off (Linear)" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="0"/>
+                                    <Button Content="Game Specific SDK" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="1"/>
+                                    <Button Content="Rigid Section Snap" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="2"/>
+                                    <Button Content="Compound Bow" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="3"/>
+                                    <Button Content="Machine Gun Recoil" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="4"/>
+                                </WrapPanel>
+                                <ProgressBar x:Name="BarR2Inspector" Height="6" Minimum="0" Maximum="100" Value="0" Background="#141B2B" Foreground="{StaticResource AccentSignature}" BorderThickness="0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 2. GYRO AIM PANEL -->
+            <StackPanel x:Name="PanelGyro" Visibility="Collapsed">
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🎯 6-AXIS GYROSCOPE AIMING" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleGyroEnable" Content="Gyro Aim: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleGyroEnable_Click"/>
+                        </Grid>
+                        <TextBlock Text="Precision motion crosshair aiming with natural pitch/roll coordinate orientation." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="OUTPUT EMULATION MODE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="BtnGyroMouse" Content="🖱️ Windows Mouse Emulation" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,8,0" Click="BtnGyroMode_Click" Tag="0"/>
+                                    <Button x:Name="BtnGyroStick" Content="🕹️ XInput Right Thumbstick" Style="{StaticResource XmbOptionBtn}" Click="BtnGyroMode_Click" Tag="1"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="HORIZONTAL SENSITIVITY (X)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtSensXVal" Text="1.20x" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Slider x:Name="SliderSensX" Minimum="0.2" Maximum="3.0" Value="1.2" SmallChange="0.05" LargeChange="0.1" Margin="0,0,0,10" ValueChanged="SliderSens_ValueChanged"/>
+
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="VERTICAL SENSITIVITY (Y - NATURAL PITCH)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtSensYVal" Text="1.20x" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Slider x:Name="SliderSensY" Minimum="0.2" Maximum="3.0" Value="1.2" SmallChange="0.05" LargeChange="0.1" ValueChanged="SliderSens_ValueChanged"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="BtnLaunchCalibrator" Content="🪄 Launch Interactive Gyro Calibrator Wizard" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentBlue}" Padding="16,10" HorizontalAlignment="Left" Click="BtnLaunchCalibrator_Click"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 3. LIGHTBAR PANEL -->
+            <StackPanel x:Name="PanelLightbar" Visibility="Collapsed">
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="🌈 DUALSENSE RGB LIGHTBAR" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Customize LED illumination effects, glow colors, and player indicator LEDs." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="LIGHTBAR ANIMATION MODE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Content="Solid Color" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="0"/>
+                                    <Button Content="Breathing Pulse" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="1"/>
+                                    <Button Content="Rainbow Wave" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="2"/>
+                                    <Button Content="Game Audio Reactive" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="3"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="QUICK COLOR PRESETS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button Content="Signature Cyan" Style="{StaticResource XmbOptionBtn}" Background="#00F5D4" Foreground="#080B13" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#00F5D4"/>
+                                    <Button Content="PlayStation Blue" Style="{StaticResource XmbOptionBtn}" Background="#2979FF" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#2979FF"/>
+                                    <Button Content="Neon Magenta" Style="{StaticResource XmbOptionBtn}" Background="#FF007F" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#FF007F"/>
+                                    <Button Content="Emerald Green" Style="{StaticResource XmbOptionBtn}" Background="#00E676" Foreground="#080B13" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#00E676"/>
+                                    <Button Content="Solar Amber" Style="{StaticResource XmbOptionBtn}" Background="#FFA000" Foreground="#080B13" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#FFA000"/>
+                                    <Button Content="Crimson Red" Style="{StaticResource XmbOptionBtn}" Background="#FF334B" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#FF334B"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 4. AUDIO & HAPTICS PANEL -->
+            <StackPanel x:Name="PanelAudio" Visibility="Collapsed">
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="🔊 AUDIO &amp; DUALSENSE VOICE-COIL HAPTICS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Haptic tactile motors, sub-bass recoil, and controller speaker output." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="DUALSENSE VOICE-COIL HAPTICS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Wideband voice-coil haptic actuators in palm grips" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleHaptics" Content="Haptics: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleHaptics_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="AUDIO-TO-HAPTICS RECOIL INTENSITY" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtHapticIntensity" Text="30% (Recommended)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Slider x:Name="SliderHapticIntensity" Minimum="0" Maximum="100" Value="30" Margin="0,0,0,4" ValueChanged="SliderHapticIntensity_ValueChanged"/>
+                                <TextBlock Text="Default 30% intensity and 40Hz bass cutoff provides smooth tactile rumble." FontSize="9" Foreground="{StaticResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="CONTROLLER SPEAKER OUTPUT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Route audio directly to controller built-in DAC speaker (Default: Off)" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleSpeaker" Content="Speaker: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleSpeaker_Click"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 5. PROFILES PANEL -->
+            <StackPanel x:Name="PanelProfiles" Visibility="Collapsed">
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="👤 PROFILES &amp; GAME PRESETS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Switch between tailored profiles or link profiles to game executables." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1.5" CornerRadius="8" Padding="14" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="🎮 PlayStation 5 Balanced (Active)" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Default PS5 haptics, rigid section trigger snap, and rainbow lightbar" FontSize="11" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Border Background="#3000E676" CornerRadius="6" Padding="8,4" HorizontalAlignment="Right">
+                                    <TextBlock Text="CURRENT ACTIVE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="🏆 Esports Ultra 1000Hz" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="1000Hz polling rate, Hall stabilizer active, instant click triggers" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button Content="Activate" Style="{StaticResource XmbOptionBtn}" HorizontalAlignment="Right" Click="BtnActivateProfile_Click" Tag="Esports Ultra"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="🎯 FPS Gyro Aim Specialist" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Gyro-to-mouse enabled, spatial footstep radar, trigger click-break" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button Content="Activate" Style="{StaticResource XmbOptionBtn}" HorizontalAlignment="Right" Click="BtnActivateProfile_Click" Tag="FPS Gyro"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 6. SETTINGS & SYSTEM PANEL -->
+            <StackPanel x:Name="PanelSettings" Visibility="Collapsed">
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="⚙️ SYSTEM &amp; DRIVER ENGINE SETTINGS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Direct Win32 kernel HID service configuration and application settings." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="DIRECT HID SERVICE (OpenDualDriver.exe)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="High-priority Win32 overlapped 1000Hz kernel polling engine" FontSize="10" Foreground="{StaticResource AccentGreen}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button Content="Restart Service" Style="{StaticResource XmbOptionBtn}" HorizontalAlignment="Right" Click="BtnRestartDriver_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="LAUNCH ON WINDOWS STARTUP" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Start minimized in system tray on user logon" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleAutoStart" Content="Auto-Start: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleAutoStart_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="SOFTWARE RELEASE VERSION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="OpenDual Suite v1.6.6 (Latest PS3 XMB Release)" FontSize="10" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Border Background="#2000E676" CornerRadius="6" Padding="8,4" HorizontalAlignment="Right">
+                                    <TextBlock Text="UP TO DATE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+        </Grid>
+    </ScrollViewer>
+</UserControl>

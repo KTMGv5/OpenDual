@@ -1,0 +1,205 @@
+<UserControl x:Class="OpenDualHub.ControllerInspectorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="620" d:DesignWidth="680">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="AccentSignature" Color="#00F5D4"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#2979FF"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#00E676"/>
+        <SolidColorBrush x:Key="AccentAmber" Color="#FFA000"/>
+        <SolidColorBrush x:Key="AccentRed" Color="#FF334B"/>
+        <SolidColorBrush x:Key="AccentMagenta" Color="#FF007F"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#9AACC4"/>
+        <SolidColorBrush x:Key="BgCard" Color="#CC0E1422"/>
+        <SolidColorBrush x:Key="SlotBg" Color="#B0080C14"/>
+        <SolidColorBrush x:Key="PillBg" Color="#1F283B"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#352979FF"/>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="6">
+
+            <!-- 1. HERO INFORMATION & TELEMETRY CARD -->
+            <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="18,14" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtModelTitle" Text="PlayStation 5 DualSense Controller" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                            <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtProfileBadge" Text="PS5 Balanced" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                            </Border>
+                        </WrapPanel>
+                        <TextBlock x:Name="TxtConnectionInfo" Text="Active USB Connection • Direct Win32 Overlapped High-Priority Driver" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Telemetry Badges -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,8,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="POLLING RATE" FontSize="8" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                                <TextBlock x:Name="TxtHzVal" Text="1000 Hz" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="INPUT LATENCY" FontSize="8" FontWeight="Bold" Foreground="{StaticResource AccentBlue}"/>
+                                <TextBlock x:Name="TxtLatencyVal" Text="0.8 ms" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 2. LIVE INPUT TEST & ANALOG SENSORS -->
+            <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="18">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🕹️" FontSize="13" Margin="0,0,6,0"/>
+                            <TextBlock Text="LIVE HARDWARE INPUT VISUALIZER" FontSize="13" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                        </StackPanel>
+                        <TextBlock Text="Real-time 1000Hz HID Bus Polling" FontSize="10" Foreground="{StaticResource AccentGreen}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Analog Thumbsticks (L3 / R3) & Triggers (L2 / R2) -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Stick & L2 Trigger -->
+                        <Border Grid.Column="0" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="LEFT ANALOG &amp; L2 TRIGGER" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+
+                                <!-- Stick Crosshair Radar -->
+                                <Border Width="110" Height="110" Background="#0C101A" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="55">
+                                    <Canvas x:Name="CanvasStickL" Width="110" Height="110" ClipToBounds="True"/>
+                                </Border>
+                                <TextBlock x:Name="TxtCoordsL" Text="X: +0.00  Y: +0.00" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Center" Margin="0,6,0,8"/>
+
+                                <!-- L2 Trigger Gauge -->
+                                <Grid Width="110">
+                                    <TextBlock Text="L2" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock x:Name="TxtTriggerLVal" Text="0%" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <ProgressBar x:Name="BarTriggerL" Width="110" Height="6" Minimum="0" Maximum="100" Value="0" Background="#141B2B" Foreground="{StaticResource AccentSignature}" BorderThickness="0" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right Stick & R2 Trigger -->
+                        <Border Grid.Column="2" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="RIGHT ANALOG &amp; R2 TRIGGER" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+
+                                <!-- Stick Crosshair Radar -->
+                                <Border Width="110" Height="110" Background="#0C101A" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="55">
+                                    <Canvas x:Name="CanvasStickR" Width="110" Height="110" ClipToBounds="True"/>
+                                </Border>
+                                <TextBlock x:Name="TxtCoordsR" Text="X: +0.00  Y: +0.00" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentMagenta}" HorizontalAlignment="Center" Margin="0,6,0,8"/>
+
+                                <!-- R2 Trigger Gauge -->
+                                <Grid Width="110">
+                                    <TextBlock Text="R2" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock x:Name="TxtTriggerRVal" Text="0%" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentMagenta}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <ProgressBar x:Name="BarTriggerR" Width="110" Height="6" Minimum="0" Maximum="100" Value="0" Background="#141B2B" Foreground="{StaticResource AccentMagenta}" BorderThickness="0" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Buttons & D-Pad Status Row -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Directional D-Pad -->
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="DIRECTIONAL D-PAD" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                <Grid Width="90" Height="90">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border x:Name="BtnDpadUp" Grid.Row="0" Grid.Column="1" Background="{StaticResource PillBg}" CornerRadius="4" Margin="2">
+                                        <TextBlock Text="▲" FontSize="10" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border x:Name="BtnDpadLeft" Grid.Row="1" Grid.Column="0" Background="{StaticResource PillBg}" CornerRadius="4" Margin="2">
+                                        <TextBlock Text="◀" FontSize="10" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border x:Name="BtnDpadRight" Grid.Row="1" Grid.Column="2" Background="{StaticResource PillBg}" CornerRadius="4" Margin="2">
+                                        <TextBlock Text="▶" FontSize="10" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border x:Name="BtnDpadDown" Grid.Row="2" Grid.Column="1" Background="{StaticResource PillBg}" CornerRadius="4" Margin="2">
+                                        <TextBlock Text="▼" FontSize="10" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Divider -->
+                            <Border Grid.Column="1" Background="{StaticResource BorderColor}"/>
+
+                            <!-- PlayStation Action Buttons -->
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                <TextBlock Text="ACTION BUTTONS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                <Grid Width="90" Height="90">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Triangle △ -->
+                                    <Border x:Name="BtnTriangle" Grid.Row="0" Grid.Column="1" Background="{StaticResource PillBg}" CornerRadius="14" Margin="2">
+                                        <TextBlock Text="△" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <!-- Square □ -->
+                                    <Border x:Name="BtnSquare" Grid.Row="1" Grid.Column="0" Background="{StaticResource PillBg}" CornerRadius="14" Margin="2">
+                                        <TextBlock Text="□" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentMagenta}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <!-- Circle ◯ -->
+                                    <Border x:Name="BtnCircle" Grid.Row="1" Grid.Column="2" Background="{StaticResource PillBg}" CornerRadius="14" Margin="2">
+                                        <TextBlock Text="◯" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentRed}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <!-- Cross ✕ -->
+                                    <Border x:Name="BtnCross" Grid.Row="2" Grid.Column="1" Background="{StaticResource PillBg}" CornerRadius="14" Margin="2">
+                                        <TextBlock Text="✕" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

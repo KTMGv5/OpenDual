@@ -100,6 +100,11 @@ namespace OpenDualHub
             _ipc.Start();
             RefreshDriverStatus();
 
+            if (XmbView != null)
+            {
+                XmbView.SetIpcClient(_ipc);
+            }
+
             if (LabControl != null)
             {
                 LabControl.IpcClient = _ipc;
@@ -134,6 +139,60 @@ namespace OpenDualHub
 
             // Background update check (non-blocking)
             _ = CheckForUpdatesSilentlyAsync();
+
+            // Automated UI screenshot generation for testing
+            string[] args = Environment.GetCommandLineArgs();
+            int targetCat = -1;
+            int targetItem = -1;
+            string? screenshotPath = null;
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--category" && i + 1 < args.Length && int.TryParse(args[i + 1], out int c)) targetCat = c;
+                if (args[i] == "--item" && i + 1 < args.Length && int.TryParse(args[i + 1], out int itm)) targetItem = itm;
+                if (args[i] == "--screenshot" && i + 1 < args.Length) screenshotPath = args[i + 1];
+            }
+
+            if (!string.IsNullOrEmpty(screenshotPath))
+            {
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+                {
+                    try
+                    {
+                        if (targetCat >= 0 && XmbView != null) XmbView.Xmb.SelectCategory(targetCat);
+                        if (targetItem >= 0 && XmbView != null) XmbView.Xmb.SelectItem(targetItem);
+                        UpdateLayout();
+                        CaptureToPng(screenshotPath);
+                    }
+                    catch { }
+                    Application.Current.Shutdown();
+                }));
+                return;
+            }
+        }
+
+        public void CaptureToPng(string outputPath)
+        {
+            UpdateLayout();
+            int width = (int)ActualWidth;
+            int height = (int)ActualHeight;
+            if (width <= 0) width = 1100;
+            if (height <= 0) height = 820;
+
+            var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(width, height, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+            rtb.Render(this);
+
+            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb));
+
+            string? dir = System.IO.Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.CreateDirectory(dir);
+            }
+
+            using var stream = System.IO.File.Create(outputPath);
+            encoder.Save(stream);
         }
 
         private void RestoreFromTray()
@@ -210,6 +269,40 @@ namespace OpenDualHub
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateResponsiveLayout(e.NewSize.Width);
+        }
+
+        protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+        {
+            base.OnPreviewKeyDown(e);
+            if (XmbView != null && XmbView.Visibility == Visibility.Visible)
+            {
+                if (e.Key == System.Windows.Input.Key.Left)
+                {
+                    XmbView.Xmb.NavigateCategory(-1);
+                    e.Handled = true;
+                }
+                else if (e.Key == System.Windows.Input.Key.Right)
+                {
+                    XmbView.Xmb.NavigateCategory(1);
+                    e.Handled = true;
+                }
+                else if (e.Key == System.Windows.Input.Key.Up)
+                {
+                    XmbView.Xmb.NavigateItem(-1);
+                    e.Handled = true;
+                }
+                else if (e.Key == System.Windows.Input.Key.Down)
+                {
+                    XmbView.Xmb.NavigateItem(1);
+                    e.Handled = true;
+                }
+                else if (e.Key == System.Windows.Input.Key.Enter || e.Key == System.Windows.Input.Key.Space)
+                {
+                    var item = XmbView.Xmb.ActiveItem;
+                    if (item != null) item.OnActivate?.Invoke();
+                    e.Handled = true;
+                }
+            }
         }
 
         private void NavTabsScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
@@ -488,6 +581,8 @@ namespace OpenDualHub
                 _isUpdatingUi = true;
                 try
                 {
+                    XmbView?.UpdateTelemetry(t);
+
                     if (t.Connected)
                     {
                         if (StatusDot != null) StatusDot.Fill = (SolidColorBrush)FindResource("AccentGreen");
