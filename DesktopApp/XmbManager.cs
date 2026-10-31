@@ -58,7 +58,7 @@ namespace OpenDualHub
 
             // 2. CONTROLLER (DEFAULT)
             var catController = new XmbCategory { Id = "controller", Title = "CONTROLLER", Icon = "🎮" };
-            catController.Items.Add(new XmbItem { Id = "ctrl_status", Title = "Controller Overview", Subtitle = "DualSense Wireless (USB 1000Hz)", Icon = "🎮", ValueBadge = "Connected" });
+            catController.Items.Add(new XmbItem { Id = "ctrl_status", Title = "Controller Overview", Subtitle = "Controller Wireless (USB 1000Hz)", Icon = "🎮", ValueBadge = "Connected" });
             catController.Items.Add(new XmbItem { Id = "ctrl_input", Title = "Live Input Visualizer", Subtitle = "Real-time sticks, triggers, D-Pad & buttons", Icon = "🕹️", ValueBadge = "Live Test" });
             catController.Items.Add(new XmbItem { Id = "ctrl_overclock", Title = "1000 Hz USB Overclock Assistant", Subtitle = "SweetLow HIDUSBF kernel filter booster", Icon = "⚡", ValueBadge = "1.0 ms" });
             catController.Items.Add(new XmbItem { Id = "ctrl_battery_sentinel", Title = "Battery Longevity Sentinel", Subtitle = "80% Esports smart charge limit & health", Icon = "🔋", ValueBadge = "98% Pro" });
@@ -98,7 +98,7 @@ namespace OpenDualHub
 
             // 7. AUDIO & HAPTICS
             var catAudio = new XmbCategory { Id = "audio", Title = "AUDIO", Icon = "🔊" };
-            catAudio.Items.Add(new XmbItem { Id = "aud_haptic", Title = "DualSense Voice-Coil Haptics", Subtitle = "Dual wideband voice-coil tactile actuators", Icon = "🔊", ValueBadge = "Active" });
+            catAudio.Items.Add(new XmbItem { Id = "aud_haptic", Title = "Tactile Voice-Coil Haptics", Subtitle = "Dual wideband voice-coil tactile actuators", Icon = "🔊", ValueBadge = "Active" });
             catAudio.Items.Add(new XmbItem { Id = "aud_spatial_radar", Title = "Directional Spatial Audio Radar", Subtitle = "Acoustic footstep tactile pulse virtualizer", Icon = "🎧", ValueBadge = "Spatial On" });
             catAudio.Items.Add(new XmbItem { Id = "aud_reactive", Title = "Audio-to-Haptics Reactive Bass", Subtitle = "Real-time 40Hz sub-bass recoil haptic rumble", Icon = "🌊", ValueBadge = "30% Smooth" });
             catAudio.Items.Add(new XmbItem { Id = "aud_speaker", Title = "Controller Speaker Output", Subtitle = "Play sound directly through controller DAC", Icon = "📢", ValueBadge = "Toggle Off" });

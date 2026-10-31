@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using System.Windows;
 
@@ -9,8 +9,6 @@ using System.Windows.Media;
 using System.Windows.Threading;
 
 using OpenDualHub.Models;
-
-
 
 namespace OpenDualHub
 
@@ -30,8 +28,6 @@ namespace OpenDualHub
 
         private bool _isInitialized = false;
 
-
-
         private readonly TrayIconManager _trayManager = new();
 
         private readonly MicToastWindow _micToast = new();
@@ -41,8 +37,6 @@ namespace OpenDualHub
         private bool _enableVolumeOverlay = false; // Default: DISABLED per user requirement
 
         public bool EnableVolumeOverlay { get => _enableVolumeOverlay; set => _enableVolumeOverlay = value; }
-
-
 
         private readonly TouchpadGestureEngine _gestureEngine = new();
 
@@ -63,8 +57,6 @@ namespace OpenDualHub
         private DispatcherTimer? _hapticDebounceTimer;
 
         private DateTime _lastHapticSendTime = DateTime.MinValue;
-
-
 
         private readonly ProfileManager _profileManager = new();
 
@@ -100,8 +92,6 @@ namespace OpenDualHub
 
         private DateTime _lastShareReleaseTime = DateTime.MinValue;
 
-
-
         public MainWindow()
 
         {
@@ -110,11 +100,7 @@ namespace OpenDualHub
 
             _isInitialized = true;
 
-
-
             ThemeManager.Initialize(Resources);
-
-
 
             _clockTimer.Interval = TimeSpan.FromSeconds(1);
 
@@ -142,8 +128,6 @@ namespace OpenDualHub
 
             }
 
-
-
             if (TxtInstalledVersion != null)
 
             {
@@ -160,21 +144,15 @@ namespace OpenDualHub
 
             }
 
-
-
             _ipc.OnTelemetryReceived += OnTelemetryReceived;
 
             _ipc.OnConnectionChanged += OnIpcConnectionChanged;
-
-
 
             Loaded += MainWindow_Loaded;
 
             Closing += MainWindow_Closing;
 
         }
-
-
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 
@@ -188,11 +166,7 @@ namespace OpenDualHub
 
             source?.AddHook(WndProc);
 
-
-
             ThemeManager.ApplySystemTheme(Resources);
-
-
 
             // Auto-start driver engine if not running
 
@@ -204,13 +178,9 @@ namespace OpenDualHub
 
             }
 
-
-
             _ipc.Start();
 
             RefreshDriverStatus();
-
-
 
             if (XmbView != null)
 
@@ -222,8 +192,6 @@ namespace OpenDualHub
 
             }
 
-
-
             if (LabControl != null)
 
             {
@@ -232,15 +200,11 @@ namespace OpenDualHub
 
             }
 
-
-
             _trayManager.Initialize(helper.Handle, "OpenDual - Controller Suite");
 
             _trayManager.DoubleClick += RestoreFromTray;
 
             _trayManager.RightClick += ShowTrayContextMenu;
-
-
 
             _quickHud = new QuickHudWindow();
 
@@ -274,8 +238,6 @@ namespace OpenDualHub
 
             _quickHud.GetActiveProfileName = () => _currentProfile?.Name ?? "Default Profile";
 
-
-
             _gestureEngine.OnGestureRecognized += (gesture, action) =>
 
             {
@@ -300,8 +262,6 @@ namespace OpenDualHub
 
             UpdateResponsiveLayout(ActualWidth);
 
-
-
             // Game-Specific Auto Profile Switching
 
             _gameDetector = new GameDetector(_profileManager);
@@ -310,19 +270,13 @@ namespace OpenDualHub
 
             _gameDetector.Start();
 
-
-
             PopulateProfilesList();
 
             UpdateSpeakerUi();
 
-
-
             // Background update check (non-blocking)
 
             _ = CheckForUpdatesSilentlyAsync();
-
-
 
             // Automated UI screenshot generation for testing
 
@@ -333,8 +287,6 @@ namespace OpenDualHub
             int targetItem = -1;
 
             string? screenshotPath = null;
-
-
 
             bool targetQuickHud = false;
 
@@ -352,64 +304,109 @@ namespace OpenDualHub
 
             }
 
-
-
             if (args.Contains("--test-ui"))
+
             {
+
                 Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(async () =>
+
                 {
+
                     try
+
                     {
+
                         System.IO.File.WriteAllText("ui_test_result.log", "Starting UI button click test...\n");
+
                         XmbView?.Xmb.SelectCategory(3);
+
                         UpdateLayout();
+
                         await System.Threading.Tasks.Task.Delay(100);
 
                         var insp = XmbView?.CategoryInspector;
+
                         if (insp != null)
+
                         {
+
                             System.IO.File.AppendAllText("ui_test_result.log", "Clicking Lightbar Effect buttons...\n");
+
                             insp.BtnLedEff0.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                             insp.BtnLedEff1.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                             insp.BtnLedEff2.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
-                            insp.BtnLedEff3.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
+                            insp.BtnLedEff3.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnLedEff4.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
 
                             System.IO.File.AppendAllText("ui_test_result.log", "Clicking Player LED buttons...\n");
+
                             insp.BtnPled1.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                             insp.BtnPledAll.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                         }
 
                         XmbView?.Xmb.SelectCategory(4);
+
                         UpdateLayout();
+
                         await System.Threading.Tasks.Task.Delay(100);
+
                         if (insp != null)
+
                         {
+
                             System.IO.File.AppendAllText("ui_test_result.log", "Clicking Trigger buttons...\n");
+
                             insp.BtnL2_0.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                             insp.BtnL2_2.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                             insp.BtnR2_1.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                         }
 
                         XmbView?.Xmb.SelectCategory(5);
+
                         UpdateLayout();
+
                         await System.Threading.Tasks.Task.Delay(100);
+
                         if (insp != null)
+
                         {
+
                             System.IO.File.AppendAllText("ui_test_result.log", "Clicking Gyro buttons...\n");
+
                             insp.BtnGyroMouse.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                             insp.BtnGyroStick.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                             insp.BtnGyroTrigADS.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
                         }
 
                         System.IO.File.AppendAllText("ui_test_result.log", "SUCCESS: All button click tests completed without any crashes!\n");
+
                     }
+
                     catch (Exception ex)
+
                     {
+
                         System.IO.File.AppendAllText("ui_test_result.log", $"CRASH IN TEST: {ex}\n");
+
                     }
+
                     Application.Current.Shutdown();
+
                 }));
+
                 return;
+
             }
 
             if (!string.IsNullOrEmpty(screenshotPath))
@@ -454,7 +451,10 @@ namespace OpenDualHub
 
                     }
 
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        System.IO.File.WriteAllText("screenshot_err.log", ex.ToString());
+                    }
 
                     Application.Current.Shutdown();
 
@@ -465,8 +465,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         public void CaptureToPng(string outputPath)
 
@@ -482,19 +480,13 @@ namespace OpenDualHub
 
             if (height <= 0) height = 820;
 
-
-
             var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(width, height, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
 
             rtb.Render(this);
 
-
-
             var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
 
             encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb));
-
-
 
             string? dir = System.IO.Path.GetDirectoryName(outputPath);
 
@@ -506,15 +498,11 @@ namespace OpenDualHub
 
             }
 
-
-
             using var stream = System.IO.File.Create(outputPath);
 
             encoder.Save(stream);
 
         }
-
-
 
         private void RestoreFromTray()
 
@@ -530,8 +518,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void ShowTrayContextMenu()
 
         {
@@ -544,15 +530,11 @@ namespace OpenDualHub
 
             menu.Items.Add(itemOpen);
 
-
-
             var itemRestart = new MenuItem { Header = "Restart Driver Engine" };
 
             itemRestart.Click += (s, e) => BtnRestartEngine_Click(this, new RoutedEventArgs());
 
             menu.Items.Add(itemRestart);
-
-
 
             var itemHud = new MenuItem { Header = "Preview Quick HUD (PS Button Overlay)" };
 
@@ -560,19 +542,13 @@ namespace OpenDualHub
 
             menu.Items.Add(itemHud);
 
-
-
             var itemMute = new MenuItem { Header = "Toggle Microphone Mute" };
 
             itemMute.Click += (s, e) => ToggleMicMute();
 
             menu.Items.Add(itemMute);
 
-
-
             menu.Items.Add(new Separator());
-
-
 
             var itemExit = new MenuItem { Header = "Exit OpenDual" };
 
@@ -580,13 +556,9 @@ namespace OpenDualHub
 
             menu.Items.Add(itemExit);
 
-
-
             menu.IsOpen = true;
 
         }
-
-
 
         private void ToggleMicMute()
 
@@ -605,8 +577,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void ExitApplication()
 
@@ -627,8 +597,6 @@ namespace OpenDualHub
             Application.Current.Shutdown();
 
         }
-
-
 
         private void Window_StateChanged(object? sender, EventArgs e)
 
@@ -656,8 +624,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
 
         {
@@ -665,8 +631,6 @@ namespace OpenDualHub
             UpdateResponsiveLayout(e.NewSize.Width);
 
         }
-
-
 
         protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
 
@@ -734,8 +698,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void NavTabsScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
 
         {
@@ -758,8 +720,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void EnsureNavTabVisible(RadioButton? tab)
 
         {
@@ -768,15 +728,11 @@ namespace OpenDualHub
 
         }
 
-
-
         private void UpdateResponsiveLayout(double width)
 
         {
 
             if (!_isInitialized) return;
-
-
 
             // 1. Clock visibility in header
 
@@ -787,8 +743,6 @@ namespace OpenDualHub
                 TxtClock.Visibility = width < 780 ? Visibility.Collapsed : Visibility.Visible;
 
             }
-
-
 
             // 2. Dashboard 2-column vs 1-column stacked
 
@@ -830,8 +784,6 @@ namespace OpenDualHub
 
             }
 
-
-
             // 3. Triggers 2-column vs 1-column stacked
 
             if (TriggersLeftCol != null && TriggersRightCol != null && TriggersColDefRight != null)
@@ -871,8 +823,6 @@ namespace OpenDualHub
                 }
 
             }
-
-
 
             // 4. RGB 2-column vs 1-column stacked
 
@@ -916,8 +866,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
 
         {
@@ -931,8 +879,6 @@ namespace OpenDualHub
                 return IntPtr.Zero;
 
             }
-
-
 
             const int WM_SETTINGCHANGE = 0x001A;
 
@@ -958,8 +904,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
 
         {
@@ -982,8 +926,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void RefreshDriverStatus()
 
         {
@@ -1004,8 +946,6 @@ namespace OpenDualHub
 
                 }
 
-
-
                 bool engRunning = DriverManager.IsDriverEngineRunning();
 
                 if (TxtEngineStatus != null)
@@ -1018,8 +958,6 @@ namespace OpenDualHub
 
                 }
 
-
-
                 if (FooterEngineStatus != null)
 
                 {
@@ -1029,8 +967,6 @@ namespace OpenDualHub
                     FooterEngineStatus.Foreground = engRunning ? (SolidColorBrush)FindResource("AccentGreen") : (SolidColorBrush)FindResource("AccentRed");
 
                 }
-
-
 
                 // Show only appropriate contextual buttons
 
@@ -1064,15 +1000,11 @@ namespace OpenDualHub
 
                 }
 
-
-
                 RefreshGameDvrStatus();
 
             });
 
         }
-
-
 
         #region Navigation
 
@@ -1102,8 +1034,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void Nav_Dashboard_Checked(object sender, RoutedEventArgs e)
 
         {
@@ -1115,8 +1045,6 @@ namespace OpenDualHub
             EnsureNavTabVisible(TabController);
 
         }
-
-
 
         private void Nav_Rgb_Checked(object sender, RoutedEventArgs e)
 
@@ -1130,8 +1058,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void Nav_Triggers_Checked(object sender, RoutedEventArgs e)
 
         {
@@ -1143,8 +1069,6 @@ namespace OpenDualHub
             EnsureNavTabVisible(TabTriggers);
 
         }
-
-
 
         private void Nav_Gyro_Checked(object sender, RoutedEventArgs e)
 
@@ -1158,8 +1082,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void Nav_Touchpad_Checked(object sender, RoutedEventArgs e)
 
         {
@@ -1171,8 +1093,6 @@ namespace OpenDualHub
             EnsureNavTabVisible(TabTouchpad);
 
         }
-
-
 
         private void Nav_Audio_Checked(object sender, RoutedEventArgs e)
 
@@ -1188,8 +1108,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void Nav_HardwareLab_Checked(object sender, RoutedEventArgs e)
 
         {
@@ -1202,8 +1120,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void Nav_Profiles_Checked(object sender, RoutedEventArgs e)
 
         {
@@ -1215,8 +1131,6 @@ namespace OpenDualHub
             EnsureNavTabVisible(TabProfiles);
 
         }
-
-
 
         private void Nav_Driver_Checked(object sender, RoutedEventArgs e)
 
@@ -1239,8 +1153,6 @@ namespace OpenDualHub
         }
 
         #endregion
-
-
 
         #region Telemetry & Live UI
 
@@ -1272,15 +1184,11 @@ namespace OpenDualHub
 
         }
 
-
-
         private ControllerTelemetry? _pendingTelemetry;
 
         private int _telemetryDispatchActive = 0;
 
         private long _lastTelemetryDispatchTicks = 0;
-
-
 
         private void OnTelemetryReceived(ControllerTelemetry t)
 
@@ -1288,19 +1196,13 @@ namespace OpenDualHub
 
             _pendingTelemetry = t;
 
-
-
             long now = System.Diagnostics.Stopwatch.GetTimestamp();
 
             double elapsedMs = (now - _lastTelemetryDispatchTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
 
-
-
             // Throttle UI updates to smooth 60 FPS (16ms) so the UI message loop is never starved
 
             if (elapsedMs < 16.0) return;
-
-
 
             if (System.Threading.Interlocked.CompareExchange(ref _telemetryDispatchActive, 1, 0) == 0)
 
@@ -1342,8 +1244,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void ApplyTelemetryToUi(ControllerTelemetry t)
 
         {
@@ -1355,8 +1255,6 @@ namespace OpenDualHub
             {
 
                 XmbView?.UpdateTelemetry(t);
-
-
 
                     if (t.Connected)
 
@@ -1372,13 +1270,9 @@ namespace OpenDualHub
 
                         if (TxtBatteryHeader != null) TxtBatteryHeader.Text = $"{t.Battery}%{(t.Charging ? " âš¡" : "")}";
 
-
-
                         if (DashHzVal != null) DashHzVal.Text = $"{t.PollingRateHz} Hz";
 
                         if (DashLatencyVal != null) DashLatencyVal.Text = $"{t.LatencyMs:F1} ms";
-
-
 
                         if (t.PollingRateHz >= 900)
 
@@ -1440,13 +1334,9 @@ namespace OpenDualHub
 
                         }
 
-
-
                         _overclockAssistant?.UpdateTelemetry(t);
 
                         LabControl?.UpdateTelemetry(t);
-
-
 
                         // Mic Mute Transition & Toast
 
@@ -1459,8 +1349,6 @@ namespace OpenDualHub
                         }
 
                         _lastMicMuted = t.MicMuted;
-
-
 
                         if (DashMicBadge != null)
 
@@ -1494,8 +1382,6 @@ namespace OpenDualHub
 
                         }
 
-
-
                         if (TxtControllerAudioLiveInfo != null)
 
                         {
@@ -1507,8 +1393,6 @@ namespace OpenDualHub
                             TxtControllerAudioLiveInfo.Text = $"Windows Master Volume: {volPct}% â€¢ Headphone Jack: {hp}";
 
                         }
-
-
 
                         // Master Volume Transition & Floating HUD (Disabled by default per user request)
 
@@ -1522,19 +1406,13 @@ namespace OpenDualHub
 
                         _lastMasterVolume = t.MasterVolume;
 
-
-
                         // Process capacitive touchpad unistroke gestures and custom shortcuts
 
                         _gestureEngine.ProcessTelemetry(t);
 
-
-
                         // Forward telemetry to interactive Gyro Calibrator
 
                         _gyroCalibrator?.UpdateTelemetry(t);
-
-
 
                         // Live Dynamic Color Box for Rainbow / Breathing / Multi-color effects
 
@@ -1576,8 +1454,6 @@ namespace OpenDualHub
 
                         }
 
-
-
                         // Triggers
 
                         int l2Pct = (int)(t.L2 * 100);
@@ -1591,8 +1467,6 @@ namespace OpenDualHub
                         if (TxtR2Val != null) TxtR2Val.Text = $"{r2Pct}%";
 
                         if (BarR2 != null) BarR2.Value = r2Pct;
-
-
 
                         // Sticks (Canvas width 130, center 65, radius 65, dot width 26 -> range 0 to 104)
 
@@ -1612,8 +1486,6 @@ namespace OpenDualHub
 
                         if (TxtLSCoord != null) TxtLSCoord.Text = $"X: {t.LX:+0.00;-0.00;0.00}  Y: {t.LY:+0.00;-0.00;0.00}";
 
-
-
                         double rsX = 52 + (t.RX * 45);
 
                         double rsY = 52 - (t.RY * 45);
@@ -1629,8 +1501,6 @@ namespace OpenDualHub
                         }
 
                         if (TxtRSCoord != null) TxtRSCoord.Text = $"X: {t.RX:+0.00;-0.00;0.00}  Y: {t.RY:+0.00;-0.00;0.00}";
-
-
 
                         // Buttons Highlight
 
@@ -1658,8 +1528,6 @@ namespace OpenDualHub
 
                         if (PillPadR != null) HighlightPill(PillPadR, t.PaddleRight);
 
-
-
                         // Live Gyro IMU Telemetry
 
                         if (BadgeGyroAiming != null)
@@ -1682,8 +1550,6 @@ namespace OpenDualHub
 
                         if (TxtGyroRoll != null) TxtGyroRoll.Text = $"Roll: {t.GyroZ:+0000;-0000;0}";
 
-
-
                         // Live Charging & Low Battery Badges
 
                         if (DashChargingBadge != null)
@@ -1702,8 +1568,6 @@ namespace OpenDualHub
 
                         }
 
-
-
                         if (DashBatteryLowBadge != null)
 
                         {
@@ -1711,8 +1575,6 @@ namespace OpenDualHub
                             DashBatteryLowBadge.Visibility = (t.Battery <= 15 && !t.Charging) ? Visibility.Visible : Visibility.Collapsed;
 
                         }
-
-
 
                         if (TxtBatteryHeader != null)
 
@@ -1743,8 +1605,6 @@ namespace OpenDualHub
                             }
 
                         }
-
-
 
                         // Battery Level Alerts & Charging Notifications
 
@@ -1820,8 +1680,6 @@ namespace OpenDualHub
 
                                 }
 
-
-
                                 // Staged battery discharge warnings when not charging
 
                                 if (!t.Charging)
@@ -1866,8 +1724,6 @@ namespace OpenDualHub
 
                         }
 
-
-
                         if (BtnTriangle != null) HighlightButton(BtnTriangle, t.Triangle, "#00E676");
 
                         if (BtnSquare != null) HighlightButton(BtnSquare, t.Square, "#FF3377");
@@ -1875,8 +1731,6 @@ namespace OpenDualHub
                         if (BtnCircle != null) HighlightButton(BtnCircle, t.Circle, "#FF334B");
 
                         if (BtnCross != null) HighlightButton(BtnCross, t.Cross, "#3399FF");
-
-
 
                         // Directional D-Pad Visualizer & Status Pills
 
@@ -1888,8 +1742,6 @@ namespace OpenDualHub
 
                         bool dRight = t.DPadRight;
 
-
-
                         if (BtnDpadUp != null) HighlightButton(BtnDpadUp, dUp, "#00E5FF");
 
                         if (BtnDpadDown != null) HighlightButton(BtnDpadDown, dDown, "#00E5FF");
@@ -1898,8 +1750,6 @@ namespace OpenDualHub
 
                         if (BtnDpadRight != null) HighlightButton(BtnDpadRight, dRight, "#00E5FF");
 
-
-
                         if (PillDpadUp != null) HighlightPill(PillDpadUp, dUp);
 
                         if (PillDpadDown != null) HighlightPill(PillDpadDown, dDown);
@@ -1907,8 +1757,6 @@ namespace OpenDualHub
                         if (PillDpadLeft != null) HighlightPill(PillDpadLeft, dLeft);
 
                         if (PillDpadRight != null) HighlightPill(PillDpadRight, dRight);
-
-
 
                         // Touchpad (380x200 canvas from 1920x1080)
 
@@ -1942,8 +1790,6 @@ namespace OpenDualHub
 
                         }
 
-
-
                         if (DotTouch2 != null)
 
                         {
@@ -1974,15 +1820,11 @@ namespace OpenDualHub
 
                         }
 
-
-
                         string t1Str = t.Touch1.On ? $"({t.Touch1.X}, {t.Touch1.Y})" : "Inactive";
 
                         string t2Str = t.Touch2.On ? $"({t.Touch2.X}, {t.Touch2.Y})" : "Inactive";
 
                         if (TxtTouchCoords != null) TxtTouchCoords.Text = $"Touch 1: {t1Str} | Touch 2: {t2Str}";
-
-
 
                         // Live Audio-Reactive Haptics Tactile Meters
 
@@ -1994,8 +1836,6 @@ namespace OpenDualHub
 
                         if (TxtHapticR != null) TxtHapticR.Text = t.HapticR.ToString();
 
-
-
                         // Dynamic Audio Endpoint Names
 
                         if (!string.IsNullOrEmpty(t.RenderDev) && TxtRenderDev != null && TxtRenderDev.Text != t.RenderDev)
@@ -2005,8 +1845,6 @@ namespace OpenDualHub
                         if (!string.IsNullOrEmpty(t.CaptureDev) && TxtCaptureDev != null && TxtCaptureDev.Text != t.CaptureDev)
 
                             TxtCaptureDev.Text = t.CaptureDev;
-
-
 
                         // In-Game Quick HUD Update & PS Button Detection
 
@@ -2044,8 +1882,6 @@ namespace OpenDualHub
 
                         _lastPsState = t.PS;
 
-
-
                         // In-Game Create / Capture Bar Update & Share Button Detection (Console Style)
 
                         if (_captureBar != null)
@@ -2059,8 +1895,6 @@ namespace OpenDualHub
                                 _captureBar.HandleControllerNavigation(t);
 
                             }
-
-
 
                             if (ChkEnableShareCapture?.IsChecked != false)
 
@@ -2202,8 +2036,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void HighlightPill(Border border, bool active)
 
         {
@@ -2211,8 +2043,6 @@ namespace OpenDualHub
             border.Background = active ? (SolidColorBrush)FindResource("AccentBlue") : (SolidColorBrush)FindResource("PillBg");
 
         }
-
-
 
         private void HighlightButton(Border border, bool active, string hexColor)
 
@@ -2240,8 +2070,6 @@ namespace OpenDualHub
 
         #endregion
 
-
-
         #region RGB Studio
 
         private void RgbSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -2249,8 +2077,6 @@ namespace OpenDualHub
         {
 
             if (!_isInitialized || _isUpdatingUi || TxtValR == null || SliderR == null || SliderG == null || SliderB == null || ColorPreviewBox == null || TxtHexCode == null) return;
-
-
 
             int r = (int)SliderR.Value;
 
@@ -2260,15 +2086,11 @@ namespace OpenDualHub
 
             float speed = (float)(SliderEffectSpeed?.Value ?? 1.0);
 
-
-
             TxtValR.Text = r.ToString();
 
             TxtValG.Text = g.ToString();
 
             TxtValB.Text = b.ToString();
-
-
 
             int effect = ComboEffect?.SelectedIndex ?? 0;
 
@@ -2286,15 +2108,11 @@ namespace OpenDualHub
 
             }
 
-
-
             int playerLeds = GetSelectedPlayerLeds();
 
             _ipc.SetRgbColor(r, g, b, effect, playerLeds, speed);
 
         }
-
-
 
         private void EffectSpeed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 
@@ -2302,13 +2120,9 @@ namespace OpenDualHub
 
             if (!_isInitialized || _isUpdatingUi || SliderEffectSpeed == null || TxtEffectSpeedVal == null) return;
 
-
-
             float speed = (float)SliderEffectSpeed.Value;
 
             TxtEffectSpeedVal.Text = $"{speed:F1}x";
-
-
 
             int r = (int)(SliderR?.Value ?? 0);
 
@@ -2320,21 +2134,15 @@ namespace OpenDualHub
 
             int playerLeds = GetSelectedPlayerLeds();
 
-
-
             _ipc.SetRgbColor(r, g, b, effect, playerLeds, speed);
 
         }
-
-
 
         private void PresetColor_Click(object sender, RoutedEventArgs e)
 
         {
 
             if (!_isInitialized || sender is not Button btn || btn.Tag is not string tag) return;
-
-
 
             var parts = tag.Split(',');
 
@@ -2362,8 +2170,6 @@ namespace OpenDualHub
 
                 if (TxtValB != null) TxtValB.Text = b.ToString();
 
-
-
                 var color = Color.FromRgb((byte)r, (byte)g, (byte)b);
 
                 if (ColorPreviewBox != null) ColorPreviewBox.Background = new SolidColorBrush(color);
@@ -2376,8 +2182,6 @@ namespace OpenDualHub
 
                 _isUpdatingUi = false;
 
-
-
                 float speed = (float)(SliderEffectSpeed?.Value ?? 1.0);
 
                 _ipc.SetRgbColor(r, g, b, 0, GetSelectedPlayerLeds(), speed);
@@ -2385,8 +2189,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void ComboEffect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 
@@ -2404,8 +2206,6 @@ namespace OpenDualHub
 
             float speed = (float)(SliderEffectSpeed?.Value ?? 1.0);
 
-
-
             if (effect == 0 && ColorPreviewBox != null && TxtHexCode != null)
 
             {
@@ -2420,13 +2220,9 @@ namespace OpenDualHub
 
             }
 
-
-
             _ipc.SetRgbColor(r, g, b, effect, GetSelectedPlayerLeds(), speed);
 
         }
-
-
 
         private int GetSelectedPlayerLeds()
 
@@ -2441,8 +2237,6 @@ namespace OpenDualHub
             return 0x04; // Player 1 (Center)
 
         }
-
-
 
         private void PlayerLed_Checked(object sender, RoutedEventArgs e)
 
@@ -2466,8 +2260,6 @@ namespace OpenDualHub
 
         #endregion
 
-
-
         #region Adaptive Triggers
 
         private void TriggerMode_Changed(object sender, EventArgs e)
@@ -2479,8 +2271,6 @@ namespace OpenDualHub
                 SliderLTStart == null || SliderLTForce == null || SliderLTFreq == null ||
 
                 SliderRTStart == null || SliderRTForce == null || SliderRTFreq == null) return;
-
-
 
             static int MapMode(int idx) => idx switch
 
@@ -2498,8 +2288,6 @@ namespace OpenDualHub
 
             };
 
-
-
             int ltMode = MapMode(ComboLTMode.SelectedIndex);
 
             int ltStart = (int)SliderLTStart.Value;
@@ -2507,8 +2295,6 @@ namespace OpenDualHub
             int ltForce = (int)SliderLTForce.Value;
 
             int ltFreq = (int)SliderLTFreq.Value;
-
-
 
             int rtMode = MapMode(ComboRTMode.SelectedIndex);
 
@@ -2518,15 +2304,11 @@ namespace OpenDualHub
 
             int rtFreq = (int)SliderRTFreq.Value;
 
-
-
             _ipc.SetAdaptiveTriggers(ltMode, ltStart, ltForce, ltFreq, rtMode, rtStart, rtForce, rtFreq);
 
         }
 
         #endregion
-
-
 
         #region Touchpad
 
@@ -2535,8 +2317,6 @@ namespace OpenDualHub
         {
 
             if (!_isInitialized || _isUpdatingUi || ChkMouseEnabled == null || SliderMouseSens == null || SliderScrollSens == null || ChkTapClick == null) return;
-
-
 
             bool enabled = ChkMouseEnabled.IsChecked == true;
 
@@ -2548,17 +2328,11 @@ namespace OpenDualHub
 
             bool volGesture = ChkTouchpadVolGesture?.IsChecked == true;
 
-
-
             if (TxtMouseSensVal != null) TxtMouseSensVal.Text = $"{mouseSens:F1}x";
 
             if (TxtScrollSensVal != null) TxtScrollSensVal.Text = $"{scrollSens:F1}x";
 
-
-
             _ipc.SetTouchpad(enabled, mouseSens, scrollSens, tapClick, volGesture);
-
-
 
             if (!_isProfileApplying && _currentProfile != null)
 
@@ -2580,8 +2354,6 @@ namespace OpenDualHub
 
         #endregion
 
-
-
         #region Audio & Mic
 
         private void MicSync_Changed(object sender, RoutedEventArgs e)
@@ -2595,8 +2367,6 @@ namespace OpenDualHub
             _ipc.SetMicSync(sync);
 
         }
-
-
 
         private void ControllerSpeaker_Changed(object sender, RoutedEventArgs e)
 
@@ -2614,8 +2384,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnToggleControllerSpeaker_Click(object sender, RoutedEventArgs e)
 
         {
@@ -2630,8 +2398,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnOpenSoundSettings_Click(object sender, RoutedEventArgs e)
 
         {
@@ -2639,8 +2405,6 @@ namespace OpenDualHub
             AudioDeviceHelper.OpenSoundSettings();
 
         }
-
-
 
         private void UpdateSpeakerUi()
 
@@ -2662,8 +2426,6 @@ namespace OpenDualHub
 
                 }
 
-
-
                 if (TxtControllerSpeakerDev != null)
 
                 {
@@ -2675,8 +2437,6 @@ namespace OpenDualHub
                         : $"Active Output: {curName} (PC Audio)";
 
                 }
-
-
 
                 if (BtnToggleControllerSpeaker != null)
 
@@ -2692,15 +2452,11 @@ namespace OpenDualHub
 
         }
 
-
-
         private void AudioHaptics_Changed(object sender, RoutedEventArgs e)
 
         {
 
             if (!_isInitialized || _isUpdatingUi || ChkAudioHaptics == null || SliderHapticIntensity == null || SliderHapticCutoff == null) return;
-
-
 
             bool enabled = ChkAudioHaptics.IsChecked == true;
 
@@ -2713,8 +2469,6 @@ namespace OpenDualHub
             bool triggerKick = ChkTriggerKick?.IsChecked == true;
 
             float kickThreshold = SliderTriggerThreshold != null ? (float)SliderTriggerThreshold.Value : 0.45f;
-
-
 
             string cutoffDesc = cutoff switch
 
@@ -2735,8 +2489,6 @@ namespace OpenDualHub
             if (TxtHapticCutoffVal != null) TxtHapticCutoffVal.Text = $"{cutoff} Hz ({cutoffDesc})";
 
             if (TxtTriggerThresholdVal != null) TxtTriggerThresholdVal.Text = $"{(int)(kickThreshold * 100)}%";
-
-
 
             // Throttle / debounce IPC sends to prevent pipe spam during fast dragging
 
@@ -2780,8 +2532,6 @@ namespace OpenDualHub
 
         #endregion
 
-
-
         #region Driver Management
 
         private void BtnStartEngine_Click(object sender, RoutedEventArgs e)
@@ -2795,8 +2545,6 @@ namespace OpenDualHub
             RefreshDriverStatus();
 
         }
-
-
 
         public void RestartDriverEngine()
 
@@ -2814,8 +2562,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnRestartEngine_Click(object sender, RoutedEventArgs e)
 
         {
@@ -2823,8 +2569,6 @@ namespace OpenDualHub
             RestartDriverEngine();
 
         }
-
-
 
         private void BtnStopEngine_Click(object sender, RoutedEventArgs e)
 
@@ -2838,8 +2582,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private async void BtnInstallViGEm_Click(object sender, RoutedEventArgs e)
 
         {
@@ -2847,8 +2589,6 @@ namespace OpenDualHub
             BtnInstallViGEm.IsEnabled = false;
 
             TxtDriverLog.Text = "Starting ViGEmBus installation...";
-
-
 
             bool success = await _driver.InstallViGEmBusAsync(msg =>
 
@@ -2858,8 +2598,6 @@ namespace OpenDualHub
 
             });
 
-
-
             BtnInstallViGEm.IsEnabled = true;
 
             TxtDriverLog.Text = success ? "ViGEmBus Driver installed successfully!" : "ViGEmBus installation cancelled or failed.";
@@ -2867,8 +2605,6 @@ namespace OpenDualHub
             RefreshDriverStatus();
 
         }
-
-
 
         private void BtnDashOverclock_Click(object sender, RoutedEventArgs e)
 
@@ -2878,8 +2614,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnOpenOverclockAssistant_Click(object sender, RoutedEventArgs e)
 
         {
@@ -2887,8 +2621,6 @@ namespace OpenDualHub
             OpenOverclockAssistant();
 
         }
-
-
 
         public void OpenOverclockAssistant()
 
@@ -2922,8 +2654,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void CmbHudScale_SelectionChanged(object sender, SelectionChangedEventArgs e)
 
         {
@@ -2941,8 +2671,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void OnHudScaleChangedFromHud(double scale)
 
@@ -2980,8 +2708,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnPreviewQuickHud_Click(object sender, RoutedEventArgs e)
 
         {
@@ -2990,8 +2716,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnPreviewCaptureBar_Click(object sender, RoutedEventArgs e)
 
         {
@@ -2999,8 +2723,6 @@ namespace OpenDualHub
             _captureBar?.ToggleOrShow();
 
         }
-
-
 
         private void CmbClipDuration_SelectionChanged(object sender, SelectionChangedEventArgs e)
 
@@ -3020,8 +2742,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnGameDvrSettings_Click(object sender, RoutedEventArgs e)
 
         {
@@ -3030,8 +2750,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnOpenCapturesGallery_Click(object sender, RoutedEventArgs e)
 
         {
@@ -3039,8 +2757,6 @@ namespace OpenDualHub
             GameCaptureManager.OpenCapturesFolder();
 
         }
-
-
 
         private void RefreshGameDvrStatus()
 
@@ -3051,8 +2767,6 @@ namespace OpenDualHub
             bool enabled = GameCaptureManager.IsGameDvrEnabled();
 
             int sec = GameCaptureManager.GetHistoricalBufferLengthSeconds();
-
-
 
             if (enabled)
 
@@ -3073,8 +2787,6 @@ namespace OpenDualHub
                 TxtGameDvrStatus.Foreground = (SolidColorBrush)FindResource("AccentAmber");
 
             }
-
-
 
             if (CmbClipDuration != null)
 
@@ -3102,8 +2814,6 @@ namespace OpenDualHub
 
         #endregion
 
-
-
         #region Gyro Motion Aiming
 
         private void Gyro_Changed(object sender, RoutedEventArgs e)
@@ -3111,8 +2821,6 @@ namespace OpenDualHub
         {
 
             if (!_isInitialized || _isUpdatingUi || _isProfileApplying) return;
-
-
 
             bool enabled = ChkEnableGyro?.IsChecked == true;
 
@@ -3134,8 +2842,6 @@ namespace OpenDualHub
 
             float smooth = (float)(SliderGyroSmooth?.Value ?? 0.20);
 
-
-
             if (TxtGyroSensXVal != null) TxtGyroSensXVal.Text = $"{sensX:F1}x";
 
             if (TxtGyroSensYVal != null) TxtGyroSensYVal.Text = $"{sensY:F1}x";
@@ -3144,13 +2850,9 @@ namespace OpenDualHub
 
             if (TxtGyroSmoothVal != null) TxtGyroSmoothVal.Text = $"{(int)(smooth * 100)}%";
 
-
-
             _ipc.SetGyro(enabled, mode, outputMode, space, sensX, sensY, invX, invY, deadzone, smooth);
 
         }
-
-
 
         private void BtnResetGyroDrift_Click(object sender, RoutedEventArgs e)
 
@@ -3161,8 +2863,6 @@ namespace OpenDualHub
             if (FooterStatus != null) FooterStatus.Text = "Gyro resting baseline recalibrated. Keep controller still for 1 second.";
 
         }
-
-
 
         public void LaunchGyroCalibrator()
 
@@ -3184,8 +2884,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void BtnLaunchGyroCalibrator_Click(object sender, RoutedEventArgs e)
 
         {
@@ -3193,8 +2891,6 @@ namespace OpenDualHub
             LaunchGyroCalibrator();
 
         }
-
-
 
         private void HandleCalibrationApplied(float sensX, float sensY, float deadzone)
 
@@ -3212,11 +2908,7 @@ namespace OpenDualHub
 
                 if (ChkEnableGyro != null) ChkEnableGyro.IsChecked = true;
 
-
-
                 Gyro_Changed(this, new RoutedEventArgs());
-
-
 
                 _trayManager.ShowNotification("OpenDual Gyro Calibration Applied", $"Aim calibration active: X={sensX:F2}x, Y={sensY:F2}x, Deadzone={deadzone:F2}");
 
@@ -3225,8 +2917,6 @@ namespace OpenDualHub
         }
 
         #endregion
-
-
 
         #region Game Profiles & Presets
 
@@ -3237,8 +2927,6 @@ namespace OpenDualHub
             if (CmbProfiles == null) return;
 
             CmbProfiles.Items.Clear();
-
-
 
             foreach (var profile in _profileManager.Profiles)
 
@@ -3258,8 +2946,6 @@ namespace OpenDualHub
 
             }
 
-
-
             if (CmbProfiles.Items.Count > 0)
 
             {
@@ -3269,8 +2955,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void CmbProfiles_SelectionChanged(object sender, SelectionChangedEventArgs e)
 
@@ -3294,8 +2978,6 @@ namespace OpenDualHub
 
                     if (BtnDeleteProfile != null) BtnDeleteProfile.IsEnabled = !prof.IsBuiltIn;
 
-
-
                     if (TxtSummaryTriggers != null)
 
                         TxtSummaryTriggers.Text = $"L2: {FormatTriggerModeName(prof.Config.LtMode)} â€¢ R2: {FormatTriggerModeName(prof.Config.RtMode)}";
@@ -3314,8 +2996,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private static string FormatTriggerModeName(int mode) => mode switch
 
         {
@@ -3331,8 +3011,6 @@ namespace OpenDualHub
             _ => "Standard (Off)"
 
         };
-
-
 
         private void BtnApplyProfile_Click(object sender, RoutedEventArgs e)
 
@@ -3356,8 +3034,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void ApplyProfile(GameProfile prof)
 
         {
@@ -3373,8 +3049,6 @@ namespace OpenDualHub
                 // Send full config to driver
 
                 _ipc.SendConfig(prof.Config);
-
-
 
                 // Update UI controls to match profile
 
@@ -3400,8 +3074,6 @@ namespace OpenDualHub
 
                 if (SliderGyroSmooth != null) SliderGyroSmooth.Value = prof.Config.GyroSmooth;
 
-
-
                 if (ChkAudioHaptics != null) ChkAudioHaptics.IsChecked = prof.Config.Haptic;
 
                 if (SliderHapticIntensity != null) SliderHapticIntensity.Value = prof.Config.HapticIntensity;
@@ -3415,8 +3087,6 @@ namespace OpenDualHub
                 if (ChkControllerSpeaker != null) ChkControllerSpeaker.IsChecked = prof.Config.SpeakerEnabled;
 
                 if (ChkTouchpadVolGesture != null) ChkTouchpadVolGesture.IsChecked = prof.Config.VolGesture;
-
-
 
                 static int UnmapTriggerIndex(int triggerMode) => triggerMode switch
 
@@ -3434,8 +3104,6 @@ namespace OpenDualHub
 
                 };
 
-
-
                 if (ComboLTMode != null) ComboLTMode.SelectedIndex = UnmapTriggerIndex(prof.Config.LtMode);
 
                 if (ComboRTMode != null) ComboRTMode.SelectedIndex = UnmapTriggerIndex(prof.Config.RtMode);
@@ -3447,8 +3115,6 @@ namespace OpenDualHub
                 if (SliderB != null) SliderB.Value = prof.Config.B;
 
                 if (ComboEffect != null) ComboEffect.SelectedIndex = Math.Clamp(prof.Config.Effect, 0, 3);
-
-
 
                 if (FooterStatus != null) FooterStatus.Text = $"Active Profile: {prof.Name}";
 
@@ -3463,8 +3129,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void CycleProfile(int direction)
 
@@ -3518,8 +3182,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void AdjustTouchpadSensitivity(float delta)
 
         {
@@ -3544,8 +3206,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void ToggleTouchpadEnabled()
 
         {
@@ -3565,8 +3225,6 @@ namespace OpenDualHub
             });
 
         }
-
-
 
         private void AdjustGyroSensitivity(float delta)
 
@@ -3594,8 +3252,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void ToggleGyroEnabled()
 
         {
@@ -3615,8 +3271,6 @@ namespace OpenDualHub
             });
 
         }
-
-
 
         private void BtnSaveProfile_Click(object sender, RoutedEventArgs e)
 
@@ -3686,8 +3340,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void CaptureCurrentConfig(ConfigDto cfg)
 
         {
@@ -3699,8 +3351,6 @@ namespace OpenDualHub
             cfg.B = (int)(SliderB?.Value ?? 255);
 
             cfg.Effect = ComboEffect?.SelectedIndex ?? 0;
-
-
 
             static int MapTriggerMode(int idx) => idx switch
 
@@ -3717,8 +3367,6 @@ namespace OpenDualHub
                 _ => 0  // Off
 
             };
-
-
 
             cfg.LtMode = MapTriggerMode(ComboLTMode?.SelectedIndex ?? 0);
 
@@ -3762,8 +3410,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void SelectProfileInCombo(string id)
 
         {
@@ -3785,8 +3431,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void BtnDuplicateProfile_Click(object sender, RoutedEventArgs e)
 
@@ -3817,8 +3461,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void BtnDeleteProfile_Click(object sender, RoutedEventArgs e)
 
@@ -3851,8 +3493,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void BtnExportProfile_Click(object sender, RoutedEventArgs e)
 
@@ -3895,8 +3535,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void BtnImportProfile_Click(object sender, RoutedEventArgs e)
 
@@ -3944,8 +3582,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private void ChkAutoSwitchProfile_Changed(object sender, RoutedEventArgs e)
 
         {
@@ -3959,8 +3595,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         private void GameDetector_OnGameChanged(string exeName, GameProfile? matchedProfile)
 
@@ -4010,8 +3644,6 @@ namespace OpenDualHub
 
         #endregion
 
-
-
         #region Power Management
 
         private void PowerSettings_Changed(object sender, RoutedEventArgs e)
@@ -4019,8 +3651,6 @@ namespace OpenDualHub
         {
 
             if (!_isInitialized || _isUpdatingUi || _isProfileApplying) return;
-
-
 
             int timeoutIdx = CmbIdleTimeout?.SelectedIndex ?? 2;
 
@@ -4044,15 +3674,11 @@ namespace OpenDualHub
 
             bool lowBatWarn = ChkLowBatteryWarn?.IsChecked == true;
 
-
-
             _ipc.SetPowerManagement(idleMins, lowBatWarn);
 
         }
 
         #endregion
-
-
 
         #region In-App Automatic Updater
 
@@ -4099,8 +3725,6 @@ namespace OpenDualHub
             catch { }
 
         }
-
-
 
         private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
 
@@ -4178,8 +3802,6 @@ namespace OpenDualHub
 
         }
 
-
-
         private async void BtnInstallUpdate_Click(object sender, RoutedEventArgs e)
 
         {
@@ -4208,8 +3830,6 @@ namespace OpenDualHub
 
             }
 
-
-
             if (BtnInstallUpdate != null) BtnInstallUpdate.IsEnabled = false;
 
             if (ProgressUpdate != null)
@@ -4222,8 +3842,6 @@ namespace OpenDualHub
 
             }
 
-
-
             var progress = new Progress<int>(pct =>
 
             {
@@ -4233,8 +3851,6 @@ namespace OpenDualHub
                 if (TxtNewVersionTitle != null) TxtNewVersionTitle.Text = $"Downloading update... {pct}%";
 
             });
-
-
 
             string? downloadedSetup = await _updateChecker.DownloadInstallerAsync(_latestUpdateInfo.DownloadUrl, progress);
 
@@ -4278,8 +3894,6 @@ namespace OpenDualHub
 
         }
 
-
-
         public async Task<UpdateInfo?> CheckForUpdatesAsync()
 
         {
@@ -4304,8 +3918,6 @@ namespace OpenDualHub
 
         }
 
-
-
         public async Task DownloadAndInstallUpdateAsync(IProgress<int>? progress)
 
         {
@@ -4323,8 +3935,6 @@ namespace OpenDualHub
             }
 
         }
-
-
 
         public void ApplyProfileByName(string name)
 

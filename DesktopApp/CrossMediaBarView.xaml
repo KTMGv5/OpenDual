@@ -178,7 +178,7 @@
 
                 <!-- Left: Hardware Status -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtFooterStatus" Text="DualSense 1000Hz Ready" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                    <TextBlock x:Name="TxtFooterStatus" Text="Controller 1000Hz Ready" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
                     <TextBlock Text="  •  " FontSize="11" Foreground="{StaticResource BorderColor}"/>
                     <TextBlock x:Name="TxtFooterConnection" Text="Direct Win32 Overlapped" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>

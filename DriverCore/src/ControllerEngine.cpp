@@ -370,6 +370,19 @@ void ControllerEngine::UpdateRgbEffects() {
         break;
     }
 
+    case RgbEffect::AudioReactive: {
+        float peak = m_audio.GetMasterVolumeScalar();
+        uint8_t l = 0, r = 0;
+        m_audio.GetHapticRumble(l, r, 1.0f, 150, true);
+        float hapticEnergy = (float)(l + r) / 510.0f;
+        float energy = (hapticEnergy > 0.05f) ? hapticEnergy : peak;
+        float factor = std::clamp(energy, 0.15f, 1.0f);
+        m_activeR = (uint8_t)(cfg.ledR * factor);
+        m_activeG = (uint8_t)(cfg.ledG * factor);
+        m_activeB = (uint8_t)(cfg.ledB * factor);
+        break;
+    }
+
     default:
         m_activeR = cfg.ledR;
         m_activeG = cfg.ledG;

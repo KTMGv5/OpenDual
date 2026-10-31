@@ -15,7 +15,7 @@ namespace OpenDualHub
         private NamedPipeClientStream? _pipeClient;
         private CancellationTokenSource? _cts;
         private Task? _readTask;
-        private readonly object _writeLock = new();
+        private readonly SemaphoreSlim _sendLock = new(1, 1);
 
         public event Action<ControllerTelemetry>? OnTelemetryReceived;
         public event Action<bool>? OnConnectionChanged;
@@ -94,21 +94,38 @@ namespace OpenDualHub
 
         public void SendCommand(string json)
         {
-            if (!IsConnected || _pipeClient == null) return;
+            var client = _pipeClient;
+            if (client == null || !client.IsConnected) return;
 
-            lock (_writeLock)
+            // Non-blocking fire-and-forget: dispatch to ThreadPool to guarantee 0ms UI delay
+            ThreadPool.QueueUserWorkItem(async _ =>
             {
                 try
                 {
-                    var bytes = Encoding.UTF8.GetBytes(json);
-                    _pipeClient.Write(bytes, 0, bytes.Length);
-                    _pipeClient.Flush();
+                    // Try to acquire send lock within 200ms
+                    if (!await _sendLock.WaitAsync(200).ConfigureAwait(false)) return;
+                    try
+                    {
+                        var target = _pipeClient;
+                        if (target != null && target.IsConnected)
+                        {
+                            byte[] bytes = Encoding.UTF8.GetBytes(json);
+                            await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                            // CRITICAL: NEVER call target.Flush() on Windows NamedPipeClientStream.
+                            // Named pipe Flush() invokes Win32 FlushFileBuffers, which blocks the thread
+                            // until the remote driver consumes all buffer bytes, causing UI freezes/deadlocks.
+                        }
+                    }
+                    finally
+                    {
+                        _sendLock.Release();
+                    }
                 }
                 catch
                 {
-                    // Ignore write failures; client will reconnect
+                    // Ignore write failures; client reconnects automatically
                 }
-            }
+            });
         }
 
         public void SetRgbColor(int r, int g, int b, int effect = 0, int playerLeds = 4, float effectSpeed = 1.0f)
@@ -203,6 +220,7 @@ namespace OpenDualHub
         public void Dispose()
         {
             Stop();
+            _sendLock.Dispose();
         }
     }
 }

@@ -229,7 +229,7 @@
             <StackPanel x:Name="PanelLightbar" Visibility="Collapsed">
                 <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="🌈 DUALSENSE RGB LIGHTBAR" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="🌈 CONTROLLER RGB LIGHTBAR" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
                         <TextBlock Text="Customize LED illumination effects, glow colors, and player indicator LEDs." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
                         <Border x:Name="CardLedEffect" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
@@ -239,7 +239,8 @@
                                     <Button x:Name="BtnLedEff0" Content="Solid Color" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="0"/>
                                     <Button x:Name="BtnLedEff1" Content="Breathing Pulse" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="1"/>
                                     <Button x:Name="BtnLedEff2" Content="Rainbow Wave" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="2"/>
-                                    <Button x:Name="BtnLedEff3" Content="Audio Reactive" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="3"/>
+                                    <Button x:Name="BtnLedEff3" Content="Battery Gauge" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="3"/>
+                                    <Button x:Name="BtnLedEff4" Content="Audio Reactive" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="4"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
@@ -397,13 +398,13 @@
             <StackPanel x:Name="PanelAudio" Visibility="Collapsed">
                 <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="🔊 AUDIO &amp; DUALSENSE VOICE-COIL HAPTICS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="🔊 AUDIO &amp; VOICE-COIL HAPTICS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
                         <TextBlock Text="Haptic tactile motors, sub-bass recoil, and controller speaker output." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
                         <Border x:Name="CardAudHaptic" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="DUALSENSE VOICE-COIL HAPTICS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="TACTILE VOICE-COIL HAPTICS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
                                     <TextBlock Text="Wideband voice-coil haptic actuators in palm grips" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
                                 </StackPanel>
                                 <ToggleButton x:Name="ToggleHaptics" Content="Haptics: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleHaptics_Click"/>
