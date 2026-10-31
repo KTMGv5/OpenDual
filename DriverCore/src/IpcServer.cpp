@@ -226,6 +226,13 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getInt("idleTimeout", idleMins)) { cfg.idleTimeoutMinutes = idleMins; changed = true; }
     if (getBool("lowBatteryWarning", lowBatWarn)) { cfg.lowBatteryWarning = lowBatWarn; changed = true; }
 
+    // Dynamic Stick Zero-Shift Calibration
+    int zLX = 0, zLY = 0, zRX = 0, zRY = 0;
+    if (getInt("zeroShiftLX", zLX)) { cfg.zeroShiftLX = (int8_t)zLX; changed = true; }
+    if (getInt("zeroShiftLY", zLY)) { cfg.zeroShiftLY = (int8_t)zLY; changed = true; }
+    if (getInt("zeroShiftRX", zRX)) { cfg.zeroShiftRX = (int8_t)zRX; changed = true; }
+    if (getInt("zeroShiftRY", zRY)) { cfg.zeroShiftRY = (int8_t)zRY; changed = true; }
+
     // Adaptive Triggers
     int lMode = 0, lStart = 0, lForce = 0, lFreq = 0;
     if (getInt("ltMode", lMode)) { cfg.leftTrigger.mode = (TriggerMode)lMode; changed = true; }
@@ -329,6 +336,10 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"gyroSmooth\":" << c.gyroSmooth << ","
            << "\"idleTimeout\":" << c.idleTimeoutMinutes << ","
            << "\"lowBatWarn\":" << (c.lowBatteryWarning ? "true" : "false") << ","
+           << "\"zeroShiftLX\":" << (int)c.zeroShiftLX << ","
+           << "\"zeroShiftLY\":" << (int)c.zeroShiftLY << ","
+           << "\"zeroShiftRX\":" << (int)c.zeroShiftRX << ","
+           << "\"zeroShiftRY\":" << (int)c.zeroShiftRY << ","
            << "\"ltMode\":" << (int)c.leftTrigger.mode << ","
            << "\"rtMode\":" << (int)c.rightTrigger.mode
        << "}"

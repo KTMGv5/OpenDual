@@ -189,7 +189,14 @@ namespace OpenDualHub
                        $"\"audioHaptics\":{(cfg.Haptic ? "true" : "false")},\"hapticIntensity\":{cfg.HapticIntensity.ToString(inv)},\"hapticCutoff\":{cfg.HapticCutoff},\"hapticStereo\":{(cfg.HapticStereo ? "true" : "false")}," +
                        $"\"audioTriggerKick\":{(cfg.AudioTriggerKick ? "true" : "false")},\"audioTriggerThreshold\":{cfg.AudioTriggerThreshold.ToString(inv)},\"speakerEnabled\":{(cfg.SpeakerEnabled ? "true" : "false")}," +
                        $"\"gyroEnabled\":{(cfg.Gyro ? "true" : "false")},\"gyroMode\":{cfg.GyroMode},\"gyroOutputMode\":{cfg.GyroOutputMode},\"gyroSpace\":{cfg.GyroSpace},\"gyroSensX\":{cfg.GyroSensX.ToString(inv)},\"gyroSensY\":{cfg.GyroSensY.ToString(inv)},\"gyroInvertX\":{(cfg.GyroInvertX ? "true" : "false")},\"gyroInvertY\":{(cfg.GyroInvertY ? "true" : "false")},\"gyroDeadzone\":{cfg.GyroDeadzone},\"gyroSmooth\":{cfg.GyroSmooth.ToString(inv)}," +
-                       $"\"idleTimeout\":{cfg.IdleTimeout},\"lowBatteryWarning\":{(cfg.LowBatWarn ? "true" : "false")}}}";
+                       $"\"idleTimeout\":{cfg.IdleTimeout},\"lowBatteryWarning\":{(cfg.LowBatWarn ? "true" : "false")}," +
+                       $"\"zeroShiftLX\":{cfg.ZeroShiftLX},\"zeroShiftLY\":{cfg.ZeroShiftLY},\"zeroShiftRX\":{cfg.ZeroShiftRX},\"zeroShiftRY\":{cfg.ZeroShiftRY}}}";
+            SendCommand(json);
+        }
+
+        public void SetZeroShift(int zLX, int zLY, int zRX, int zRY)
+        {
+            var json = $"{{\"zeroShiftLX\":{zLX},\"zeroShiftLY\":{zLY},\"zeroShiftRX\":{zRX},\"zeroShiftRY\":{zRY}}}";
             SendCommand(json);
         }
 

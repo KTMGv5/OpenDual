@@ -100,6 +100,11 @@ namespace OpenDualHub
             _ipc.Start();
             RefreshDriverStatus();
 
+            if (LabControl != null)
+            {
+                LabControl.IpcClient = _ipc;
+            }
+
             _trayManager.Initialize(helper.Handle, "OpenDual - PlayStation Controller Suite");
             _trayManager.DoubleClick += RestoreFromTray;
             _trayManager.RightClick += ShowTrayContextMenu;
@@ -386,6 +391,7 @@ namespace OpenDualHub
             if (ViewGyro != null) ViewGyro.Visibility = Visibility.Collapsed;
             ViewTouchpad.Visibility = Visibility.Collapsed;
             ViewAudio.Visibility = Visibility.Collapsed;
+            if (ViewHardwareLab != null) ViewHardwareLab.Visibility = Visibility.Collapsed;
             if (ViewProfiles != null) ViewProfiles.Visibility = Visibility.Collapsed;
             ViewDriver.Visibility = Visibility.Collapsed;
         }
@@ -431,6 +437,13 @@ namespace OpenDualHub
             if (ViewAudio != null) ViewAudio.Visibility = Visibility.Visible;
             EnsureNavTabVisible(TabAudio);
             UpdateSpeakerUi();
+        }
+
+        private void Nav_HardwareLab_Checked(object sender, RoutedEventArgs e)
+        {
+            HideAllViews();
+            if (ViewHardwareLab != null) ViewHardwareLab.Visibility = Visibility.Visible;
+            EnsureNavTabVisible(TabHardwareLab);
         }
 
         private void Nav_Profiles_Checked(object sender, RoutedEventArgs e)
@@ -518,6 +531,7 @@ namespace OpenDualHub
                         }
 
                         _overclockAssistant?.UpdateTelemetry(t);
+                        LabControl?.UpdateTelemetry(t);
 
                         // Mic Mute Transition & Toast
                         if (_lastMicMuted.HasValue && _lastMicMuted.Value != t.MicMuted)

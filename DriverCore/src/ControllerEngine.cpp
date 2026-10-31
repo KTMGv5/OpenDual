@@ -211,9 +211,9 @@ void ControllerEngine::PollingThread() {
 
             bool parsed = false;
             if (localState.model == ControllerModel::DualSense || localState.model == ControllerModel::DualSenseEdge) {
-                parsed = DualSenseProtocol::ParseInputReport(inBuffer, m_device.GetInputReportLength(), localState, localState.connection);
+                parsed = DualSenseProtocol::ParseInputReport(inBuffer, m_device.GetInputReportLength(), localState, localState.connection, localConfig);
             } else {
-                parsed = DS4Protocol::ParseInputReport(inBuffer, m_device.GetInputReportLength(), localState, localState.connection);
+                parsed = DS4Protocol::ParseInputReport(inBuffer, m_device.GetInputReportLength(), localState, localState.connection, localConfig);
             }
 
             if (parsed) {

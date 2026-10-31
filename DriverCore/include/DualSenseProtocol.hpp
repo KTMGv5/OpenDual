@@ -20,7 +20,7 @@ public:
         return ~crc;
     }
 
-    static bool ParseInputReport(const uint8_t* data, size_t len, ControllerState& state, ConnectionType conn) {
+    static bool ParseInputReport(const uint8_t* data, size_t len, ControllerState& state, ConnectionType conn, const ControllerConfig& config = ControllerConfig{}) {
         if (len < 64) return false;
 
         const uint8_t* p = data;
@@ -34,10 +34,17 @@ public:
         state.rawLY = p[2];
         state.rawRX = p[3];
         state.rawRY = p[4];
-        state.lx = (p[1] - 128.0f) / 128.0f;
-        state.ly = -(p[2] - 128.0f) / 128.0f; // Invert Y so up is positive
-        state.rx = (p[3] - 128.0f) / 128.0f;
-        state.ry = -(p[4] - 128.0f) / 128.0f;
+
+        // Hardware zero-shift calibration
+        float centerLX = 128.0f + (float)config.zeroShiftLX;
+        float centerLY = 128.0f + (float)config.zeroShiftLY;
+        float centerRX = 128.0f + (float)config.zeroShiftRX;
+        float centerRY = 128.0f + (float)config.zeroShiftRY;
+
+        state.lx = std::clamp(((float)p[1] - centerLX) / 128.0f, -1.0f, 1.0f);
+        state.ly = std::clamp(-((float)p[2] - centerLY) / 128.0f, -1.0f, 1.0f); // Invert Y so up is positive
+        state.rx = std::clamp(((float)p[3] - centerRX) / 128.0f, -1.0f, 1.0f);
+        state.ry = std::clamp(-((float)p[4] - centerRY) / 128.0f, -1.0f, 1.0f);
 
         // Triggers
         state.rawL2 = p[5];

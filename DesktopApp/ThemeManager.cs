@@ -25,20 +25,20 @@ namespace OpenDualHub
 
             if (IsDarkMode)
             {
-                // Dark Mode System Palette
+                // PlayStation 3 XMB Smoked Glass Palette
                 accentSignature = BrightenColor(CurrentAccentColor, 1.25f);
 
-                resources["BgPrimary"] = new SolidColorBrush(Color.FromRgb(0x0A, 0x0D, 0x14));
-                resources["BgSecondary"] = new SolidColorBrush(Color.FromRgb(0x12, 0x16, 0x22));
-                resources["BgCard"] = new SolidColorBrush(Color.FromRgb(0x18, 0x1F, 0x2E));
-                resources["BgCardHover"] = new SolidColorBrush(Color.FromRgb(0x22, 0x2B, 0x3F));
-                resources["InputBg"] = new SolidColorBrush(Color.FromRgb(0x13, 0x18, 0x24));
-                resources["InputBorder"] = new SolidColorBrush(Color.FromRgb(0x28, 0x35, 0x4D));
+                resources["BgPrimary"] = new SolidColorBrush(Color.FromArgb(0x00, 0x00, 0x00, 0x00));
+                resources["BgSecondary"] = new SolidColorBrush(Color.FromArgb(0xD9, 0x0B, 0x0F, 0x1A));
+                resources["BgCard"] = new SolidColorBrush(Color.FromArgb(0xCC, 0x0E, 0x14, 0x22));
+                resources["BgCardHover"] = new SolidColorBrush(Color.FromArgb(0xE6, 0x16, 0x20, 0x33));
+                resources["InputBg"] = new SolidColorBrush(Color.FromArgb(0xD0, 0x0A, 0x0E, 0x17));
+                resources["InputBorder"] = new SolidColorBrush(Color.FromArgb(0x50, 0x29, 0x79, 0xFF));
                 resources["TextPrimary"] = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF));
-                resources["TextSecondary"] = new SolidColorBrush(Color.FromRgb(0x8C, 0x9B, 0xB0));
-                resources["BorderColor"] = new SolidColorBrush(Color.FromRgb(0x24, 0x30, 0x46));
-                resources["SlotBg"] = new SolidColorBrush(Color.FromRgb(0x0E, 0x12, 0x1A));
-                resources["PillBg"] = new SolidColorBrush(Color.FromRgb(0x1F, 0x28, 0x3B));
+                resources["TextSecondary"] = new SolidColorBrush(Color.FromRgb(0x9A, 0xAC, 0xC4));
+                resources["BorderColor"] = new SolidColorBrush(Color.FromArgb(0x35, 0x29, 0x79, 0xFF));
+                resources["SlotBg"] = new SolidColorBrush(Color.FromArgb(0xB0, 0x08, 0x0C, 0x14));
+                resources["PillBg"] = new SolidColorBrush(Color.FromArgb(0xD0, 0x16, 0x20, 0x33));
             }
             else
             {

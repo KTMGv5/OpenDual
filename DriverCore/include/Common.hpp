@@ -99,6 +99,12 @@ struct ControllerConfig {
     int idleTimeoutMinutes = 10;        // 0 = Never, 5, 10, 15, 30 min
     bool lowBatteryWarning = true;      // Flash red pulse when battery <= 15%
 
+    // Dynamic Stick Zero-Shift Calibration (Fix stick drift at hardware level without deadzones)
+    int8_t zeroShiftLX = 0;
+    int8_t zeroShiftLY = 0;
+    int8_t zeroShiftRX = 0;
+    int8_t zeroShiftRY = 0;
+
     // Output Mode
     bool emulateXbox360 = true; // ViGEmBus XInput emulation
 };

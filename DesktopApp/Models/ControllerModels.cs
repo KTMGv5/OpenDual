@@ -111,6 +111,19 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("lowBatWarn")]
         public bool LowBatWarn { get; set; } = true;
+
+        // Dynamic Stick Zero-Shift Calibration
+        [JsonPropertyName("zeroShiftLX")]
+        public int ZeroShiftLX { get; set; } = 0;
+
+        [JsonPropertyName("zeroShiftLY")]
+        public int ZeroShiftLY { get; set; } = 0;
+
+        [JsonPropertyName("zeroShiftRX")]
+        public int ZeroShiftRX { get; set; } = 0;
+
+        [JsonPropertyName("zeroShiftRY")]
+        public int ZeroShiftRY { get; set; } = 0;
     }
 
     public class ControllerTelemetry
