@@ -12,7 +12,7 @@ void SignalHandler(int signum) {
 int main(int argc, char* argv[]) {
     std::cout << "====================================================\n";
     std::cout << "  OpenDualDriver - High-Performance Controller Service\n";
-    std::cout << "  Native PS4 / PS5 Windows 10 & 11 Driver Engine\n";
+    std::cout << "  Native DualSense / DS4 Windows 10 & 11 Driver Engine\n";
     std::cout << "====================================================\n";
 
     signal(SIGINT, SignalHandler);
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
                       << " | Mic: " << (st.micMuted ? "MUTED" : "ACTIVE")
                       << "    " << std::flush;
         } else {
-            std::cout << "\r[Status] Waiting for PS4/PS5 controller...                        " << std::flush;
+            std::cout << "\r[Status] Waiting for DualSense/DS4 controller...                        " << std::flush;
         }
     }
 

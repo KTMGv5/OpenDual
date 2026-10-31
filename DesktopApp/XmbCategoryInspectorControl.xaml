@@ -3,8 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OpenDualHub"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="680">
+             d:DesignHeight="850" d:DesignWidth="680">
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="AccentSignature" Color="#00F5D4"/>
@@ -68,8 +69,29 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <Grid Margin="6">
+    <ScrollViewer x:Name="CategoryScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" local:SmoothScrollHelper.SmoothScroll="True">
+        <StackPanel Margin="6">
+
+            <!-- DYNAMIC ITEM FOCUS BREADCRUMB BANNER -->
+            <Border x:Name="BannerItemFocus" Background="{StaticResource BgCard}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1" CornerRadius="12" Padding="16,12" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtBannerCategory" Text="🎮 CONTROLLER" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                            <TextBlock Text="  ›  " FontSize="11" Foreground="{StaticResource AccentSignature}"/>
+                            <TextBlock x:Name="TxtBannerItem" Text="Controller Overview" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
+                        <TextBlock x:Name="TxtBannerSubtitle" Text="Interactive hardware inspection &amp; realtime telemetry" FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10,5">
+                        <TextBlock x:Name="TxtBannerBadge" Text="Active" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                    </Border>
+                </Grid>
+            </Border>
 
             <!-- 1. TRIGGERS PANEL -->
             <StackPanel x:Name="PanelTriggers" Visibility="Collapsed">
@@ -79,7 +101,7 @@
                         <TextBlock Text="Configure force-feedback resistance profiles for L2 and R2 motor worm gears." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,12"/>
 
                         <!-- Left Trigger (L2) -->
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                        <Border x:Name="CardTrigL2" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
                             <StackPanel>
                                 <Grid Margin="0,0,0,6">
                                     <TextBlock Text="LEFT TRIGGER (L2 - AIM / BRAKE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -97,7 +119,7 @@
                         </Border>
 
                         <!-- Right Trigger (R2) -->
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Border x:Name="CardTrigR2" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
                             <StackPanel>
                                 <Grid Margin="0,0,0,6">
                                     <TextBlock Text="RIGHT TRIGGER (R2 - FIRE / THROTTLE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -111,6 +133,18 @@
                                     <Button Content="Machine Gun Recoil" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="4"/>
                                 </WrapPanel>
                                 <ProgressBar x:Name="BarR2Inspector" Height="6" Minimum="0" Maximum="100" Value="0" Background="#141B2B" Foreground="{StaticResource AccentSignature}" BorderThickness="0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Oscilloscope & Snap Tension -->
+                        <Border x:Name="CardTrigSnap" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="CLICK-SNAP BARRIER TENSION" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtSnapTensionVal" Text="85% Force" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Slider x:Name="SliderSnapTension" Minimum="10" Maximum="100" Value="85" Margin="0,0,0,6" ValueChanged="SliderSnapTension_ValueChanged"/>
+                                <TextBlock Text="Mechanical breakthrough resistance threshold for instantaneous trigger click tactile feedback." FontSize="9" Foreground="{StaticResource TextSecondary}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -129,7 +163,7 @@
                         </Grid>
                         <TextBlock Text="Precision motion crosshair aiming with natural pitch/roll coordinate orientation." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Border x:Name="CardGyroOutput" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="OUTPUT EMULATION MODE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
                                 <StackPanel Orientation="Horizontal">
@@ -139,7 +173,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Border x:Name="CardGyroTuning" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <Grid Margin="0,0,0,4">
                                     <TextBlock Text="HORIZONTAL SENSITIVITY (X)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -167,7 +201,7 @@
                         <TextBlock Text="🌈 DUALSENSE RGB LIGHTBAR" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
                         <TextBlock Text="Customize LED illumination effects, glow colors, and player indicator LEDs." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Border x:Name="CardLedEffect" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="LIGHTBAR ANIMATION MODE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
                                 <WrapPanel Orientation="Horizontal">
@@ -179,12 +213,12 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Border x:Name="CardLedColor" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="QUICK COLOR PRESETS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
                                 <WrapPanel Orientation="Horizontal">
                                     <Button Content="Signature Cyan" Style="{StaticResource XmbOptionBtn}" Background="#00F5D4" Foreground="#080B13" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#00F5D4"/>
-                                    <Button Content="PlayStation Blue" Style="{StaticResource XmbOptionBtn}" Background="#2979FF" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#2979FF"/>
+                                    <Button Content="Classic Blue" Style="{StaticResource XmbOptionBtn}" Background="#2979FF" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#2979FF"/>
                                     <Button Content="Neon Magenta" Style="{StaticResource XmbOptionBtn}" Background="#FF007F" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#FF007F"/>
                                     <Button Content="Emerald Green" Style="{StaticResource XmbOptionBtn}" Background="#00E676" Foreground="#080B13" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#00E676"/>
                                     <Button Content="Solar Amber" Style="{StaticResource XmbOptionBtn}" Background="#FFA000" Foreground="#080B13" Margin="0,0,6,6" Click="BtnColorPreset_Click" Tag="#FFA000"/>
@@ -192,18 +226,79 @@
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
+
+                        <Border x:Name="CardLedBrightness" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="LIGHTBAR BRIGHTNESS LEVEL" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtBrightnessVal" Text="100%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Slider x:Name="SliderBrightness" Minimum="10" Maximum="100" Value="100" ValueChanged="SliderBrightness_ValueChanged"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <!-- 4. AUDIO & HAPTICS PANEL -->
+            <!-- 4. TOUCHPAD PANEL -->
+            <StackPanel x:Name="PanelTouchpad" Visibility="Collapsed">
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="🖱️ CAPACITIVE TOUCHPAD &amp; GESTURES" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Multi-touch surface navigation, precision cursor emulation, and gestures." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+
+                        <!-- Touchpad Mouse -->
+                        <Border x:Name="CardTouchMouse" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="TOUCHPAD PRECISION MOUSE EMULATION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                        <TextBlock Text="Dual-point capacitive desktop cursor navigation" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                    </StackPanel>
+                                    <ToggleButton x:Name="ToggleTouchMouse" Content="Mouse: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleTouchMouse_Click"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="TRACKPAD SENSITIVITY" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtTouchSensVal" Text="1.20x" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Slider x:Name="SliderTouchSens" Minimum="0.2" Maximum="3.0" Value="1.2" Margin="0,0,0,6" ValueChanged="SliderTouchSens_ValueChanged"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right-Edge Volume Slider Gesture (Default OFF) -->
+                        <Border x:Name="CardTouchVol" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="RIGHT-EDGE VOLUME SLIDER GESTURE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Slide finger vertically along the right edge of touchpad to adjust Master Volume (Default: Off)" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleTouchVol" Content="Gesture: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleTouchVol_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Tap-to-Click -->
+                        <Border x:Name="CardTouchTap" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="TAP-TO-CLICK &amp; MULTI-TOUCH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Tap surface to click without depressing the physical button" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleTouchTap" Content="Tap: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleTouchTap_Click"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- 5. AUDIO & HAPTICS PANEL -->
             <StackPanel x:Name="PanelAudio" Visibility="Collapsed">
                 <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
                     <StackPanel>
                         <TextBlock Text="🔊 AUDIO &amp; DUALSENSE VOICE-COIL HAPTICS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
                         <TextBlock Text="Haptic tactile motors, sub-bass recoil, and controller speaker output." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Border x:Name="CardAudHaptic" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="DUALSENSE VOICE-COIL HAPTICS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -213,7 +308,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Border x:Name="CardAudReactive" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <Grid Margin="0,0,0,4">
                                     <TextBlock Text="AUDIO-TO-HAPTICS RECOIL INTENSITY" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -224,7 +319,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Border x:Name="CardAudSpeaker" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="CONTROLLER SPEAKER OUTPUT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -233,22 +328,32 @@
                                 <ToggleButton x:Name="ToggleSpeaker" Content="Speaker: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleSpeaker_Click"/>
                             </Grid>
                         </Border>
+
+                        <Border x:Name="CardAudMic" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="MICROPHONE MUTE SYNCHRONIZATION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Sync controller mute button and amber LED with Windows system microphone" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleMicSync" Content="Mic Sync: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleMicSync_Click"/>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <!-- 5. PROFILES PANEL -->
+            <!-- 6. PROFILES PANEL -->
             <StackPanel x:Name="PanelProfiles" Visibility="Collapsed">
                 <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
                     <StackPanel>
-                        <TextBlock Text="👤 PROFILES &amp; GAME PRESETS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                        <TextBlock Text="👤 PROFILES &amp; PRESETS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
                         <TextBlock Text="Switch between tailored profiles or link profiles to game executables." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1.5" CornerRadius="8" Padding="14" Margin="0,0,0,10">
+                        <Border x:Name="CardProfDefault" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1.5" CornerRadius="8" Padding="14" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="🎮 PlayStation 5 Balanced (Active)" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                    <TextBlock Text="Default PS5 haptics, rigid section trigger snap, and rainbow lightbar" FontSize="11" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="🎮 Standard Balanced (Active)" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Standard haptics, rigid section trigger snap, and rainbow lightbar" FontSize="11" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Border Background="#3000E676" CornerRadius="6" Padding="8,4" HorizontalAlignment="Right">
                                     <TextBlock Text="CURRENT ACTIVE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
@@ -256,7 +361,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,10">
+                        <Border x:Name="CardProfEsports" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="🏆 Esports Ultra 1000Hz" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -266,7 +371,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Border x:Name="CardProfFps" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="🎯 FPS Gyro Aim Specialist" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -275,18 +380,28 @@
                                 <Button Content="Activate" Style="{StaticResource XmbOptionBtn}" HorizontalAlignment="Right" Click="BtnActivateProfile_Click" Tag="FPS Gyro"/>
                             </Grid>
                         </Border>
+
+                        <Border x:Name="CardProfRacing" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="🏎️ Racing Force Feedback" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Progressive brake wall tension &amp; dynamic throttle engine vibration" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button Content="Activate" Style="{StaticResource XmbOptionBtn}" HorizontalAlignment="Right" Click="BtnActivateProfile_Click" Tag="Racing Force"/>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <!-- 6. SETTINGS & SYSTEM PANEL -->
+            <!-- 7. SETTINGS & SYSTEM PANEL -->
             <StackPanel x:Name="PanelSettings" Visibility="Collapsed">
                 <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
                     <StackPanel>
                         <TextBlock Text="⚙️ SYSTEM &amp; DRIVER ENGINE SETTINGS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
                         <TextBlock Text="Direct Win32 kernel HID service configuration and application settings." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                        <Border x:Name="CardSetDriver" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="DIRECT HID SERVICE (OpenDualDriver.exe)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -296,7 +411,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                        <Border x:Name="CardSetAutoStart" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="LAUNCH ON WINDOWS STARTUP" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -306,11 +421,26 @@
                             </Grid>
                         </Border>
 
-                        <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Border x:Name="CardSetIdle" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="BATTERY IDLE SLEEP TIMER" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Automatically power off wireless controller after inactivity" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ComboBox x:Name="CmbIdleTimeout" Width="120" HorizontalAlignment="Right" SelectedIndex="1" SelectionChanged="CmbIdleTimeout_SelectionChanged">
+                                    <ComboBoxItem Content="5 Minutes"/>
+                                    <ComboBoxItem Content="10 Minutes"/>
+                                    <ComboBoxItem Content="15 Minutes"/>
+                                    <ComboBoxItem Content="Never"/>
+                                </ComboBox>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="CardSetUpdate" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="SOFTWARE RELEASE VERSION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                    <TextBlock Text="OpenDual Suite v1.6.6 (Latest PS3 XMB Release)" FontSize="10" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="OpenDual Suite v1.6.6 (Latest Cross Bar Edition)" FontSize="10" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Border Background="#2000E676" CornerRadius="6" Padding="8,4" HorizontalAlignment="Right">
                                     <TextBlock Text="UP TO DATE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
@@ -321,6 +451,6 @@
                 </Border>
             </StackPanel>
 
-        </Grid>
+        </StackPanel>
     </ScrollViewer>
 </UserControl>

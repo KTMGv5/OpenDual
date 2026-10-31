@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace OpenDualHub
 {
-    public class Ps3WaveBackground : FrameworkElement
+    public class WaveRibbonBackground : FrameworkElement
     {
         private double _phase1 = 0;
         private double _phase2 = 1.5;
@@ -31,7 +31,36 @@ namespace OpenDualHub
         private readonly StarParticle[] _particles = new StarParticle[45];
         private readonly Random _rand = new(1337);
 
-        public Ps3WaveBackground()
+        private static readonly Brush _bgBrush;
+        private static readonly SolidColorBrush[] _particleBrushes;
+        private long _lastRenderTicks = 0;
+
+        static WaveRibbonBackground()
+        {
+            var bgBrush = new RadialGradientBrush
+            {
+                Center = new Point(0.5, 0.40),
+                GradientOrigin = new Point(0.5, 0.40),
+                RadiusX = 0.90,
+                RadiusY = 0.90
+            };
+            bgBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x11, 0x18, 0x2A), 0.0));
+            bgBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x07, 0x0A, 0x13), 0.65));
+            bgBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x03, 0x04, 0x08), 1.0));
+            bgBrush.Freeze();
+            _bgBrush = bgBrush;
+
+            _particleBrushes = new SolidColorBrush[32];
+            for (int i = 0; i < 32; i++)
+            {
+                byte a = (byte)(i * 200 / 31);
+                var b = new SolidColorBrush(Color.FromArgb(a, 0x00, 0xF5, 0xD4));
+                b.Freeze();
+                _particleBrushes[i] = b;
+            }
+        }
+
+        public WaveRibbonBackground()
         {
             IsHitTestVisible = false;
 
@@ -51,7 +80,7 @@ namespace OpenDualHub
                 };
             }
 
-            // Glowing PS3 ethereal wave brushes
+            // Glowing harmonic ethereal wave brushes
             var gradGlow1 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 0) };
             gradGlow1.GradientStops.Add(new GradientStop(Color.FromArgb(0, 0, 80, 200), 0.0));
             gradGlow1.GradientStops.Add(new GradientStop(Color.FromArgb(45, 0, 245, 212), 0.45));
@@ -100,6 +129,11 @@ namespace OpenDualHub
 
         private void OnRendering(object? sender, EventArgs e)
         {
+            long now = System.Diagnostics.Stopwatch.GetTimestamp();
+            double elapsedMs = (now - _lastRenderTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+            if (elapsedMs < 16.0) return; // Cap at smooth 60 FPS to prevent high-refresh monitor overload
+            _lastRenderTicks = now;
+
             _phase1 += 0.012;
             _phase2 += 0.008;
             _phase3 += 0.015;
@@ -129,20 +163,10 @@ namespace OpenDualHub
             double h = ActualHeight;
             if (w <= 0 || h <= 0) return;
 
-            // Background Deep Piano Black with Charcoal Slate vignette
-            var bgBrush = new RadialGradientBrush
-            {
-                Center = new Point(0.5, 0.40),
-                GradientOrigin = new Point(0.5, 0.40),
-                RadiusX = 0.90,
-                RadiusY = 0.90
-            };
-            bgBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x11, 0x18, 0x2A), 0.0));
-            bgBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x07, 0x0A, 0x13), 0.65));
-            bgBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0x03, 0x04, 0x08), 1.0));
-            dc.DrawRectangle(bgBrush, null, new Rect(0, 0, w, h));
+            // Deep Piano Black with Charcoal Slate vignette (Pre-created & frozen)
+            dc.DrawRectangle(_bgBrush, null, new Rect(0, 0, w, h));
 
-            // Floating Stardust Particles
+            // Floating Stardust Particles (Zero-allocation frozen brush palette)
             for (int i = 0; i < _particles.Length; i++)
             {
                 double px = _particles[i].X * w;
@@ -150,12 +174,11 @@ namespace OpenDualHub
                 double tw = (Math.Sin(_particles[i].TwinklePhase) + 1.0) * 0.5;
                 double alpha = Math.Clamp(_particles[i].BaseAlpha * (0.6 + tw * 0.4), 0.0, 1.0);
 
-                byte a = (byte)(alpha * 200);
-                var pBrush = new SolidColorBrush(Color.FromArgb(a, 0x00, 0xF5, 0xD4));
-                dc.DrawEllipse(pBrush, null, new Point(px, py), _particles[i].Radius, _particles[i].Radius);
+                int brushIdx = Math.Clamp((int)(alpha * 31), 0, 31);
+                dc.DrawEllipse(_particleBrushes[brushIdx], null, new Point(px, py), _particles[i].Radius, _particles[i].Radius);
             }
 
-            // Wave Ribbon 1 (Primary PS3 Wave + Ambient Glow Aura)
+            // Wave Ribbon 1 (Primary Ribbon Wave + Ambient Glow Aura)
             DrawRibbon(dc, _glowPen1, w, h * 0.58, h * 0.16, _phase1, 1.2, 0.0025);
             DrawRibbon(dc, _pen1, w, h * 0.58, h * 0.16, _phase1, 1.2, 0.0025);
 

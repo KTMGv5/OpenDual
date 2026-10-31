@@ -25,7 +25,7 @@ namespace OpenDualHub
 
             if (IsDarkMode)
             {
-                // PlayStation 3 XMB Smoked Glass Palette
+                // Cross Bar Smoked Glass Palette
                 accentSignature = BrightenColor(CurrentAccentColor, 1.25f);
 
                 resources["BgPrimary"] = new SolidColorBrush(Color.FromArgb(0x00, 0x00, 0x00, 0x00));

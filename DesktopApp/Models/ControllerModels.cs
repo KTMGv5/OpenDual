@@ -302,11 +302,11 @@ namespace OpenDualHub.Models
 
         public string ModelName => Model switch
         {
-            1 => "PlayStation 4 DualShock (v1)",
-            2 => "PlayStation 4 DualShock (v2)",
-            3 => "PlayStation 5 DualSense",
-            4 => "PlayStation 5 DualSense Edge",
-            _ => "Unknown Controller"
+            1 => "DualShock 4 (v1)",
+            2 => "DualShock 4 (v2)",
+            3 => "DualSense Wireless",
+            4 => "DualSense Edge",
+            _ => "Generic Controller"
         };
 
         public string ConnectionName => Connection switch

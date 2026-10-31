@@ -41,7 +41,7 @@ namespace OpenDualHub
         {
             // 0. USERS & PROFILES
             var catUsers = new XmbCategory { Id = "users", Title = "PROFILES", Icon = "👤" };
-            catUsers.Items.Add(new XmbItem { Id = "prof_default", Title = "PlayStation 5 Balanced", Subtitle = "Standard haptics & adaptive triggers", Icon = "🎮", ValueBadge = "Active" });
+            catUsers.Items.Add(new XmbItem { Id = "prof_default", Title = "Standard Balanced", Subtitle = "Standard haptics & adaptive triggers", Icon = "🎮", ValueBadge = "Active" });
             catUsers.Items.Add(new XmbItem { Id = "prof_esports", Title = "Esports Ultra 1000Hz", Subtitle = "1ms polling, Hall-stabilizer & instant click", Icon = "🏆", ValueBadge = "Esports" });
             catUsers.Items.Add(new XmbItem { Id = "prof_fps", Title = "FPS Gyro Specialist", Subtitle = "6-axis motion aim with spatial footstep radar", Icon = "🎯", ValueBadge = "Gyro Aim" });
             catUsers.Items.Add(new XmbItem { Id = "prof_racing", Title = "Racing Force Feedback", Subtitle = "Progressive brake wall & throttle resistance", Icon = "🏎️", ValueBadge = "Dynamic" });
@@ -58,7 +58,7 @@ namespace OpenDualHub
 
             // 2. CONTROLLER (DEFAULT)
             var catController = new XmbCategory { Id = "controller", Title = "CONTROLLER", Icon = "🎮" };
-            catController.Items.Add(new XmbItem { Id = "ctrl_status", Title = "Controller Overview", Subtitle = "PlayStation 5 DualSense (USB 1000Hz)", Icon = "🎮", ValueBadge = "Connected" });
+            catController.Items.Add(new XmbItem { Id = "ctrl_status", Title = "Controller Overview", Subtitle = "DualSense Wireless (USB 1000Hz)", Icon = "🎮", ValueBadge = "Connected" });
             catController.Items.Add(new XmbItem { Id = "ctrl_input", Title = "Live Input Visualizer", Subtitle = "Real-time sticks, triggers, D-Pad & buttons", Icon = "🕹️", ValueBadge = "Live Test" });
             catController.Items.Add(new XmbItem { Id = "ctrl_overclock", Title = "1000 Hz USB Overclock Assistant", Subtitle = "SweetLow HIDUSBF kernel filter booster", Icon = "⚡", ValueBadge = "1.0 ms" });
             catController.Items.Add(new XmbItem { Id = "ctrl_battery_sentinel", Title = "Battery Longevity Sentinel", Subtitle = "80% Esports smart charge limit & health", Icon = "🔋", ValueBadge = "98% Pro" });

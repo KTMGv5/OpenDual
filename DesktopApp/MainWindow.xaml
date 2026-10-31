@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:OpenDualHub"
-        Title="OpenDual - PlayStation Controller Suite"
+        Title="OpenDual - Controller Suite"
         Icon="Assets/app.ico"
         Height="820" Width="1100"
         MinHeight="480" MinWidth="600"
@@ -14,7 +14,7 @@
         SizeChanged="Window_SizeChanged">
 
     <Window.Resources>
-        <!-- Theme Brushes (PlayStation 3 XMB Smoked Glass) -->
+        <!-- Theme Brushes (Cross Bar Smoked Glass) -->
         <SolidColorBrush x:Key="BgPrimary" Color="#00000000"/>
         <SolidColorBrush x:Key="BgSecondary" Color="#D90B0F1A"/>
         <SolidColorBrush x:Key="BgCard" Color="#CC0E1422"/>
@@ -123,8 +123,8 @@
             </Setter>
         </Style>
 
-        <!-- PS5 Top Navigation Ribbon Tab Style -->
-        <Style x:Key="PS5NavTabStyle" TargetType="RadioButton">
+        <!-- Top Navigation Ribbon Tab Style -->
+        <Style x:Key="RibbonNavTabStyle" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="FontSize" Value="12"/>
@@ -139,7 +139,7 @@
                             <Border x:Name="HoverBorder" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             </Border>
-                            <!-- Active indicator underline bar (PS5 style) -->
+                            <!-- Active indicator underline bar -->
                             <Border x:Name="ActiveBar" Height="3" VerticalAlignment="Bottom" Background="{DynamicResource AccentSignature}" CornerRadius="1.5" Visibility="Collapsed" Margin="6,0,6,-2"/>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -233,11 +233,11 @@
             <RowDefinition Height="36"/>
         </Grid.RowDefinitions>
 
-        <!-- PlayStation 3 Dynamic Ethereal Wave Background -->
-        <local:Ps3WaveBackground Grid.RowSpan="3" x:Name="Ps3Background" Panel.ZIndex="0"/>
+        <!-- Dynamic Ethereal Wave Background -->
+        <local:WaveRibbonBackground Grid.RowSpan="3" x:Name="WaveBackground" Panel.ZIndex="0"/>
 
-        <!-- PlayStation 3 Authentic Cross Media Bar (XMB) Primary Interface -->
-        <local:Ps3XmbView x:Name="XmbView" Grid.RowSpan="3" Panel.ZIndex="5" Visibility="Visible"/>
+        <!-- Authentic Cross Media Bar (XMB) Primary Interface -->
+        <local:CrossMediaBarView x:Name="XmbView" Grid.RowSpan="3" Panel.ZIndex="5" Visibility="Visible"/>
 
         <!-- Legacy / Classic Expanded Layout (Preserved for element references, hidden by default) -->
         <Grid x:Name="ViewClassicLayout" Grid.RowSpan="3" Visibility="Collapsed">
@@ -247,7 +247,7 @@
                 <RowDefinition Height="36"/>
             </Grid.RowDefinitions>
 
-            <!-- PS5 HOMESCREEN TOP NAVIGATION BAR -->
+            <!-- HOMESCREEN TOP NAVIGATION BAR -->
             <Border Grid.Row="0" Panel.ZIndex="1" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="14,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -268,15 +268,15 @@
                 <!-- Center: Navigation Ribbon Tabs (Smoothly scrollable, zero clipping) -->
                 <ScrollViewer x:Name="NavTabsScrollViewer" Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Focusable="False" PanningMode="HorizontalOnly" PreviewMouseWheel="NavTabsScrollViewer_PreviewMouseWheel">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
-                        <RadioButton x:Name="TabController" Content="CONTROLLER" Style="{StaticResource PS5NavTabStyle}" IsChecked="True" Checked="Nav_Dashboard_Checked"/>
-                        <RadioButton x:Name="TabLightbar" Content="LIGHTBAR" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Rgb_Checked"/>
-                        <RadioButton x:Name="TabTriggers" Content="TRIGGERS" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Triggers_Checked"/>
-                        <RadioButton x:Name="TabGyro" Content="GYRO AIM" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Gyro_Checked"/>
-                        <RadioButton x:Name="TabTouchpad" Content="TOUCHPAD" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Touchpad_Checked"/>
-                        <RadioButton x:Name="TabAudio" Content="AUDIO" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Audio_Checked"/>
-                        <RadioButton x:Name="TabHardwareLab" Content="HARDWARE LAB" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_HardwareLab_Checked"/>
-                        <RadioButton x:Name="TabProfiles" Content="PROFILES" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Profiles_Checked"/>
-                        <RadioButton x:Name="TabSystem" Content="SYSTEM" Style="{StaticResource PS5NavTabStyle}" Checked="Nav_Driver_Checked"/>
+                        <RadioButton x:Name="TabController" Content="CONTROLLER" Style="{StaticResource RibbonNavTabStyle}" IsChecked="True" Checked="Nav_Dashboard_Checked"/>
+                        <RadioButton x:Name="TabLightbar" Content="LIGHTBAR" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_Rgb_Checked"/>
+                        <RadioButton x:Name="TabTriggers" Content="TRIGGERS" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_Triggers_Checked"/>
+                        <RadioButton x:Name="TabGyro" Content="GYRO AIM" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_Gyro_Checked"/>
+                        <RadioButton x:Name="TabTouchpad" Content="TOUCHPAD" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_Touchpad_Checked"/>
+                        <RadioButton x:Name="TabAudio" Content="AUDIO" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_Audio_Checked"/>
+                        <RadioButton x:Name="TabHardwareLab" Content="HARDWARE LAB" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_HardwareLab_Checked"/>
+                        <RadioButton x:Name="TabProfiles" Content="PROFILES" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_Profiles_Checked"/>
+                        <RadioButton x:Name="TabSystem" Content="SYSTEM" Style="{StaticResource RibbonNavTabStyle}" Checked="Nav_Driver_Checked"/>
                     </StackPanel>
                 </ScrollViewer>
 
@@ -316,9 +316,9 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
                             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock x:Name="DashModelTitle" Text="PlayStation 5 DualSense Wireless Controller" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="DashModelTitle" Text="DualSense Wireless Controller" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                 <Border x:Name="DashProfileBadge" Background="{DynamicResource SlotBg}" BorderBrush="{DynamicResource HeaderAccent}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="10,2,0,2" VerticalAlignment="Center">
-                                    <TextBlock x:Name="TxtDashProfileName" Text="PlayStation 5 Balanced" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
+                                    <TextBlock x:Name="TxtDashProfileName" Text="Standard Balanced" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
                                 </Border>
                                 <Border x:Name="DashBatteryLowBadge" Background="#33FF334B" BorderBrush="{StaticResource AccentRed}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="8,2,0,2" VerticalAlignment="Center" Visibility="Collapsed">
                                     <TextBlock Text="CRITICAL BATTERY (&lt;15%)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentRed}"/>
@@ -493,7 +493,7 @@
                             </Border>
                             <TextBlock x:Name="TxtTouchCoords" Text="Touch 1: Inactive | Touch 2: Inactive" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,6,0,16"/>
 
-                            <!-- D-Pad and PlayStation Face Buttons Side-by-Side -->
+                            <!-- D-Pad and Action Face Buttons Side-by-Side -->
                             <Grid Margin="0,10,0,0" HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -544,7 +544,7 @@
                                 <!-- Vertical Divider -->
                                 <Rectangle Grid.Column="1" Width="1" VerticalAlignment="Stretch" Fill="{DynamicResource BorderColor}" Margin="0,10"/>
 
-                                <!-- PlayStation Face Buttons -->
+                                <!-- Action Face Buttons -->
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Center">
                                     <TextBlock Text="ACTION BUTTONS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                                     <Grid HorizontalAlignment="Center" Width="140" Height="140">
@@ -666,7 +666,7 @@
                                 </Border>
 
                                 <WrapPanel>
-                                    <Button Content="PlayStation Blue" Style="{StaticResource PrimaryBtnStyle}" Background="#0070D1" Margin="3" Click="PresetColor_Click" Tag="0,112,209"/>
+                                    <Button Content="Signature Blue" Style="{StaticResource PrimaryBtnStyle}" Background="#0070D1" Margin="3" Click="PresetColor_Click" Tag="0,112,209"/>
                                     <Button Content="Cyber Cyan" Style="{StaticResource PrimaryBtnStyle}" Background="#00F5D4" Foreground="#000000" Margin="3" Click="PresetColor_Click" Tag="0,245,212"/>
                                     <Button Content="Neon Pink" Style="{StaticResource PrimaryBtnStyle}" Background="#FF007F" Margin="3" Click="PresetColor_Click" Tag="255,0,127"/>
                                     <Button Content="Crimson Red" Style="{StaticResource PrimaryBtnStyle}" Background="#FF2A2A" Margin="3" Click="PresetColor_Click" Tag="255,42,42"/>
@@ -1267,7 +1267,7 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="In-Game PS Button Quick HUD Overlay" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                        <TextBlock Text="Displays a sleek PS5-style floating status card (battery %, volume, mic mute, triggers) whenever you press the PS button." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Displays a sleek floating status card (battery %, volume, mic mute, triggers) whenever you press the PS button." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                         <Button Content="Preview HUD" Style="{StaticResource PrimaryBtnStyle}" Background="#222B3F" Padding="12,6" Margin="0,0,12,0" Click="BtnPreviewQuickHud_Click"/>
@@ -1278,8 +1278,8 @@
                                 <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="PlayStation Create / Share Button (Capture Bar)" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                        <TextBlock Text="Pressing Create / Share summons a PS5-style Capture Bar (Screenshot, Instant Replay clip, Record, Game Bar)." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Create / Share Button (Capture Bar)" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="Pressing Create / Share summons the console-style Quick Capture Bar (Screenshot, Instant Replay clip, Record, Game Bar)." FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                         <Button Content="Preview Capture Bar" Style="{StaticResource PrimaryBtnStyle}" Background="#222B3F" Padding="12,6" Margin="0,0,12,0" Click="BtnPreviewCaptureBar_Click"/>
@@ -1429,7 +1429,7 @@
             </Grid>
         </ScrollViewer>
 
-        <!-- PLAYSTATION 3 XMB FOOTER STATUS & ACTION BAR -->
+        <!-- CROSS MEDIA BAR FOOTER STATUS & ACTION BAR -->
         <Border Grid.Row="2" Panel.ZIndex="1" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0" Padding="20,0">
             <Grid VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
@@ -1445,7 +1445,7 @@
                     <TextBlock x:Name="FooterEngineStatus" Text="Engine: Active (1000Hz)" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
 
-                <!-- Center: PlayStation 3 Action Button Hints (Authentic XMB Style) -->
+                <!-- Center: Action Button Hints (Authentic XMB Style) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border Width="16" Height="16" Background="#262979FF" BorderBrush="{StaticResource AccentBlue}" BorderThickness="1" CornerRadius="8" Margin="0,0,5,0">
                         <TextBlock Text="✕" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" VerticalAlignment="Center"/>

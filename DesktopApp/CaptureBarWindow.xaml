@@ -64,7 +64,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- ROW 0: Header with PlayStation Create Icon & Status -->
+                <!-- ROW 0: Header with Create Icon & Status -->
                 <Grid Grid.Row="0" Margin="4,0,4,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>

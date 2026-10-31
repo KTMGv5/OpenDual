@@ -12,7 +12,7 @@ namespace OpenDualSetup
     public class Program
     {
         private const string AppName = "OpenDual";
-        private const string AppFullName = "OpenDual PlayStation Controller Suite";
+        private const string AppFullName = "OpenDual Controller Suite";
         private const string AppVersion = "1.6.6";
         private const string AppPublisher = "OpenDual Team";
 
@@ -442,7 +442,7 @@ namespace OpenDualSetup
             key.SetValue("EstimatedSize", sizeKb, RegistryValueKind.DWord);
             key.SetValue("NoModify", 1, RegistryValueKind.DWord);
             key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
-            key.SetValue("Comments", "High-Performance Direct HID PlayStation Controller Driver & Desktop Suite");
+            key.SetValue("Comments", "High-Performance Direct HID Controller Driver & Desktop Suite");
             key.SetValue("URLInfoAbout", "https://github.com/KTMGv5/OpenDual");
         }
 

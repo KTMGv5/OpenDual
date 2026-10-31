@@ -1,10 +1,10 @@
-# OpenDual - PlayStation Controller Driver & Desktop Suite
+# OpenDual - Controller Driver & Desktop Suite
 
 [![Code Analysis & Build Verification](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml/badge.svg)](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml)
 [![Release v1.6.6](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.6.6)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Open-source, ultra-low-latency Windows driver service and desktop suite for PlayStation DualShock 4 and DualSense (PS5) controllers on Windows 10 & 11.**
+**Open-source, ultra-low-latency Windows driver service and desktop suite for DualShock 4 and DualSense controllers on Windows 10 & 11.**
 
 ---
 
@@ -15,7 +15,7 @@
   * Standard DualSense controllers default to 250 Hz (4.0ms) over USB on PC because Sony reserves USB endpoint bandwidth for 48kHz audio. OpenDual features an interactive Overclocking Assistant to guide competitive players through enabling SweetLow HIDUSBF for a true 1000 Hz (1.0ms) esports polling rate.
   * Features 1-click package download, driver certificate installer, elevated setup launcher, Windows Core Isolation shortcuts, and real-time live polling rate benchmarking.
 * **Interactive In-Game Control Center HUD (PS Button)**:
-  * Persistent, non-focus-stealing PS5-style overlay (`WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`) that opens when pressing the **PS button** without minimizing or dropping focus in games.
+  * Persistent, non-focus-stealing console-style overlay (`WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`) that opens when pressing the **PS button** without minimizing or dropping focus in games.
   * Stays open persistently until explicitly closed with Circle (O) or PS Button. Ephemeral toasts auto-dismiss cleanly after 3.5 seconds.
   * Customizable display scaling (Compact 85%, Standard 100%, Large 115%, Couch/TV 130%) so the HUD is never cut off on high-DPI screens.
   * **Rock-Solid Centered HUD Clock**: Anchored across the entire HUD boundary, eliminating side-to-side wobble from micro-fluctuations in ms latency.
@@ -26,11 +26,11 @@
     * **Tile 3 (PC Hardware Specs)**: Real-time CPU % utilization (`GetSystemTimes`), RAM load % and used GB / total GB (`GlobalMemoryStatusEx`) with zero CPU overhead.
     * **Tile 4 (Touchpad & Haptics)**: Live touchpad sensitivity and stereo haptic summary. D-Pad Up/Down adjusts sensitivity (+/-0.1x); Cross (X) toggles touchpad on/off.
   * **Universal Quick Action**: Square ([]) toggles mic mute from anywhere in the HUD. Mouse clicks and touch inputs are also fully supported.
-* **PlayStation Create / Share Button & Windows Game Bar Integration**:
-  * **PS5-Style Create / Capture Bar**: Pressing Create / Share summons an authentic floating capture bar at the bottom of the screen without minimizing or interrupting PC gameplay.
+* **Create / Share Button & Windows Game Bar Integration**:
+  * **Console-Style Create / Capture Bar**: Pressing Create / Share summons an authentic floating capture bar at the bottom of the screen without minimizing or interrupting PC gameplay.
   * **5 Capture Tiles**: Screenshot (`Win + Alt + PrtScn`), Save Recent Clip (`Win + Alt + G`), Start / Stop Recording (`Win + Alt + R`), Xbox Game Bar Overlay (`Win + G`), and Captures Gallery (`Videos\Captures`).
   * **Adjustable Instant Replay Length**: On Tile 1, D-Pad Up/Down lets players choose their instant replay buffer on the fly (15s, 30s, 1 min, 3 min, 5 min), directly synchronized with Windows GameDVR registry settings.
-  * **Quick Gestures (PS5 Style)**:
+  * **Quick Gestures**:
     * **Single Tap Share**: Toggles Create Capture Bar.
     * **Hold Share (> 800ms)**: Instant screenshot with shutter notification.
     * **Double-Tap Share**: Instant 30s replay clip capture (`Win + Alt + G`).
@@ -106,7 +106,7 @@
 
 | Controller | Connection | Audio & Mic | Touchpad Mouse | RGB Lightbar | Adaptive Triggers |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Sony DualSense (PS5)** | USB / Bluetooth | Native WASAPI | Multi-Touch | Full 24-bit + Speed | Full Stepper Motor |
+| **Sony DualSense** | USB / Bluetooth | Native WASAPI | Multi-Touch | Full 24-bit + Speed | Full Stepper Motor |
 | **Sony DualSense Edge** | USB / Bluetooth | Native WASAPI | Multi-Touch | Full 24-bit + Speed | Full Stepper Motor |
 | **Sony DualShock 4 v2** | USB / Bluetooth | Native USB | Multi-Touch | Full 24-bit + Speed | N/A |
 | **Sony DualShock 4 v1** | USB / Bluetooth | Native USB | Multi-Touch | Full 24-bit + Speed | N/A |
@@ -129,7 +129,7 @@ OpenDualHub.exe
 ```
 
 ### 3. Uninstalling
-Open **Windows Settings** -> **Apps** -> **Installed Apps**, locate **OpenDual PlayStation Controller Suite**, and click **Uninstall**.
+Open **Windows Settings** -> **Apps** -> **Installed Apps**, locate **OpenDual Controller Suite**, and click **Uninstall**.
 This stops all driver services, unregisters startup keys, removes shortcuts, and cleanly removes all installed files and AppData settings.
 
 ### 4. Controller Hotkeys (Adjust without opening the app)

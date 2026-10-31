@@ -592,6 +592,40 @@ namespace OpenDualHub
             ResetCircularity();
         }
 
+        public void FocusItem(string itemId)
+        {
+            var defaultBorder = (Brush)FindResource("BorderColor");
+            var glowBorder = (Brush)FindResource("AccentSignature");
+
+            CardGimbal.BorderBrush = defaultBorder;
+            CardCircularity.BorderBrush = defaultBorder;
+            CardTriggers.BorderBrush = defaultBorder;
+            CardJitter.BorderBrush = defaultBorder;
+
+            switch (itemId)
+            {
+                case "lab_gimbal":
+                    CardGimbal.BorderBrush = (Brush)FindResource("AccentBlue");
+                    LabScrollViewer.ScrollToTop();
+                    break;
+                case "lab_circ":
+                    CardCircularity.BorderBrush = glowBorder;
+                    LabScrollViewer.ScrollToVerticalOffset(240);
+                    break;
+                case "lab_zeroshift":
+                    CardCircularity.BorderBrush = (Brush)FindResource("AccentAmber");
+                    LabScrollViewer.ScrollToVerticalOffset(240);
+                    break;
+                case "lab_jitter":
+                    CardJitter.BorderBrush = glowBorder;
+                    LabScrollViewer.ScrollToBottom();
+                    break;
+                default:
+                    LabScrollViewer.ScrollToTop();
+                    break;
+            }
+        }
+
         private void ResetCircularity()
         {
             Array.Clear(_radarBinsL, 0, _radarBinsL.Length);

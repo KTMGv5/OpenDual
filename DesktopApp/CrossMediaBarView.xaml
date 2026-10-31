@@ -1,4 +1,4 @@
-<UserControl x:Class="OpenDualHub.Ps3XmbView"
+<UserControl x:Class="OpenDualHub.CrossMediaBarView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -47,17 +47,17 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <!-- Top PS3 Status Header -->
+            <!-- Top Status Header -->
             <RowDefinition Height="50"/>
             <!-- Horizontal XMB Category Axis -->
             <RowDefinition Height="96"/>
             <!-- XMB Main Split: Vertical Items (Left) + Interactive Inspector (Right) -->
             <RowDefinition Height="*"/>
-            <!-- Bottom PS3 Controller Navigation Action Bar -->
+            <!-- Bottom Navigation Action Bar -->
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
 
-        <!-- 1. TOP PS3 STATUS HEADER -->
+        <!-- 1. TOP STATUS HEADER -->
         <Border Grid.Row="0" Background="#A0080B13" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1" Padding="20,0">
             <Grid VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
@@ -66,13 +66,13 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: PS3 User Profile Badge -->
+                <!-- Left: User Profile Badge -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="26" Height="26" CornerRadius="13" Background="#2600F5D4" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1.2" Margin="0,0,8,0">
                         <TextBlock Text="👤" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="USER 1 (TYLER)" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
-                    <TextBlock Text="  •  OPENDUAL PLAYSTATION 3 XMB" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                    <TextBlock Text="  •  OPENDUAL CROSS BAR HUB" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Center: High-Priority 1000Hz HID Bus Engine Pill -->
@@ -83,7 +83,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Right: PS3 Date, Real-Time Clock & Battery -->
+                <!-- Right: Date, Real-Time Clock & Battery -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtXmbClock" Text="Sat 31/10  1:15 AM" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="8,4">
@@ -96,7 +96,7 @@
             </Grid>
         </Border>
 
-        <!-- 2. HORIZONTAL PS3 XMB CATEGORY AXIS -->
+        <!-- 2. HORIZONTAL XMB CATEGORY AXIS -->
         <Border Grid.Row="1" Background="#60080B13" BorderBrush="#202979FF" BorderThickness="0,0,0,1">
             <Grid>
                 <!-- Luminous Horizontal Guide Axis -->
@@ -150,9 +150,9 @@
                     </Grid>
 
                     <!-- Vertical Scrollable Items List -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" local:SmoothScrollHelper.SmoothScroll="True">
                         <StackPanel x:Name="PanelItems">
-                            <!-- Dynamically populated XMB item tiles with glowing PS3 selection capsules -->
+                            <!-- Dynamically populated XMB item tiles with glowing selection capsules -->
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
@@ -167,7 +167,7 @@
             </Border>
         </Grid>
 
-        <!-- 4. BOTTOM PS3 SYSTEM STATUS FOOTER -->
+        <!-- 4. BOTTOM SYSTEM STATUS FOOTER -->
         <Border Grid.Row="3" Background="#C0080B13" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,0" Padding="20,0">
             <Grid VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
@@ -188,7 +188,7 @@
                     <Border Background="#1A00E5FF" BorderBrush="#4000E5FF" BorderThickness="1" CornerRadius="6" Padding="7,2" Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="PROFILE: " FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentCyan}"/>
-                            <TextBlock x:Name="TxtFooterProfile" Text="PS5 Balanced" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtFooterProfile" Text="Standard Balanced" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#1A00E676" BorderBrush="#4000E676" BorderThickness="1" CornerRadius="6" Padding="7,2" Margin="0,0,8,0">

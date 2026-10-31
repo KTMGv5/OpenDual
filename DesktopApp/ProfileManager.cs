@@ -149,9 +149,9 @@ namespace OpenDualHub
                 new GameProfile
                 {
                     Id = "builtin-default",
-                    Name = "PlayStation 5 Balanced",
+                    Name = "Standard Balanced",
                     ProcessNames = "",
-                    Description = "Standard PlayStation 5 experience with Rainbow RGB, standard game rumble haptics, and default resistance.",
+                    Description = "Standard controller experience with Rainbow RGB, standard game rumble haptics, and default resistance.",
                     IsBuiltIn = true,
                     Config = new ConfigDto
                     {

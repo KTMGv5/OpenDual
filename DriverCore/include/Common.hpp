@@ -52,7 +52,7 @@ struct ControllerConfig {
     // RGB Lightbar
     uint8_t ledR = 0;
     uint8_t ledG = 120;
-    uint8_t ledB = 255;         // Default PlayStation Blue
+    uint8_t ledB = 255;         // Default Signature Blue
     uint8_t brightness = 255;
     RgbEffect rgbEffect = RgbEffect::Rainbow;
     float effectSpeed = 1.0f;

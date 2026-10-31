@@ -18,34 +18,116 @@ namespace OpenDualHub
 
         public void SetSection(string sectionId)
         {
+            SetSectionAndItem(sectionId, "");
+        }
+
+        public void SetSectionAndItem(string sectionId, string itemId, string? categoryTitle = null, string? itemTitle = null, string? itemSubtitle = null, string? badge = null)
+        {
+            // 1. Update Breadcrumb Banner
+            if (!string.IsNullOrEmpty(categoryTitle)) TxtBannerCategory.Text = categoryTitle;
+            if (!string.IsNullOrEmpty(itemTitle)) TxtBannerItem.Text = itemTitle;
+            if (!string.IsNullOrEmpty(itemSubtitle)) TxtBannerSubtitle.Text = itemSubtitle;
+            if (!string.IsNullOrEmpty(badge)) TxtBannerBadge.Text = badge;
+
+            // 2. Hide all category panels
             PanelTriggers.Visibility = Visibility.Collapsed;
             PanelGyro.Visibility = Visibility.Collapsed;
             PanelLightbar.Visibility = Visibility.Collapsed;
+            PanelTouchpad.Visibility = Visibility.Collapsed;
             PanelAudio.Visibility = Visibility.Collapsed;
             PanelProfiles.Visibility = Visibility.Collapsed;
             PanelSettings.Visibility = Visibility.Collapsed;
 
+            // 3. Reset card borders
+            var defaultBorder = (Brush)FindResource("BorderColor");
+            var glowBorder = (Brush)FindResource("AccentSignature");
+
+            CardTrigL2.BorderBrush = defaultBorder;
+            CardTrigR2.BorderBrush = defaultBorder;
+            CardTrigSnap.BorderBrush = defaultBorder;
+
+            CardGyroOutput.BorderBrush = defaultBorder;
+            CardGyroTuning.BorderBrush = defaultBorder;
+
+            CardLedEffect.BorderBrush = defaultBorder;
+            CardLedColor.BorderBrush = defaultBorder;
+            CardLedBrightness.BorderBrush = defaultBorder;
+
+            CardTouchMouse.BorderBrush = defaultBorder;
+            CardTouchVol.BorderBrush = defaultBorder;
+            CardTouchTap.BorderBrush = defaultBorder;
+
+            CardAudHaptic.BorderBrush = defaultBorder;
+            CardAudReactive.BorderBrush = defaultBorder;
+            CardAudSpeaker.BorderBrush = defaultBorder;
+            CardAudMic.BorderBrush = defaultBorder;
+
+            CardProfDefault.BorderBrush = defaultBorder;
+            CardProfEsports.BorderBrush = defaultBorder;
+            CardProfFps.BorderBrush = defaultBorder;
+            CardProfRacing.BorderBrush = defaultBorder;
+
+            CardSetDriver.BorderBrush = defaultBorder;
+            CardSetAutoStart.BorderBrush = defaultBorder;
+            CardSetIdle.BorderBrush = defaultBorder;
+            CardSetUpdate.BorderBrush = defaultBorder;
+
+            // 4. Activate target panel & highlight matching card
             switch (sectionId.ToLowerInvariant())
             {
                 case "triggers":
                     PanelTriggers.Visibility = Visibility.Visible;
+                    if (itemId == "trig_l2") { CardTrigL2.BorderBrush = glowBorder; CardTrigL2.BringIntoView(); }
+                    else if (itemId == "trig_r2") { CardTrigR2.BorderBrush = glowBorder; CardTrigR2.BringIntoView(); }
+                    else if (itemId == "trig_snap" || itemId == "trig_oscilloscope") { CardTrigSnap.BorderBrush = glowBorder; CardTrigSnap.BringIntoView(); }
                     break;
+
                 case "gyro":
                     PanelGyro.Visibility = Visibility.Visible;
+                    if (itemId == "gyro_output") { CardGyroOutput.BorderBrush = glowBorder; CardGyroOutput.BringIntoView(); }
+                    else if (itemId == "gyro_tuning") { CardGyroTuning.BorderBrush = glowBorder; CardGyroTuning.BringIntoView(); }
+                    else if (itemId == "gyro_wizard") { BtnLaunchCalibrator.BringIntoView(); }
                     break;
+
                 case "lightbar":
                     PanelLightbar.Visibility = Visibility.Visible;
+                    if (itemId == "led_effect") { CardLedEffect.BorderBrush = glowBorder; CardLedEffect.BringIntoView(); }
+                    else if (itemId == "led_color" || itemId == "led_players") { CardLedColor.BorderBrush = glowBorder; CardLedColor.BringIntoView(); }
+                    else if (itemId == "led_brightness") { CardLedBrightness.BorderBrush = glowBorder; CardLedBrightness.BringIntoView(); }
                     break;
+
+                case "touchpad":
+                    PanelTouchpad.Visibility = Visibility.Visible;
+                    if (itemId == "touch_mouse") { CardTouchMouse.BorderBrush = glowBorder; CardTouchMouse.BringIntoView(); }
+                    else if (itemId == "touch_vol") { CardTouchVol.BorderBrush = (Brush)FindResource("AccentAmber"); CardTouchVol.BringIntoView(); }
+                    else if (itemId == "touch_tap") { CardTouchTap.BorderBrush = glowBorder; CardTouchTap.BringIntoView(); }
+                    break;
+
                 case "audio":
                     PanelAudio.Visibility = Visibility.Visible;
+                    if (itemId == "aud_haptic") { CardAudHaptic.BorderBrush = glowBorder; CardAudHaptic.BringIntoView(); }
+                    else if (itemId == "aud_reactive") { CardAudReactive.BorderBrush = glowBorder; CardAudReactive.BringIntoView(); }
+                    else if (itemId == "aud_speaker") { CardAudSpeaker.BorderBrush = (Brush)FindResource("AccentBlue"); CardAudSpeaker.BringIntoView(); }
+                    else if (itemId == "aud_mic") { CardAudMic.BorderBrush = (Brush)FindResource("AccentAmber"); CardAudMic.BringIntoView(); }
                     break;
+
                 case "users":
                 case "profiles":
                     PanelProfiles.Visibility = Visibility.Visible;
+                    if (itemId == "prof_default") { CardProfDefault.BorderBrush = glowBorder; CardProfDefault.BringIntoView(); }
+                    else if (itemId == "prof_esports") { CardProfEsports.BorderBrush = glowBorder; CardProfEsports.BringIntoView(); }
+                    else if (itemId == "prof_fps") { CardProfFps.BorderBrush = glowBorder; CardProfFps.BringIntoView(); }
+                    else if (itemId == "prof_racing" || itemId == "prof_new") { CardProfRacing.BorderBrush = glowBorder; CardProfRacing.BringIntoView(); }
                     break;
+
                 case "settings":
                     PanelSettings.Visibility = Visibility.Visible;
+                    if (itemId == "set_driver") { CardSetDriver.BorderBrush = (Brush)FindResource("AccentGreen"); CardSetDriver.BringIntoView(); }
+                    else if (itemId == "set_autostart") { CardSetAutoStart.BorderBrush = glowBorder; CardSetAutoStart.BringIntoView(); }
+                    else if (itemId == "set_idle") { CardSetIdle.BorderBrush = (Brush)FindResource("AccentAmber"); CardSetIdle.BringIntoView(); }
+                    else if (itemId == "set_update") { CardSetUpdate.BorderBrush = glowBorder; CardSetUpdate.BringIntoView(); }
                     break;
+
                 default:
                     PanelTriggers.Visibility = Visibility.Visible;
                     break;
@@ -75,6 +157,14 @@ namespace OpenDualHub
             {
                 TxtR2ModeBadge.Text = btn.Content.ToString();
                 IpcClient?.SetAdaptiveTriggers(2, 30, 8, 12, mode, 30, 8, 12);
+            }
+        }
+
+        private void SliderSnapTension_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (TxtSnapTensionVal != null)
+            {
+                TxtSnapTensionVal.Text = $"{e.NewValue:F0}% Force";
             }
         }
         #endregion
@@ -141,6 +231,55 @@ namespace OpenDualHub
                 catch { }
             }
         }
+
+        private void SliderBrightness_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (TxtBrightnessVal != null)
+            {
+                TxtBrightnessVal.Text = $"{e.NewValue:F0}%";
+            }
+        }
+        #endregion
+
+        #region Touchpad Handlers
+        private void ToggleTouchMouse_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOn = ToggleTouchMouse.IsChecked == true;
+            ToggleTouchMouse.Content = isOn ? "Mouse: ON" : "Mouse: OFF";
+            PushTouchpadConfig();
+        }
+
+        private void SliderTouchSens_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (TxtTouchSensVal != null)
+            {
+                TxtTouchSensVal.Text = $"{e.NewValue:F2}x";
+                PushTouchpadConfig();
+            }
+        }
+
+        private void ToggleTouchVol_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOn = ToggleTouchVol.IsChecked == true;
+            ToggleTouchVol.Content = isOn ? "Gesture: ON" : "Gesture: OFF";
+            PushTouchpadConfig();
+        }
+
+        private void ToggleTouchTap_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOn = ToggleTouchTap.IsChecked == true;
+            ToggleTouchTap.Content = isOn ? "Tap: ON" : "Tap: OFF";
+            PushTouchpadConfig();
+        }
+
+        private void PushTouchpadConfig()
+        {
+            bool mouseOn = ToggleTouchMouse?.IsChecked == true;
+            float sens = (float)(SliderTouchSens?.Value ?? 1.2);
+            bool volGesture = ToggleTouchVol?.IsChecked == true;
+            bool tapClick = ToggleTouchTap?.IsChecked == true;
+            IpcClient?.SetTouchpad(mouseOn, sens, 1.0f, tapClick, volGesture);
+        }
         #endregion
 
         #region Audio Handlers
@@ -166,6 +305,13 @@ namespace OpenDualHub
             ToggleSpeaker.Content = isOn ? "Speaker: ON" : "Speaker: OFF";
             IpcClient?.SetSpeakerOutput(isOn);
         }
+
+        private void ToggleMicSync_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOn = ToggleMicSync.IsChecked == true;
+            ToggleMicSync.Content = isOn ? "Mic Sync: ON" : "Mic Sync: OFF";
+            IpcClient?.SetMicSync(isOn);
+        }
         #endregion
 
         #region Profiles & Settings
@@ -173,7 +319,7 @@ namespace OpenDualHub
         {
             if (sender is Button btn && btn.Tag is string name)
             {
-                MessageBox.Show($"Profile '{name}' activated successfully!\nSettings applied to DualSense.", "OpenDual XMB Profiles", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Profile '{name}' activated successfully!\nSettings applied to controller.", "OpenDual Profiles", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -189,6 +335,22 @@ namespace OpenDualHub
         {
             bool isOn = ToggleAutoStart.IsChecked == true;
             ToggleAutoStart.Content = isOn ? "Auto-Start: ON" : "Auto-Start: OFF";
+        }
+
+        private void CmbIdleTimeout_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbIdleTimeout != null && CmbIdleTimeout.SelectedItem is ComboBoxItem item)
+            {
+                int minutes = item.Content.ToString() switch
+                {
+                    "5 Minutes" => 5,
+                    "10 Minutes" => 10,
+                    "15 Minutes" => 15,
+                    "Never" => 0,
+                    _ => 10
+                };
+                IpcClient?.SetPowerManagement(minutes, true);
+            }
         }
         #endregion
     }

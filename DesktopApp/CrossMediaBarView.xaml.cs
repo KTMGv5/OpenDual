@@ -7,7 +7,7 @@ using OpenDualHub.Models;
 
 namespace OpenDualHub
 {
-    public partial class Ps3XmbView : UserControl
+    public partial class CrossMediaBarView : UserControl
     {
         public XmbManager Xmb => _xmb;
         private readonly XmbManager _xmb = new();
@@ -19,7 +19,7 @@ namespace OpenDualHub
 
         public Action<string>? OnNavigateSection;
 
-        public Ps3XmbView()
+        public CrossMediaBarView()
         {
             InitializeComponent();
 
@@ -236,44 +236,40 @@ namespace OpenDualHub
         {
             var cat = _xmb.ActiveCategory;
             var item = _xmb.ActiveItem;
+            string itemId = item?.Id ?? "";
 
-            if (item != null)
+            // 1. Novel Features (Battery Sentinel, Footstep Radar, Hall Stabilizer)
+            if (itemId == "ctrl_battery_sentinel" || itemId == "ctrl_hall_stabilizer" || itemId == "aud_spatial_radar")
             {
-                // Feature 1, 2, 3: Novel features inspection
-                if (item.Id == "ctrl_battery_sentinel" || item.Id == "ctrl_hall_stabilizer" || item.Id == "aud_spatial_radar")
-                {
-                    InspectorContentHost.Content = NovelControl;
-                    return;
-                }
-
-                // Controller Overview & Live Input Test
-                if (item.Id == "ctrl_status" || item.Id == "ctrl_input" || item.Id == "ctrl_overclock")
-                {
-                    InspectorContentHost.Content = ControllerInspector;
-                    return;
-                }
-
-                // Hardware Lab items
-                if (item.Id.StartsWith("lab_"))
-                {
-                    InspectorContentHost.Content = LabControl;
-                    return;
-                }
+                NovelControl.FocusItem(itemId);
+                InspectorContentHost.Content = NovelControl;
+                return;
             }
 
+            // 2. Controller Category (Overview, Live Input, 1000Hz Overclock)
             if (cat.Id == "controller")
             {
+                ControllerInspector.FocusItem(itemId);
                 InspectorContentHost.Content = ControllerInspector;
                 return;
             }
 
-            if (cat.Id == "lab")
+            // 3. Hardware Lab Category (Gimbal, Circularity, ZeroShift, Jitter)
+            if (cat.Id == "lab" || itemId.StartsWith("lab_"))
             {
+                LabControl.FocusItem(itemId);
                 InspectorContentHost.Content = LabControl;
                 return;
             }
 
-            CategoryInspector.SetSection(cat.Id);
+            // 4. All Other Categories (Triggers, Gyro, Lightbar, Touchpad, Audio, Profiles, Settings)
+            CategoryInspector.SetSectionAndItem(
+                cat.Id,
+                itemId,
+                $"{cat.Icon} {cat.Title}",
+                item?.Title,
+                item?.Subtitle,
+                item?.ValueBadge);
             InspectorContentHost.Content = CategoryInspector;
         }
         #endregion

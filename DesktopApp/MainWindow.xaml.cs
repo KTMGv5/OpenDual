@@ -110,7 +110,7 @@ namespace OpenDualHub
                 LabControl.IpcClient = _ipc;
             }
 
-            _trayManager.Initialize(helper.Handle, "OpenDual - PlayStation Controller Suite");
+            _trayManager.Initialize(helper.Handle, "OpenDual - Controller Suite");
             _trayManager.DoubleClick += RestoreFromTray;
             _trayManager.RightClick += ShowTrayContextMenu;
 
@@ -574,14 +574,47 @@ namespace OpenDualHub
             });
         }
 
+        private ControllerTelemetry? _pendingTelemetry;
+        private int _telemetryDispatchActive = 0;
+        private long _lastTelemetryDispatchTicks = 0;
+
         private void OnTelemetryReceived(ControllerTelemetry t)
         {
-            Dispatcher.Invoke(() =>
+            _pendingTelemetry = t;
+
+            long now = System.Diagnostics.Stopwatch.GetTimestamp();
+            double elapsedMs = (now - _lastTelemetryDispatchTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+
+            // Throttle UI updates to smooth 60 FPS (16ms) so the UI message loop is never starved
+            if (elapsedMs < 16.0) return;
+
+            if (System.Threading.Interlocked.CompareExchange(ref _telemetryDispatchActive, 1, 0) == 0)
             {
-                _isUpdatingUi = true;
-                try
+                _lastTelemetryDispatchTicks = now;
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
                 {
-                    XmbView?.UpdateTelemetry(t);
+                    try
+                    {
+                        var latest = _pendingTelemetry;
+                        if (latest != null)
+                        {
+                            ApplyTelemetryToUi(latest);
+                        }
+                    }
+                    finally
+                    {
+                        System.Threading.Interlocked.Exchange(ref _telemetryDispatchActive, 0);
+                    }
+                }));
+            }
+        }
+
+        private void ApplyTelemetryToUi(ControllerTelemetry t)
+        {
+            _isUpdatingUi = true;
+            try
+            {
+                XmbView?.UpdateTelemetry(t);
 
                     if (t.Connected)
                     {
@@ -924,7 +957,7 @@ namespace OpenDualHub
                         }
                         _lastPsState = t.PS;
 
-                        // In-Game Create / Capture Bar Update & Share Button Detection (PS5 Style)
+                        // In-Game Create / Capture Bar Update & Share Button Detection (Console Style)
                         if (_captureBar != null)
                         {
                             if (_captureBar.IsVisibleToUser)
@@ -977,7 +1010,7 @@ namespace OpenDualHub
                     else
                     {
                         if (StatusDot != null) StatusDot.Fill = (SolidColorBrush)FindResource("AccentRed");
-                        if (FooterStatus != null) FooterStatus.Text = "Waiting for PS4 / PS5 Controller...";
+                        if (FooterStatus != null) FooterStatus.Text = "Waiting for DualSense / DS4 Controller...";
                         if (TxtBatteryHeader != null) TxtBatteryHeader.Text = "--%";
                         if (DashModelTitle != null) DashModelTitle.Text = "No Controller Detected";
                         if (DashConnInfo != null) DashConnInfo.Text = "Connect a DualSense or DualShock 4 via USB or Bluetooth.";
@@ -1001,7 +1034,6 @@ namespace OpenDualHub
                 {
                     _isUpdatingUi = false;
                 }
-            });
         }
 
         private void HighlightPill(Border border, bool active)

@@ -184,6 +184,35 @@ namespace OpenDualHub
             });
         }
 
+        public void FocusItem(string itemId)
+        {
+            var defaultBorder = (Brush)FindResource("BorderColor");
+            var glowBorder = (Brush)FindResource("AccentSignature");
+
+            CardSentinel.BorderBrush = defaultBorder;
+            CardRadar.BorderBrush = defaultBorder;
+            CardHall.BorderBrush = defaultBorder;
+
+            switch (itemId)
+            {
+                case "ctrl_battery_sentinel":
+                    CardSentinel.BorderBrush = (Brush)FindResource("AccentGreen");
+                    CardSentinel.BringIntoView();
+                    break;
+                case "aud_spatial_radar":
+                    CardRadar.BorderBrush = glowBorder;
+                    CardRadar.BringIntoView();
+                    break;
+                case "ctrl_hall_stabilizer":
+                    CardHall.BorderBrush = (Brush)FindResource("AccentAmber");
+                    CardHall.BringIntoView();
+                    break;
+                default:
+                    CardSentinel.BringIntoView();
+                    break;
+            }
+        }
+
         private void ToggleBatteryGuard_Click(object sender, RoutedEventArgs e)
         {
             bool isOn = ToggleBatteryGuard.IsChecked == true;

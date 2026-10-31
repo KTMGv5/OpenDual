@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OpenDualHub"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="680">
 
@@ -40,7 +41,7 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer x:Name="LabScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" local:SmoothScrollHelper.SmoothScroll="True">
         <StackPanel Margin="4">
 
             <!-- 1. TOP HEADER BANNER -->
@@ -86,7 +87,7 @@
             </Border>
 
             <!-- 2. REAL-TIME 3D SPATIAL GIMBAL -->
-            <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+            <Border x:Name="CardGimbal" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
                 <StackPanel>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -158,7 +159,7 @@
             </Border>
 
             <!-- 3. STICK CIRCULARITY & ZERO-SHIFT DRIFT ELIMINATOR -->
-            <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+            <Border x:Name="CardCircularity" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
                 <StackPanel>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -208,7 +209,7 @@
             </Border>
 
             <!-- 4. ADAPTIVE TRIGGER RESISTANCE & FORCE OSCILLOSCOPE -->
-            <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+            <Border x:Name="CardTriggers" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
                 <StackPanel>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -256,7 +257,7 @@
             </Border>
 
             <!-- 5. 1000Hz POLLING LATENCY JITTER HISTOGRAM -->
-            <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+            <Border x:Name="CardJitter" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
                 <StackPanel>
                     <Grid Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>

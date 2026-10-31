@@ -91,5 +91,48 @@ namespace OpenDualHub
             };
             canvas.Children.Add(dot);
         }
+
+        public void FocusItem(string itemId)
+        {
+            var defaultBorder = (Brush)FindResource("BorderColor");
+            var glowBorder = (Brush)FindResource("AccentSignature");
+
+            CardOverview.BorderBrush = defaultBorder;
+            CardLiveInput.BorderBrush = defaultBorder;
+            CardOverclock.BorderBrush = defaultBorder;
+
+            switch (itemId)
+            {
+                case "ctrl_status":
+                    CardOverview.BorderBrush = glowBorder;
+                    CardOverview.BringIntoView();
+                    break;
+                case "ctrl_input":
+                    CardLiveInput.BorderBrush = glowBorder;
+                    CardLiveInput.BringIntoView();
+                    break;
+                case "ctrl_overclock":
+                    CardOverclock.BorderBrush = (Brush)FindResource("AccentBlue");
+                    CardOverclock.BringIntoView();
+                    break;
+                default:
+                    CardOverview.BringIntoView();
+                    break;
+            }
+        }
+
+        private void BtnLaunchOverclock_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var w = new OverclockAssistantWindow();
+                w.Owner = Window.GetWindow(this);
+                w.Show();
+            }
+            catch
+            {
+                new OverclockAssistantWindow().Show();
+            }
+        }
     }
 }
