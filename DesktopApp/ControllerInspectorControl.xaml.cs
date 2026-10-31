@@ -11,6 +11,24 @@ namespace OpenDualHub
     {
         public MainWindow? MainWindow { get; set; }
 
+        private static readonly SolidColorBrush s_ringBrush = CreateFrozenBrush(Color.FromArgb(40, 255, 255, 255));
+        private static readonly SolidColorBrush s_gridBrush = CreateFrozenBrush(Color.FromArgb(30, 255, 255, 255));
+        private static readonly SolidColorBrush s_dotLeftBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xF5, 0xD4));
+        private static readonly SolidColorBrush s_dotRightBrush = CreateFrozenBrush(Color.FromRgb(0xFF, 0x00, 0x7F));
+
+        private Ellipse? _ringL, _dotL;
+        private Line? _hLineL, _vLineL;
+
+        private Ellipse? _ringR, _dotR;
+        private Line? _hLineR, _vLineR;
+
+        private static SolidColorBrush CreateFrozenBrush(Color color)
+        {
+            var b = new SolidColorBrush(color);
+            b.Freeze();
+            return b;
+        }
+
         public ControllerInspectorControl()
         {
             InitializeComponent();
@@ -30,8 +48,8 @@ namespace OpenDualHub
             TxtCoordsL.Text = $"X: {t.LX:+0.00;-0.00;0.00}  Y: {t.LY:+0.00;-0.00;0.00}";
             TxtCoordsR.Text = $"X: {t.RX:+0.00;-0.00;0.00}  Y: {t.RY:+0.00;-0.00;0.00}";
 
-            DrawStickPoint(CanvasStickL, t.LX, t.LY, Color.FromRgb(0x00, 0xF5, 0xD4));
-            DrawStickPoint(CanvasStickR, t.RX, t.RY, Color.FromRgb(0xFF, 0x00, 0x7F));
+            DrawStickPoint(CanvasStickL, ref _ringL, ref _hLineL, ref _vLineL, ref _dotL, t.LX, t.LY, s_dotLeftBrush);
+            DrawStickPoint(CanvasStickR, ref _ringR, ref _hLineR, ref _vLineR, ref _dotR, t.RX, t.RY, s_dotRightBrush);
 
             // Triggers
             double l2Pct = Math.Clamp(t.L2 * 100.0, 0.0, 100.0);
@@ -57,41 +75,59 @@ namespace OpenDualHub
             BtnCross.Background = t.Cross ? (Brush)FindResource("AccentBlue") : pillBg;
         }
 
-        private void DrawStickPoint(Canvas canvas, float x, float y, Color dotColor)
+        private static void DrawStickPoint(
+            Canvas canvas,
+            ref Ellipse? ring,
+            ref Line? hLine,
+            ref Line? vLine,
+            ref Ellipse? dot,
+            float x,
+            float y,
+            SolidColorBrush dotBrush)
         {
-            canvas.Children.Clear();
+            if (canvas == null) return;
+
             double w = canvas.ActualWidth > 0 ? canvas.ActualWidth : 110;
             double h = canvas.ActualHeight > 0 ? canvas.ActualHeight : 110;
             double cx = w * 0.5, cy = h * 0.5, r = cx - 6;
 
-            // Concentric Ring & Crosshairs
-            var circle = new Ellipse
+            if (dot == null)
             {
-                Width = r * 2,
-                Height = r * 2,
-                Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
-                StrokeThickness = 1,
-                Margin = new Thickness(cx - r, cy - r, 0, 0)
-            };
-            canvas.Children.Add(circle);
+                ring = new Ellipse
+                {
+                    Stroke = s_ringBrush,
+                    StrokeThickness = 1
+                };
+                hLine = new Line { Stroke = s_gridBrush };
+                vLine = new Line { Stroke = s_gridBrush };
+                dot = new Ellipse
+                {
+                    Width = 10,
+                    Height = 10,
+                    Fill = dotBrush,
+                    Stroke = Brushes.White,
+                    StrokeThickness = 1.5
+                };
 
-            canvas.Children.Add(new Line { X1 = 0, X2 = w, Y1 = cy, Y2 = cy, Stroke = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)) });
-            canvas.Children.Add(new Line { X1 = cx, X2 = cx, Y1 = 0, Y2 = h, Stroke = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)) });
+                canvas.Children.Clear();
+                canvas.Children.Add(ring);
+                canvas.Children.Add(hLine);
+                canvas.Children.Add(vLine);
+                canvas.Children.Add(dot);
+            }
 
-            // Moving Stick Point
+            ring!.Width = r * 2;
+            ring.Height = r * 2;
+            Canvas.SetLeft(ring, cx - r);
+            Canvas.SetTop(ring, cy - r);
+
+            hLine!.X1 = 0; hLine.X2 = w; hLine.Y1 = cy; hLine.Y2 = cy;
+            vLine!.X1 = cx; vLine.X2 = cx; vLine.Y1 = 0; vLine.Y2 = h;
+
             double px = cx + x * r;
             double py = cy - y * r;
-
-            var dot = new Ellipse
-            {
-                Width = 10,
-                Height = 10,
-                Fill = new SolidColorBrush(dotColor),
-                Stroke = new SolidColorBrush(Colors.White),
-                StrokeThickness = 1.5,
-                Margin = new Thickness(px - 5, py - 5, 0, 0)
-            };
-            canvas.Children.Add(dot);
+            Canvas.SetLeft(dot, px - 5);
+            Canvas.SetTop(dot, py - 5);
         }
 
         public void FocusItem(string itemId)

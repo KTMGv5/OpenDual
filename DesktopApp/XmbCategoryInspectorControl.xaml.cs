@@ -52,15 +52,91 @@ namespace OpenDualHub
         private bool _discreteScroll = true;
         private readonly List<Point> _recentStroke = new();
 
+        // Cached Persistent Canvas Visuals (Zero Per-Frame GC Allocations)
+        private static readonly SolidColorBrush s_gridDimBrush = CreateFrozenBrush(Color.FromArgb(40, 255, 255, 255));
+        private static readonly SolidColorBrush s_cyanBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xF5, 0xD4));
+        private static readonly SolidColorBrush s_magentaBrush = CreateFrozenBrush(Color.FromRgb(0xE0, 0x40, 0xFB));
+
+        private Line? _oscCenterLine;
+        private Path? _oscPathL2;
+        private Path? _oscPathR2;
+        private Line? _oscMarkerL2;
+        private Line? _oscMarkerR2;
+        private int _lastOscL2Mode = -999;
+        private int _lastOscR2Mode = -999;
+        private double _lastOscWidth = -1;
+        private double _lastOscHeight = -1;
+
+        private Line? _gyroCrosshairH;
+        private Line? _gyroCrosshairV;
+        private Ellipse? _gyroReticleDot;
+
+        private Path? _gestureStrokePath;
+
+        private static SolidColorBrush CreateFrozenBrush(Color color)
+        {
+            var b = new SolidColorBrush(color);
+            b.Freeze();
+            return b;
+        }
+
         public XmbCategoryInspectorControl()
         {
             InitializeComponent();
             Loaded += (s, e) =>
             {
-                DrawTriggerOscilloscope(0, 0);
+                DrawTriggerOscilloscope(0, 0, forceRebuildCurve: true);
                 DrawGyroCrosshair(0, 0, 0);
                 SyncStartupRegistryState();
+                SyncSettingsUi(AppSettingsManager.Current);
             };
+        }
+
+        public void SyncSettingsUi(AppSettings settings)
+        {
+            if (settings == null) return;
+
+            if (ToggleNerdStats != null)
+            {
+                ToggleNerdStats.IsChecked = settings.ShowNerdStats;
+                ToggleNerdStats.Content = settings.ShowNerdStats ? "Nerd Stats: ON" : "Nerd Stats: OFF";
+            }
+
+            if (ToggleMilitaryTime != null)
+            {
+                ToggleMilitaryTime.IsChecked = settings.ClockUseMilitaryTime;
+                ToggleMilitaryTime.Content = settings.ClockUseMilitaryTime ? "Military Time: ON" : "Military Time: OFF";
+            }
+
+            if (BtnDateUk != null && BtnDateUs != null && BtnDateIso != null && BtnDateNone != null)
+            {
+                var dateBtn = settings.ClockDateFormat switch
+                {
+                    "ddd MM/dd" => BtnDateUs,
+                    "yyyy-MM-dd" => BtnDateIso,
+                    "None" => BtnDateNone,
+                    _ => BtnDateUk
+                };
+                HighlightOptionButton(new[] { BtnDateUk, BtnDateUs, BtnDateIso, BtnDateNone }, dateBtn);
+            }
+
+            if (ToggleLightweightBg != null)
+            {
+                ToggleLightweightBg.IsChecked = settings.LightweightBackground;
+                ToggleLightweightBg.Content = settings.LightweightBackground ? "Lightweight Art: ON" : "Lightweight Art: OFF";
+            }
+
+            if (ToggleVolumeOverlay != null)
+            {
+                ToggleVolumeOverlay.IsChecked = settings.EnableVolumeOverlay;
+                ToggleVolumeOverlay.Content = settings.EnableVolumeOverlay ? "Overlay: ON" : "Overlay: OFF";
+            }
+
+            if (ToggleGestures != null)
+            {
+                ToggleGestures.IsChecked = settings.TouchpadGesturesEnabled;
+                ToggleGestures.Content = settings.TouchpadGesturesEnabled ? "Gestures: ON" : "Gestures: OFF";
+            }
         }
 
         public void SetSection(string sectionId)
@@ -265,7 +341,7 @@ namespace OpenDualHub
                 else if (_l2Mode == 1) { _l2Start = 2; }
 
                 PushAdaptiveTriggers();
-                DrawTriggerOscilloscope(BarL2Inspector.Value / 100.0, BarR2Inspector.Value / 100.0);
+                DrawTriggerOscilloscope(BarL2Inspector.Value / 100.0, BarR2Inspector.Value / 100.0, forceRebuildCurve: true);
             }
         }
 
@@ -283,7 +359,7 @@ namespace OpenDualHub
                 else if (_r2Mode == 1) { _r2Start = 2; }
 
                 PushAdaptiveTriggers();
-                DrawTriggerOscilloscope(BarL2Inspector.Value / 100.0, BarR2Inspector.Value / 100.0);
+                DrawTriggerOscilloscope(BarL2Inspector.Value / 100.0, BarR2Inspector.Value / 100.0, forceRebuildCurve: true);
             }
         }
 
@@ -298,7 +374,7 @@ namespace OpenDualHub
             _l2Force = Math.Clamp((int)Math.Round(_snapTension / 100.0 * 8.0), 1, 8);
             _r2Force = _l2Force;
             PushAdaptiveTriggers();
-            DrawTriggerOscilloscope(0, 0);
+            DrawTriggerOscilloscope(0, 0, forceRebuildCurve: true);
         }
 
         private void PushAdaptiveTriggers()
@@ -306,105 +382,135 @@ namespace OpenDualHub
             IpcClient?.SetAdaptiveTriggers(_l2Mode, _l2Start, _l2Force, _l2Freq, _r2Mode, _r2Start, _r2Force, _r2Freq);
         }
 
-        private void DrawTriggerOscilloscope(double l2Pos, double r2Pos)
+        private void EnsureOscilloscopeVisuals()
+        {
+            if (_oscCenterLine != null || CanvasTrigOscilloscope == null) return;
+
+            var dash = new DoubleCollection { 2, 2 };
+            dash.Freeze();
+
+            _oscCenterLine = new Line
+            {
+                Stroke = s_gridDimBrush,
+                StrokeDashArray = dash
+            };
+            _oscPathL2 = new Path
+            {
+                Stroke = s_cyanBrush,
+                StrokeThickness = 1.8
+            };
+            _oscPathR2 = new Path
+            {
+                Stroke = s_magentaBrush,
+                StrokeThickness = 1.8
+            };
+            _oscMarkerL2 = new Line
+            {
+                Stroke = Brushes.White,
+                StrokeThickness = 1.5
+            };
+            _oscMarkerR2 = new Line
+            {
+                Stroke = Brushes.White,
+                StrokeThickness = 1.5
+            };
+
+            CanvasTrigOscilloscope.Children.Clear();
+            CanvasTrigOscilloscope.Children.Add(_oscCenterLine);
+            CanvasTrigOscilloscope.Children.Add(_oscPathL2);
+            CanvasTrigOscilloscope.Children.Add(_oscPathR2);
+            CanvasTrigOscilloscope.Children.Add(_oscMarkerL2);
+            CanvasTrigOscilloscope.Children.Add(_oscMarkerR2);
+        }
+
+        private void DrawTriggerOscilloscope(double l2Pos, double r2Pos, bool forceRebuildCurve = false)
         {
             if (CanvasTrigOscilloscope == null) return;
-            CanvasTrigOscilloscope.Children.Clear();
+            EnsureOscilloscopeVisuals();
+            if (_oscCenterLine == null || _oscPathL2 == null || _oscPathR2 == null || _oscMarkerL2 == null || _oscMarkerR2 == null) return;
 
             double w = CanvasTrigOscilloscope.ActualWidth > 0 ? CanvasTrigOscilloscope.ActualWidth : 580;
             double h = CanvasTrigOscilloscope.ActualHeight > 0 ? CanvasTrigOscilloscope.ActualHeight : 64;
 
-            // Center grid baseline
-            CanvasTrigOscilloscope.Children.Add(new Line
-            {
-                X1 = 0,
-                X2 = w,
-                Y1 = h * 0.5,
-                Y2 = h * 0.5,
-                Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
-                StrokeDashArray = new DoubleCollection { 2, 2 }
-            });
+            bool needsCurveRebuild = forceRebuildCurve ||
+                                     _lastOscL2Mode != _l2Mode ||
+                                     _lastOscR2Mode != _r2Mode ||
+                                     Math.Abs(_lastOscWidth - w) > 0.5 ||
+                                     Math.Abs(_lastOscHeight - h) > 0.5;
 
-            // L2 Waveform (Cyan)
-            var geomL2 = new StreamGeometry();
-            using (var ctx = geomL2.Open())
+            if (needsCurveRebuild)
             {
-                ctx.BeginFigure(new Point(0, h * 0.75), false, false);
-                for (int x = 0; x < w * 0.5; x += 4)
+                _lastOscL2Mode = _l2Mode;
+                _lastOscR2Mode = _r2Mode;
+                _lastOscWidth = w;
+                _lastOscHeight = h;
+
+                _oscCenterLine.X1 = 0;
+                _oscCenterLine.X2 = w;
+                _oscCenterLine.Y1 = h * 0.5;
+                _oscCenterLine.Y2 = h * 0.5;
+
+                // L2 Waveform (Cyan)
+                var geomL2 = new StreamGeometry();
+                using (var ctx = geomL2.Open())
                 {
-                    double norm = x / (w * 0.5);
-                    double resistance = _l2Mode switch
+                    ctx.BeginFigure(new Point(0, h * 0.75), false, false);
+                    for (int x = 0; x < w * 0.5; x += 4)
                     {
-                        0 => 0.0, // Linear off
-                        1 => Math.Sin(norm * Math.PI * 4) * 0.3, // SDK
-                        2 => norm > 0.4 ? 0.85 : 0.1, // Snap barrier
-                        3 => norm * 0.9, // Bow tension
-                        4 => (Math.Sin(norm * Math.PI * 8) > 0 ? 0.9 : 0.1), // Machine Gun
-                        _ => 0.5
-                    };
-                    double y = h * 0.75 - (resistance * (h * 0.45));
-                    ctx.LineTo(new Point(x, y), true, false);
+                        double norm = x / (w * 0.5);
+                        double resistance = _l2Mode switch
+                        {
+                            0 => 0.0, // Linear off
+                            1 => norm > 0.25 ? 0.75 : 0.1, // Rigid Wall
+                            6 => (norm > 0.25 && norm < 0.55) ? 0.90 : 0.1, // Click-Snap Barrier
+                            5 => norm * 0.9, // Compound Bow tension
+                            2 => (Math.Sin(norm * Math.PI * 8) > 0 ? 0.9 : 0.1), // Machine Gun Pulse
+                            _ => 0.5
+                        };
+                        double y = h * 0.75 - (resistance * (h * 0.45));
+                        ctx.LineTo(new Point(x, y), true, false);
+                    }
                 }
-            }
-            geomL2.Freeze();
-            CanvasTrigOscilloscope.Children.Add(new Path
-            {
-                Data = geomL2,
-                Stroke = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4)),
-                StrokeThickness = 1.8
-            });
+                geomL2.Freeze();
+                _oscPathL2.Data = geomL2;
 
-            // R2 Waveform (Magenta)
-            var geomR2 = new StreamGeometry();
-            using (var ctx = geomR2.Open())
-            {
-                ctx.BeginFigure(new Point(w * 0.5, h * 0.75), false, false);
-                for (int x = (int)(w * 0.5); x < w; x += 4)
+                // R2 Waveform (Magenta)
+                var geomR2 = new StreamGeometry();
+                using (var ctx = geomR2.Open())
                 {
-                    double norm = (x - w * 0.5) / (w * 0.5);
-                    double resistance = _r2Mode switch
+                    ctx.BeginFigure(new Point(w * 0.5, h * 0.75), false, false);
+                    for (int x = (int)(w * 0.5); x < w; x += 4)
                     {
-                        0 => 0.0,
-                        1 => Math.Sin(norm * Math.PI * 4) * 0.35,
-                        2 => norm > 0.4 ? 0.85 : 0.1,
-                        3 => norm * 0.9,
-                        4 => (Math.Sin(norm * Math.PI * 10) > 0 ? 0.95 : 0.05),
-                        _ => 0.5
-                    };
-                    double y = h * 0.75 - (resistance * (h * 0.45));
-                    ctx.LineTo(new Point(x, y), true, false);
+                        double norm = (x - w * 0.5) / (w * 0.5);
+                        double resistance = _r2Mode switch
+                        {
+                            0 => 0.0,
+                            1 => norm > 0.25 ? 0.75 : 0.1,
+                            6 => (norm > 0.25 && norm < 0.55) ? 0.90 : 0.1,
+                            5 => norm * 0.9,
+                            2 => (Math.Sin(norm * Math.PI * 10) > 0 ? 0.95 : 0.05),
+                            _ => 0.5
+                        };
+                        double y = h * 0.75 - (resistance * (h * 0.45));
+                        ctx.LineTo(new Point(x, y), true, false);
+                    }
                 }
+                geomR2.Freeze();
+                _oscPathR2.Data = geomR2;
             }
-            geomR2.Freeze();
-            CanvasTrigOscilloscope.Children.Add(new Path
-            {
-                Data = geomR2,
-                Stroke = GetBrush("AccentMagenta", Color.FromRgb(0xE0, 0x40, 0xFB)),
-                StrokeThickness = 1.8
-            });
 
-            // Live Trigger Pull Indicator Markers
+            // Update only live trigger position markers per telemetry tick (Zero allocations)
             double markerL2X = Math.Clamp(l2Pos * (w * 0.5), 2, w * 0.5 - 2);
-            CanvasTrigOscilloscope.Children.Add(new Line
-            {
-                X1 = markerL2X,
-                X2 = markerL2X,
-                Y1 = 0,
-                Y2 = h,
-                Stroke = Brushes.White,
-                StrokeThickness = 1.5
-            });
+            _oscMarkerL2.X1 = markerL2X;
+            _oscMarkerL2.X2 = markerL2X;
+            _oscMarkerL2.Y1 = 0;
+            _oscMarkerL2.Y2 = h;
 
             double markerR2X = w * 0.5 + Math.Clamp(r2Pos * (w * 0.5), 2, w * 0.5 - 2);
-            CanvasTrigOscilloscope.Children.Add(new Line
-            {
-                X1 = markerR2X,
-                X2 = markerR2X,
-                Y1 = 0,
-                Y2 = h,
-                Stroke = Brushes.White,
-                StrokeThickness = 1.5
-            });
+            _oscMarkerR2.X1 = markerR2X;
+            _oscMarkerR2.X2 = markerR2X;
+            _oscMarkerR2.Y1 = 0;
+            _oscMarkerR2.Y2 = h;
         }
         #endregion
 
@@ -492,6 +598,8 @@ namespace OpenDualHub
                 HighlightOptionButton(r2Buttons, r2Buttons[r2Idx]);
                 if (TxtR2ModeBadge != null) TxtR2ModeBadge.Text = r2Buttons[r2Idx].Content.ToString();
             }
+
+            DrawTriggerOscilloscope(0, 0, forceRebuildCurve: true);
         }
 
         #region Gyro Handlers
@@ -588,32 +696,52 @@ namespace OpenDualHub
             MainWindow?.LaunchGyroCalibrator();
         }
 
+        private void EnsureGyroCrosshairVisuals()
+        {
+            if (_gyroReticleDot != null || CanvasGyroMotion == null) return;
+
+            _gyroCrosshairH = new Line { Stroke = s_gridDimBrush };
+            _gyroCrosshairV = new Line { Stroke = s_gridDimBrush };
+            _gyroReticleDot = new Ellipse
+            {
+                Width = 10,
+                Height = 10,
+                Fill = s_cyanBrush,
+                Stroke = Brushes.White,
+                StrokeThickness = 1.5
+            };
+
+            CanvasGyroMotion.Children.Clear();
+            CanvasGyroMotion.Children.Add(_gyroCrosshairH);
+            CanvasGyroMotion.Children.Add(_gyroCrosshairV);
+            CanvasGyroMotion.Children.Add(_gyroReticleDot);
+        }
+
         private void DrawGyroCrosshair(short gx, short gy, short gz)
         {
             if (CanvasGyroMotion == null) return;
-            CanvasGyroMotion.Children.Clear();
+            EnsureGyroCrosshairVisuals();
+            if (_gyroCrosshairH == null || _gyroCrosshairV == null || _gyroReticleDot == null) return;
 
             double w = CanvasGyroMotion.ActualWidth > 0 ? CanvasGyroMotion.ActualWidth : 580;
             double h = CanvasGyroMotion.ActualHeight > 0 ? CanvasGyroMotion.ActualHeight : 70;
             double cx = w * 0.5, cy = h * 0.5;
 
-            // Crosshairs
-            CanvasGyroMotion.Children.Add(new Line { X1 = cx - 40, X2 = cx + 40, Y1 = cy, Y2 = cy, Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)) });
-            CanvasGyroMotion.Children.Add(new Line { X1 = cx, X2 = cx, Y1 = cy - 25, Y2 = cy + 25, Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)) });
+            _gyroCrosshairH.X1 = cx - 40;
+            _gyroCrosshairH.X2 = cx + 40;
+            _gyroCrosshairH.Y1 = cy;
+            _gyroCrosshairH.Y2 = cy;
 
-            // Reticle dot
+            _gyroCrosshairV.X1 = cx;
+            _gyroCrosshairV.X2 = cx;
+            _gyroCrosshairV.Y1 = cy - 25;
+            _gyroCrosshairV.Y2 = cy + 25;
+
             double dx = Math.Clamp(gz * 0.02, -cx + 10, cx - 10);
             double dy = Math.Clamp(-gx * 0.02, -cy + 10, cy - 10);
 
-            CanvasGyroMotion.Children.Add(new Ellipse
-            {
-                Width = 10,
-                Height = 10,
-                Fill = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4)),
-                Stroke = Brushes.White,
-                StrokeThickness = 1.5,
-                Margin = new Thickness(cx + dx - 5, cy + dy - 5, 0, 0)
-            });
+            Canvas.SetLeft(_gyroReticleDot, cx + dx - 5);
+            Canvas.SetTop(_gyroReticleDot, cy + dy - 5);
         }
         #endregion
 
@@ -718,6 +846,8 @@ namespace OpenDualHub
             bool isGestures = ToggleGestures.IsChecked == true;
             ToggleGestures.Content = isGestures ? "Gestures: ON" : "Gestures: OFF";
             if (MainWindow != null) MainWindow.GestureEngine.GesturesEnabled = isGestures;
+            AppSettingsManager.Current.TouchpadGesturesEnabled = isGestures;
+            AppSettingsManager.Save();
         }
 
         private void PushTouchpadConfig()
@@ -728,7 +858,17 @@ namespace OpenDualHub
         private void DrawGestureSandbox(List<Point> pts)
         {
             if (CanvasGestureSandbox == null || pts.Count < 2) return;
-            CanvasGestureSandbox.Children.Clear();
+
+            if (_gestureStrokePath == null)
+            {
+                _gestureStrokePath = new Path
+                {
+                    Stroke = s_cyanBrush,
+                    StrokeThickness = 2.5
+                };
+                CanvasGestureSandbox.Children.Clear();
+                CanvasGestureSandbox.Children.Add(_gestureStrokePath);
+            }
 
             double w = CanvasGestureSandbox.ActualWidth > 0 ? CanvasGestureSandbox.ActualWidth : 580;
             double h = CanvasGestureSandbox.ActualHeight > 0 ? CanvasGestureSandbox.ActualHeight : 90;
@@ -746,13 +886,7 @@ namespace OpenDualHub
                 }
             }
             geom.Freeze();
-
-            CanvasGestureSandbox.Children.Add(new Path
-            {
-                Data = geom,
-                Stroke = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4)),
-                StrokeThickness = 2.5
-            });
+            _gestureStrokePath.Data = geom;
         }
         #endregion
 
@@ -792,6 +926,8 @@ namespace OpenDualHub
             bool isOn = ToggleVolumeOverlay.IsChecked == true;
             ToggleVolumeOverlay.Content = isOn ? "Overlay: ON" : "Overlay: OFF";
             if (MainWindow != null) MainWindow.EnableVolumeOverlay = isOn;
+            AppSettingsManager.Current.EnableVolumeOverlay = isOn;
+            AppSettingsManager.Save();
         }
         #endregion
 
@@ -889,6 +1025,8 @@ namespace OpenDualHub
                 MainWindow.ShowNerdStats = isOn;
                 MainWindow.XmbView?.SetNerdStatsVisible(isOn);
             }
+            AppSettingsManager.Current.ShowNerdStats = isOn;
+            AppSettingsManager.Save();
         }
 
         private void ToggleMilitaryTime_Click(object sender, RoutedEventArgs e)
@@ -900,6 +1038,8 @@ namespace OpenDualHub
                 MainWindow.ClockUseMilitaryTime = isOn;
                 MainWindow.UpdateClockDisplay();
             }
+            AppSettingsManager.Current.ClockUseMilitaryTime = isOn;
+            AppSettingsManager.Save();
         }
 
         private void BtnDateFormat_Click(object sender, RoutedEventArgs e)
@@ -909,6 +1049,8 @@ namespace OpenDualHub
                 MainWindow.ClockDateFormat = fmt;
                 MainWindow.UpdateClockDisplay();
                 HighlightOptionButton(new[] { BtnDateUk, BtnDateUs, BtnDateIso, BtnDateNone }, btn);
+                AppSettingsManager.Current.ClockDateFormat = fmt;
+                AppSettingsManager.Save();
             }
         }
 
@@ -920,6 +1062,8 @@ namespace OpenDualHub
             {
                 MainWindow.WaveBackground.LightweightMode = isOn;
             }
+            AppSettingsManager.Current.LightweightBackground = isOn;
+            AppSettingsManager.Save();
         }
 
         private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
