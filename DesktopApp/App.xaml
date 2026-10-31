@@ -1,9 +1,24 @@
-﻿<Application x:Class="OpenDualHub.App"
+<Application x:Class="OpenDualHub.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:OpenDualHub"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <SolidColorBrush x:Key="AccentSignature" Color="#00F5D4"/>
+        <SolidColorBrush x:Key="HeaderAccent" Color="#0070D1"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#0070D1"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#00E676"/>
+        <SolidColorBrush x:Key="AccentAmber" Color="#FFB300"/>
+        <SolidColorBrush x:Key="AccentRed" Color="#FF334B"/>
+        <SolidColorBrush x:Key="AccentMagenta" Color="#E040FB"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#8C9BB0"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#332979FF"/>
+        <SolidColorBrush x:Key="PillBg" Color="#25162033"/>
+        <SolidColorBrush x:Key="BgCard" Color="#CC0E1422"/>
+        <SolidColorBrush x:Key="BgCardHover" Color="#E6162033"/>
+        <SolidColorBrush x:Key="BgPrimary" Color="#0B0F1A"/>
+        <SolidColorBrush x:Key="BgSecondary" Color="#0D1322"/>
+        <SolidColorBrush x:Key="SlotBg" Color="#080C14"/>
     </Application.Resources>
 </Application>

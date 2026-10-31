@@ -63,6 +63,22 @@ namespace OpenDualHub
             resources["HeaderAccent"] = new SolidColorBrush(headerAccent);
             resources["AccentSignature"] = new SolidColorBrush(accentSignature);
             resources["AccentBlue"] = new SolidColorBrush(headerAccent);
+            resources["AccentGreen"] = new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76));
+            resources["AccentAmber"] = new SolidColorBrush(Color.FromRgb(0xFF, 0xB3, 0x00));
+            resources["AccentRed"] = new SolidColorBrush(Color.FromRgb(0xFF, 0x33, 0x4B));
+            resources["AccentMagenta"] = new SolidColorBrush(Color.FromRgb(0xE0, 0x40, 0xFB));
+
+            try
+            {
+                if (Application.Current != null && Application.Current.Resources != null)
+                {
+                    foreach (System.Collections.DictionaryEntry de in resources)
+                    {
+                        Application.Current.Resources[de.Key] = de.Value;
+                    }
+                }
+            }
+            catch { }
         }
 
         private static bool DetectIsDarkMode()

@@ -21,6 +21,7 @@ public partial class App : Application
         try
         {
             File.AppendAllText("hub_crash.log", $"[{DateTime.Now}] Dispatcher Unhandled: {e.Exception}\n");
+            e.Handled = true;
         }
         catch { }
     }
