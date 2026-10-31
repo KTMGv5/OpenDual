@@ -9,6 +9,8 @@
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="AccentSignature" Color="#00F5D4"/>
+        <SolidColorBrush x:Key="AccentCyan" Color="#00E5FF"/>
+        <SolidColorBrush x:Key="AccentPurple" Color="#B388FF"/>
         <SolidColorBrush x:Key="AccentBlue" Color="#2979FF"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#00E676"/>
         <SolidColorBrush x:Key="AccentAmber" Color="#FFA000"/>
@@ -144,7 +146,7 @@
                             <TextBlock x:Name="TxtCategoryIcon" Text="🎮" FontSize="15" Margin="0,0,6,0"/>
                             <TextBlock x:Name="TxtCategoryHeader" Text="CONTROLLER SETTINGS" FontSize="13" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                         </StackPanel>
-                        <TextBlock Text="D-Pad ↑↓ to select" FontSize="10" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <TextBlock Text="Select item to inspect" FontSize="10" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Vertical Scrollable Items List -->
@@ -165,7 +167,7 @@
             </Border>
         </Grid>
 
-        <!-- 4. BOTTOM PS3 CONTROLLER NAVIGATION ACTION BAR -->
+        <!-- 4. BOTTOM PS3 SYSTEM STATUS FOOTER -->
         <Border Grid.Row="3" Background="#C0080B13" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,0" Padding="20,0">
             <Grid VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
@@ -181,37 +183,26 @@
                     <TextBlock x:Name="TxtFooterConnection" Text="Direct Win32 Overlapped" FontSize="11" Foreground="{StaticResource AccentGreen}"/>
                 </StackPanel>
 
-                <!-- Center: Authentic PlayStation Action Glyphs -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="14,0">
-                    <!-- ✕ Cross -->
-                    <Border Width="16" Height="16" Background="#262979FF" BorderBrush="{StaticResource AccentBlue}" BorderThickness="1" CornerRadius="8" Margin="0,0,4,0">
-                        <TextBlock Text="✕" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!-- Center: Active Profile & Kernel Engine Telemetry -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0">
+                    <Border Background="#1A00E5FF" BorderBrush="#4000E5FF" BorderThickness="1" CornerRadius="6" Padding="7,2" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="PROFILE: " FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentCyan}"/>
+                            <TextBlock x:Name="TxtFooterProfile" Text="PS5 Balanced" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
                     </Border>
-                    <TextBlock Text="Select   " FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                    <!-- ◯ Circle -->
-                    <Border Width="16" Height="16" Background="#26FF334B" BorderBrush="{StaticResource AccentRed}" BorderThickness="1" CornerRadius="8" Margin="0,0,4,0">
-                        <TextBlock Text="◯" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentRed}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Background="#1A00E676" BorderBrush="#4000E676" BorderThickness="1" CornerRadius="6" Padding="7,2" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="KERNEL: " FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                            <TextBlock Text="Direct Overlapped I/O" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
                     </Border>
-                    <TextBlock Text="Back   " FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                    <!-- △ Triangle -->
-                    <Border Width="16" Height="16" Background="#2600E676" BorderBrush="{StaticResource AccentGreen}" BorderThickness="1" CornerRadius="8" Margin="0,0,4,0">
-                        <TextBlock Text="△" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Background="#1A7C4DFF" BorderBrush="#407C4DFF" BorderThickness="1" CornerRadius="6" Padding="7,2">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="HARDWARE SUITE: " FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentPurple}"/>
+                            <TextBlock Text="Sentinel • Hall Stabilizer • Radar" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
                     </Border>
-                    <TextBlock Text="Profiles   " FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                    <!-- □ Square -->
-                    <Border Width="16" Height="16" Background="#26FF007F" BorderBrush="{StaticResource AccentMagenta}" BorderThickness="1" CornerRadius="8" Margin="0,0,4,0">
-                        <TextBlock Text="□" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentMagenta}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <TextBlock Text="Hardware Lab   " FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-
-                    <!-- L1 / R1 Shoulders -->
-                    <Border Background="#20FFFFFF" BorderBrush="#40FFFFFF" BorderThickness="1" CornerRadius="4" Padding="5,1" Margin="0,0,4,0">
-                        <TextBlock Text="L1 / R1" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <TextBlock Text="Category" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Right: OpenDual Version -->

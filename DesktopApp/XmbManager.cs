@@ -31,25 +31,6 @@ namespace OpenDualHub
         public event Action<int>? CategoryChanged;
         public event Action<int, int>? ItemChanged;
         public event Action<XmbItem>? ItemActivated;
-        public event Action? BackTriggered;
-        public event Action? OptionsTriggered;
-        public event Action? LabShortcutTriggered;
-
-        // Controller Debounce & Repeat Timers
-        private DateTime _lastInputTime = DateTime.MinValue;
-        private DateTime _pressStartTime = DateTime.MinValue;
-        private bool _isRepeating = false;
-        private const double InitialRepeatDelayMs = 240.0;
-        private const double RapidRepeatIntervalMs = 85.0;
-
-        // Button Previous State Flags (edge detection)
-        private bool _prevCross = false;
-        private bool _prevCircle = false;
-        private bool _prevTriangle = false;
-        private bool _prevSquare = false;
-        private bool _prevL1 = false;
-        private bool _prevR1 = false;
-        private string _activeDirection = "";
 
         public XmbManager()
         {
@@ -145,101 +126,7 @@ namespace OpenDualHub
             }
         }
 
-        #region Gamepad Telemetry Driver
-        public void ProcessControllerTelemetry(ControllerTelemetry t)
-        {
-            if (t == null || !t.Connected) return;
-
-            var now = DateTime.UtcNow;
-
-            // Directional Input resolution
-            string dir = "";
-            if (t.DPadLeft || t.LX < -0.6f) dir = "LEFT";
-            else if (t.DPadRight || t.LX > 0.6f) dir = "RIGHT";
-            else if (t.DPadUp || t.LY > 0.6f) dir = "UP";
-            else if (t.DPadDown || t.LY < -0.6f) dir = "DOWN";
-
-            // Shoulder buttons for fast category switching
-            if (t.L1 && !_prevL1) dir = "LEFT";
-            if (t.R1 && !_prevR1) dir = "RIGHT";
-            _prevL1 = t.L1;
-            _prevR1 = t.R1;
-
-            if (!string.IsNullOrEmpty(dir))
-            {
-                if (dir != _activeDirection)
-                {
-                    _activeDirection = dir;
-                    _pressStartTime = now;
-                    _lastInputTime = now;
-                    _isRepeating = false;
-                    ExecuteDirection(dir);
-                }
-                else
-                {
-                    double heldMs = (now - _pressStartTime).TotalMilliseconds;
-                    double repeatInterval = _isRepeating ? RapidRepeatIntervalMs : InitialRepeatDelayMs;
-
-                    if (heldMs >= repeatInterval && (now - _lastInputTime).TotalMilliseconds >= RapidRepeatIntervalMs)
-                    {
-                        _isRepeating = true;
-                        _lastInputTime = now;
-                        ExecuteDirection(dir);
-                    }
-                }
-            }
-            else
-            {
-                _activeDirection = "";
-                _isRepeating = false;
-            }
-
-            // Action Buttons (Edge Detection)
-            if (t.Cross && !_prevCross)
-            {
-                var item = ActiveItem;
-                if (item != null) ItemActivated?.Invoke(item);
-            }
-            _prevCross = t.Cross;
-
-            if (t.Circle && !_prevCircle)
-            {
-                BackTriggered?.Invoke();
-            }
-            _prevCircle = t.Circle;
-
-            if (t.Triangle && !_prevTriangle)
-            {
-                OptionsTriggered?.Invoke();
-            }
-            _prevTriangle = t.Triangle;
-
-            if (t.Square && !_prevSquare)
-            {
-                LabShortcutTriggered?.Invoke();
-            }
-            _prevSquare = t.Square;
-        }
-
-        private void ExecuteDirection(string dir)
-        {
-            switch (dir)
-            {
-                case "LEFT":
-                    NavigateCategory(-1);
-                    break;
-                case "RIGHT":
-                    NavigateCategory(1);
-                    break;
-                case "UP":
-                    NavigateItem(-1);
-                    break;
-                case "DOWN":
-                    NavigateItem(1);
-                    break;
-            }
-        }
-
+        #region Mouse & Keyboard Navigation
         public void NavigateCategory(int delta)
         {
             int newIdx = (ActiveCategoryIndex + delta) % Categories.Count;
@@ -284,6 +171,15 @@ namespace OpenDualHub
             {
                 ActiveItemIndex = index;
                 ItemChanged?.Invoke(ActiveCategoryIndex, ActiveItemIndex);
+            }
+        }
+
+        public void ActivateCurrentItem()
+        {
+            var item = ActiveItem;
+            if (item != null)
+            {
+                ItemActivated?.Invoke(item);
             }
         }
         #endregion

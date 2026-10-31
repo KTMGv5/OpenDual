@@ -26,7 +26,6 @@ namespace OpenDualHub
             _xmb.CategoryChanged += OnCategoryChanged;
             _xmb.ItemChanged += OnItemChanged;
             _xmb.ItemActivated += OnItemActivated;
-            _xmb.LabShortcutTriggered += () => _xmb.SelectCategory(8); // Hardware Lab category
 
             Loaded += (s, e) =>
             {
@@ -136,7 +135,11 @@ namespace OpenDualHub
                 };
 
                 int itemIdx = i;
-                itemBorder.MouseDown += (s, e) => _xmb.SelectItem(itemIdx);
+                itemBorder.MouseDown += (s, e) =>
+                {
+                    _xmb.SelectItem(itemIdx);
+                    _xmb.ActivateCurrentItem();
+                };
 
                 var grid = new Grid();
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(32) });
@@ -317,10 +320,7 @@ namespace OpenDualHub
         {
             if (t == null) return;
 
-            // 1. Process Gamepad inputs (D-Pad, Left Stick, L1/R1, ✕, ◯, △, □)
-            _xmb.ProcessControllerTelemetry(t);
-
-            // 2. Forward to child hardware views
+            // Forward to child hardware telemetry views
             LabControl.UpdateTelemetry(t);
             NovelControl.UpdateTelemetry(t);
             ControllerInspector.UpdateTelemetry(t);
@@ -334,13 +334,13 @@ namespace OpenDualHub
 
             if (t.Connected)
             {
-                TxtFooterStatus.Text = $"{t.ModelName} Connected ({t.ConnectionName})";
-                TxtFooterConnection.Text = "Ultra Low-Latency 1000Hz HID";
+                TxtFooterStatus.Text = $"{t.ModelName} ({t.ConnectionName})";
+                TxtFooterConnection.Text = $"{t.PollingRateHz}Hz Direct HID";
             }
             else
             {
                 TxtFooterStatus.Text = "Controller Disconnected";
-                TxtFooterConnection.Text = "Waiting for USB / BT HID Report...";
+                TxtFooterConnection.Text = "Waiting for HID Report...";
             }
         }
         #endregion
