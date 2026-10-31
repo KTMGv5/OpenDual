@@ -41,10 +41,45 @@ namespace OpenDualHub
             CategoryInspector.IpcClient = ipc;
         }
 
+        public MainWindow? MainWindow { get; private set; }
+
         public void SetMainWindow(MainWindow main)
         {
+            MainWindow = main;
             CategoryInspector.MainWindow = main;
             ControllerInspector.MainWindow = main;
+        }
+
+        public void SetNerdStatsVisible(bool visible)
+        {
+            if (PillNerdStats != null)
+            {
+                PillNerdStats.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        public void UpdateProfileBadge(string activeProfileName)
+        {
+            var userCat = _xmb.Categories.FirstOrDefault(c => c.Id == "users");
+            if (userCat != null)
+            {
+                foreach (var item in userCat.Items)
+                {
+                    if (item.Title.Equals(activeProfileName, StringComparison.OrdinalIgnoreCase) ||
+                        (activeProfileName.Contains("Esports", StringComparison.OrdinalIgnoreCase) && item.Id == "prof_esports") ||
+                        (activeProfileName.Contains("FPS", StringComparison.OrdinalIgnoreCase) && item.Id == "prof_fps") ||
+                        (activeProfileName.Contains("Racing", StringComparison.OrdinalIgnoreCase) && item.Id == "prof_racing") ||
+                        (activeProfileName.Contains("Standard", StringComparison.OrdinalIgnoreCase) && item.Id == "prof_default"))
+                    {
+                        item.ValueBadge = "Active";
+                    }
+                    else if (item.Id == "prof_esports") item.ValueBadge = "Esports";
+                    else if (item.Id == "prof_fps") item.ValueBadge = "Gyro Aim";
+                    else if (item.Id == "prof_racing") item.ValueBadge = "Dynamic";
+                    else if (item.Id == "prof_default") item.ValueBadge = "Default";
+                }
+                RenderItems();
+            }
         }
 
         #region Rendering XMB Elements
@@ -302,6 +337,11 @@ namespace OpenDualHub
         {
             item.OnActivate?.Invoke();
 
+            if (item.Id.StartsWith("prof_"))
+            {
+                MainWindow?.ApplyProfileByName(item.Title);
+            }
+
             if (item.Id.StartsWith("lab_"))
             {
                 InspectorContentHost.Content = LabControl;
@@ -329,7 +369,7 @@ namespace OpenDualHub
             CategoryInspector.UpdateTelemetry(t);
 
             // 3. Update top clock & header badges
-            TxtXmbClock.Text = DateTime.Now.ToString("ddd dd/MM  h:mm tt");
+            TxtXmbClock.Text = MainWindow != null ? MainWindow.FormatCurrentClock(includeDate: true) : DateTime.Now.ToString("ddd dd/MM  h:mm tt");
             TxtXmbBattery.Text = $"{t.Battery}%";
             TxtXmbBatteryIcon.Text = t.Charging ? "⚡" : "🔋";
             TxtTopBusInfo.Text = $"{t.PollingRateHz}Hz DIRECT HID KERNEL BUS • {t.LatencyMs:F1}ms LATENCY";

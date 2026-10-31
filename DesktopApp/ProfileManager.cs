@@ -167,26 +167,44 @@ namespace OpenDualHub
                 },
                 new GameProfile
                 {
-                    Id = "builtin-competitive-fps",
-                    Name = "Competitive Shooter (FPS)",
-                    ProcessNames = "Cyberpunk2077.exe,cod.exe,cs2.exe,VALORANT-Win64-Shipping.exe,Destiny2.exe,Overwatch.exe,r5apex.exe,FortniteClient-Win64-Shipping.exe",
-                    Description = "Ultra-responsive hair triggers with tactile stop, Gyro ADS on L2 hold, and audio recoil kick.",
+                    Id = "builtin-esports",
+                    Name = "Esports Ultra 1000Hz",
+                    ProcessNames = "VALORANT-Win64-Shipping.exe,cs2.exe,r5apex.exe,FortniteClient-Win64-Shipping.exe,Overwatch.exe",
+                    Description = "1000Hz direct kernel HID polling rate, Hall-stabilizer filtering, hair triggers & zero drift.",
                     IsBuiltIn = true,
                     Config = new ConfigDto
                     {
-                        R = 0, G = 210, B = 255, Effect = 0, Speed = 1.0f,
+                        R = 0, G = 245, B = 212, Effect = 0, Speed = 1.0f,
                         Mouse = true, SyncMic = true,
-                        LtMode = 6, RtMode = 6, // TriggerStop (Hair trigger)
+                        LtMode = 6, RtMode = 6, // TriggerStop (Hair trigger / instant snap)
                         Haptic = true, HapticIntensity = 1.2f, HapticCutoff = 120, HapticStereo = true,
                         AudioTriggerKick = true, AudioTriggerThreshold = 0.38f,
-                        Gyro = true, GyroMode = 1, GyroOutputMode = 0, GyroSpace = 0, GyroSensX = 1.4f, GyroSensY = 1.4f, GyroDeadzone = 3, GyroSmooth = 0.20f,
+                        Gyro = false, GyroMode = 1, GyroOutputMode = 0, GyroSpace = 0, GyroSensX = 1.4f, GyroSensY = 1.4f, GyroDeadzone = 2, GyroSmooth = 0.15f,
                         IdleTimeout = 15, LowBatWarn = true
                     }
                 },
                 new GameProfile
                 {
-                    Id = "builtin-sim-racing",
-                    Name = "Sim Racing & ABS Brakes",
+                    Id = "builtin-fps",
+                    Name = "FPS Gyro Specialist",
+                    ProcessNames = "Cyberpunk2077.exe,cod.exe,Destiny2.exe,Battlefield2042.exe,halo.exe",
+                    Description = "6-axis motion aim on L2 ADS hold, spatial footstep radar audio, and trigger recoil kick.",
+                    IsBuiltIn = true,
+                    Config = new ConfigDto
+                    {
+                        R = 0, G = 210, B = 255, Effect = 0, Speed = 1.0f,
+                        Mouse = true, SyncMic = true,
+                        LtMode = 1, RtMode = 2, // L2: Rigid Aim Wall, R2: Recoil Pulse
+                        Haptic = true, HapticIntensity = 1.3f, HapticCutoff = 110, HapticStereo = true,
+                        AudioTriggerKick = true, AudioTriggerThreshold = 0.35f,
+                        Gyro = true, GyroMode = 1, GyroOutputMode = 0, GyroSpace = 0, GyroSensX = 1.3f, GyroSensY = 1.3f, GyroDeadzone = 3, GyroSmooth = 0.20f,
+                        IdleTimeout = 15, LowBatWarn = true
+                    }
+                },
+                new GameProfile
+                {
+                    Id = "builtin-racing",
+                    Name = "Racing Force Feedback",
                     ProcessNames = "ForzaHorizon5.exe,F1_24.exe,F1_23.exe,acc.exe,iRacingSim64DX11.exe,assettocorsa.exe,DirtRally2.exe,ForzaMotorsport.exe",
                     Description = "Progressive throttle pedal tension, ABS brake pulse vibration, and deep motor engine rumble.",
                     IsBuiltIn = true,

@@ -75,8 +75,8 @@
                     <TextBlock Text="  •  OPENDUAL CROSS BAR HUB" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Center: High-Priority 1000Hz HID Bus Engine Pill -->
-                <Border Grid.Column="1" HorizontalAlignment="Center" Background="#1800E676" BorderBrush="{StaticResource AccentGreen}" BorderThickness="1" CornerRadius="12" Padding="12,3">
+                <!-- Center: High-Priority 1000Hz HID Bus Engine Pill (Nerd Stats - Configurable) -->
+                <Border x:Name="PillNerdStats" Grid.Column="1" HorizontalAlignment="Center" Background="#1800E676" BorderBrush="{StaticResource AccentGreen}" BorderThickness="1" CornerRadius="12" Padding="12,3" Visibility="Collapsed">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Ellipse Width="6" Height="6" Fill="{StaticResource AccentGreen}" Margin="0,0,6,0"/>
                         <TextBlock x:Name="TxtTopBusInfo" Text="1000Hz DIRECT HID KERNEL BUS • 0.8ms LATENCY" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>

@@ -117,36 +117,101 @@ public:
         return true;
     }
 
+    static inline uint8_t NormalizeZone(uint8_t pos) {
+        if (pos <= 9) return pos;
+        int val = pos * 9 / 255;
+        if (val < 0) return 0;
+        if (val > 9) return 9;
+        return (uint8_t)val;
+    }
+
+    static inline uint8_t NormalizeForce(uint8_t force) {
+        if (force >= 1 && force <= 8) return force;
+        if (force == 0) return 1;
+        int val = (force * 8 + 127) / 255;
+        if (val < 1) return 1;
+        if (val > 8) return 8;
+        return (uint8_t)val;
+    }
+
     static void FormatTriggerPayload(uint8_t* p, const TriggerConfig& tc) {
         std::memset(p, 0, 11);
         switch (tc.mode) {
         case TriggerMode::Off:
             p[0] = 0x00;
             break;
-        case TriggerMode::Rigid:
-            p[0] = 0x01; // Continuous resistance
-            p[1] = tc.startPos;
-            p[2] = tc.force;
+
+        case TriggerMode::Rigid: { // 0x21 Feedback (Continuous resistance wall)
+            uint8_t pos = NormalizeZone(tc.startPos);
+            uint8_t strength = NormalizeForce(tc.force);
+            uint8_t forceVal = (uint8_t)((strength - 1) & 0x07);
+            uint32_t forceZones = 0;
+            uint16_t activeZones = 0;
+            for (int i = pos; i < 10; i++) {
+                forceZones |= ((uint32_t)forceVal << (3 * i));
+                activeZones |= (uint16_t)(1 << i);
+            }
+            p[0] = 0x21; // Feedback Mode
+            p[1] = (uint8_t)(activeZones & 0xFF);
+            p[2] = (uint8_t)((activeZones >> 8) & 0xFF);
+            p[3] = (uint8_t)(forceZones & 0xFF);
+            p[4] = (uint8_t)((forceZones >> 8) & 0xFF);
+            p[5] = (uint8_t)((forceZones >> 16) & 0xFF);
+            p[6] = (uint8_t)((forceZones >> 24) & 0xFF);
             break;
-        case TriggerMode::Pulse:
-            p[0] = 0x02; // Section pulse
-            p[1] = tc.startPos;
-            p[2] = (tc.endPos > tc.startPos) ? tc.endPos : 255;
-            p[3] = tc.force;
+        }
+
+        case TriggerMode::Pulse: { // 0x26 Vibration (Machine Gun rapid cycling)
+            uint8_t pos = NormalizeZone(tc.startPos);
+            uint8_t amplitude = NormalizeForce(tc.force);
+            uint8_t freq = (tc.frequency > 0) ? tc.frequency : 32; // Default ~32Hz rapid fire
+            uint8_t strengthVal = (uint8_t)((amplitude - 1) & 0x07);
+            uint32_t ampZones = 0;
+            uint16_t activeZones = 0;
+            for (int i = pos; i < 10; i++) {
+                ampZones |= ((uint32_t)strengthVal << (3 * i));
+                activeZones |= (uint16_t)(1 << i);
+            }
+            p[0] = 0x26; // Vibration Mode
+            p[1] = (uint8_t)(activeZones & 0xFF);
+            p[2] = (uint8_t)((activeZones >> 8) & 0xFF);
+            p[3] = (uint8_t)(ampZones & 0xFF);
+            p[4] = (uint8_t)((ampZones >> 8) & 0xFF);
+            p[5] = (uint8_t)((ampZones >> 16) & 0xFF);
+            p[6] = (uint8_t)((ampZones >> 24) & 0xFF);
+            p[9] = freq;
             break;
-        case TriggerMode::Bow:
-            p[0] = 0x22; // DualSense Native Bow Effect (0x22)
-            p[1] = (uint8_t)std::clamp((int)(tc.startPos / 32), 0, 6);       // Start zone (0..6)
-            p[2] = (uint8_t)std::clamp((int)(p[1] + 4), 2, 8);               // End snap zone (2..8)
-            p[3] = (uint8_t)std::clamp((int)(tc.force / 32), 1, 8);          // Pull resistance strength (1..8)
-            p[4] = (uint8_t)std::clamp((int)(tc.force / 32), 1, 8);          // Snap-back force (1..8)
+        }
+
+        case TriggerMode::Bow: { // 0x22 Bow (Progressive tension & release)
+            uint8_t startPos = NormalizeZone(tc.startPos);
+            if (startPos > 7) startPos = 1;
+            uint8_t endPos = (tc.endPos > startPos && tc.endPos <= 8) ? tc.endPos : 8;
+            uint8_t strength = NormalizeForce(tc.force);
+            uint8_t snapForce = NormalizeForce(tc.force);
+            uint16_t startAndStop = (uint16_t)((1 << startPos) | (1 << endPos));
+            uint32_t forcePair = (uint32_t)((((strength - 1) & 0x07) << 0) | (((snapForce - 1) & 0x07) << 3));
+            p[0] = 0x22; // Bow Mode
+            p[1] = (uint8_t)(startAndStop & 0xFF);
+            p[2] = (uint8_t)((startAndStop >> 8) & 0xFF);
+            p[3] = (uint8_t)(forcePair & 0xFF);
+            p[4] = (uint8_t)((forcePair >> 8) & 0xFF);
             break;
-        case TriggerMode::TriggerStop:
-            p[0] = 0x02; // Section hard stop
-            p[1] = (tc.startPos > 0) ? tc.startPos : 25; // Instant barrier
-            p[2] = 255;  // Barrier end
-            p[3] = 255;  // Max resistance
+        }
+
+        case TriggerMode::TriggerStop: { // 0x25 Weapon (Click-Snap barrier break point)
+            uint8_t startPos = NormalizeZone(tc.startPos);
+            if (startPos > 7) startPos = 2;
+            uint8_t endPos = (tc.endPos > startPos && tc.endPos <= 9) ? tc.endPos : (uint8_t)((startPos + 4 < 9) ? (startPos + 4) : 9);
+            uint8_t strength = NormalizeForce(tc.force);
+            uint16_t startAndStop = (uint16_t)((1 << startPos) | (1 << endPos));
+            p[0] = 0x25; // Weapon Mode
+            p[1] = (uint8_t)(startAndStop & 0xFF);
+            p[2] = (uint8_t)((startAndStop >> 8) & 0xFF);
+            p[3] = (uint8_t)((strength - 1) & 0x07);
             break;
+        }
+
         default:
             p[0] = 0x00;
             break;

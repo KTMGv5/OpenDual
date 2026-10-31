@@ -28,12 +28,28 @@ namespace OpenDualHub
             public double TwinkleSpeed;
         }
 
-        private readonly StarParticle[] _particles = new StarParticle[45];
+        private readonly StarParticle[] _particles = new StarParticle[20];
         private readonly Random _rand = new(1337);
 
         private static readonly Brush _bgBrush;
         private static readonly SolidColorBrush[] _particleBrushes;
         private long _lastRenderTicks = 0;
+        private bool _isHooked = false;
+
+        private bool _lightweightMode = false;
+        public bool LightweightMode
+        {
+            get => _lightweightMode;
+            set
+            {
+                if (_lightweightMode != value)
+                {
+                    _lightweightMode = value;
+                    UpdateHookState();
+                    InvalidateVisual();
+                }
+            }
+        }
 
         static WaveRibbonBackground()
         {
@@ -64,14 +80,14 @@ namespace OpenDualHub
         {
             IsHitTestVisible = false;
 
-            // Initialize Stardust Particles
+            // Initialize Lightweight Stardust Particles
             for (int i = 0; i < _particles.Length; i++)
             {
                 _particles[i] = new StarParticle
                 {
                     X = _rand.NextDouble(),
                     Y = _rand.NextDouble(),
-                    Radius = 0.8 + _rand.NextDouble() * 2.2,
+                    Radius = 0.8 + _rand.NextDouble() * 2.0,
                     SpeedX = (_rand.NextDouble() - 0.4) * 0.0003,
                     SpeedY = -0.0002 - _rand.NextDouble() * 0.0005,
                     BaseAlpha = 0.2 + _rand.NextDouble() * 0.5,
@@ -123,15 +139,43 @@ namespace OpenDualHub
             _pen3 = new Pen(grad3, 1.2);
             _pen3.Freeze();
 
-            Loaded += (s, e) => CompositionTarget.Rendering += OnRendering;
-            Unloaded += (s, e) => CompositionTarget.Rendering -= OnRendering;
+            Loaded += (s, e) => UpdateHookState();
+            Unloaded += (s, e) => UnhookRendering();
+            IsVisibleChanged += (s, e) => UpdateHookState();
+        }
+
+        private void UpdateHookState()
+        {
+            if (IsLoaded && IsVisible && !_lightweightMode)
+            {
+                if (!_isHooked)
+                {
+                    CompositionTarget.Rendering += OnRendering;
+                    _isHooked = true;
+                }
+            }
+            else
+            {
+                UnhookRendering();
+            }
+        }
+
+        private void UnhookRendering()
+        {
+            if (_isHooked)
+            {
+                CompositionTarget.Rendering -= OnRendering;
+                _isHooked = false;
+            }
         }
 
         private void OnRendering(object? sender, EventArgs e)
         {
+            if (_lightweightMode || !IsVisible || ActualWidth <= 0 || ActualHeight <= 0) return;
+
             long now = System.Diagnostics.Stopwatch.GetTimestamp();
             double elapsedMs = (now - _lastRenderTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
-            if (elapsedMs < 16.0) return; // Cap at smooth 60 FPS to prevent high-refresh monitor overload
+            if (elapsedMs < 33.3) return; // Cap at smooth 30 FPS to minimize GPU/CPU power on all hardware
             _lastRenderTicks = now;
 
             _phase1 += 0.012;
@@ -166,6 +210,15 @@ namespace OpenDualHub
             // Deep Piano Black with Charcoal Slate vignette (Pre-created & frozen)
             dc.DrawRectangle(_bgBrush, null, new Rect(0, 0, w, h));
 
+            if (_lightweightMode)
+            {
+                // Lightweight static ribbons: Rendered once with zero per-frame animation loops
+                DrawRibbon(dc, _glowPen1, w, h * 0.58, h * 0.14, 0.8, 1.2, 0.0025, steps: 16);
+                DrawRibbon(dc, _pen1, w, h * 0.58, h * 0.14, 0.8, 1.2, 0.0025, steps: 16);
+                DrawRibbon(dc, _pen2, w, h * 0.62, h * 0.18, 2.2, 0.9, 0.0018, steps: 16);
+                return;
+            }
+
             // Floating Stardust Particles (Zero-allocation frozen brush palette)
             for (int i = 0; i < _particles.Length; i++)
             {
@@ -179,23 +232,22 @@ namespace OpenDualHub
             }
 
             // Wave Ribbon 1 (Primary Ribbon Wave + Ambient Glow Aura)
-            DrawRibbon(dc, _glowPen1, w, h * 0.58, h * 0.16, _phase1, 1.2, 0.0025);
-            DrawRibbon(dc, _pen1, w, h * 0.58, h * 0.16, _phase1, 1.2, 0.0025);
+            DrawRibbon(dc, _glowPen1, w, h * 0.58, h * 0.16, _phase1, 1.2, 0.0025, steps: 18);
+            DrawRibbon(dc, _pen1, w, h * 0.58, h * 0.16, _phase1, 1.2, 0.0025, steps: 18);
 
             // Wave Ribbon 2 (Harmonic Under-wave + Aura)
-            DrawRibbon(dc, _glowPen2, w, h * 0.62, h * 0.20, _phase2, 0.9, 0.0018);
-            DrawRibbon(dc, _pen2, w, h * 0.62, h * 0.20, _phase2, 0.9, 0.0018);
+            DrawRibbon(dc, _glowPen2, w, h * 0.62, h * 0.20, _phase2, 0.9, 0.0018, steps: 18);
+            DrawRibbon(dc, _pen2, w, h * 0.62, h * 0.20, _phase2, 0.9, 0.0018, steps: 18);
 
             // Wave Ribbon 3 (Shimmer Crest)
-            DrawRibbon(dc, _pen3, w, h * 0.55, h * 0.12, _phase3, 1.5, 0.0032);
+            DrawRibbon(dc, _pen3, w, h * 0.55, h * 0.12, _phase3, 1.5, 0.0032, steps: 18);
         }
 
-        private void DrawRibbon(DrawingContext dc, Pen pen, double width, double baseY, double amplitude, double phase, double freqFactor, double k)
+        private void DrawRibbon(DrawingContext dc, Pen pen, double width, double baseY, double amplitude, double phase, double freqFactor, double k, int steps = 18)
         {
             var geom = new StreamGeometry();
             using (var ctx = geom.Open())
             {
-                int steps = 32;
                 double stepX = width / steps;
 
                 double startY = baseY + Math.Sin(phase) * amplitude + Math.Cos(phase * 0.7) * (amplitude * 0.35);

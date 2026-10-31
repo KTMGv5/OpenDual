@@ -440,16 +440,16 @@ void ControllerEngine::OutputThread() {
                 kickCountdownFrames--;
                 // Override trigger mode with physical recoil kick
                 activeCfg.leftTrigger.mode = TriggerMode::Pulse;
-                activeCfg.leftTrigger.startPos = 15;
-                activeCfg.leftTrigger.force = 225;
-                activeCfg.leftTrigger.frequency = 6;
-                activeCfg.leftTrigger.endPos = 240;
+                activeCfg.leftTrigger.startPos = 1;
+                activeCfg.leftTrigger.force = 8;
+                activeCfg.leftTrigger.frequency = 32;
+                activeCfg.leftTrigger.endPos = 8;
 
                 activeCfg.rightTrigger.mode = TriggerMode::Pulse;
-                activeCfg.rightTrigger.startPos = 15;
-                activeCfg.rightTrigger.force = 225;
-                activeCfg.rightTrigger.frequency = 6;
-                activeCfg.rightTrigger.endPos = 240;
+                activeCfg.rightTrigger.startPos = 1;
+                activeCfg.rightTrigger.force = 8;
+                activeCfg.rightTrigger.frequency = 32;
+                activeCfg.rightTrigger.endPos = 8;
             }
 
             // Power saving & Low battery overrides

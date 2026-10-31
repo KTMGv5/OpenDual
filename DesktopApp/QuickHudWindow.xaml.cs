@@ -188,7 +188,7 @@ namespace OpenDualHub
             TxtNavGuide.Text = _selectedTileIndex switch
             {
                 0 => $"D-Pad ◄► Select Tile   •   ▲▼ Cycle Profile   •   ✕ Apply Profile   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
-                1 => $"D-Pad ◄► Select Tile   •   ▲▼ Master Volume ±5%   •   ✕ Toggle Mute   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
+                1 => $"D-Pad ◄► Select Tile   •   ▲▼ Master Volume ±5%   •   ✕ Toggle Mic   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
                 2 => $"D-Pad ◄► Select Tile   •   ▲▼ Gyro Sens ±0.1x   •   ✕ Toggle Gyro   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
                 3 => $"D-Pad ◄► Select Tile   •   ▲▼ Refresh PC Stats   •   ✕ Refresh Now   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
                 4 => $"D-Pad ◄► Select Tile   •   ▲▼ Touchpad Sens ±0.1x   •   ✕ Toggle Touchpad   •   □ Mic Mute   •   R3 Size ({scaleLabel})   •   ○ / PS Close",
@@ -328,9 +328,8 @@ namespace OpenDualHub
                 case 0: // Profile: cycle to next
                     OnCycleProfile?.Invoke(1);
                     break;
-                case 1: // Master Audio: toggle mute
-                    SystemHardwareMonitor.ToggleMasterMute();
-                    UpdateAudioTileDisplay();
+                case 1: // Master Audio: toggle mic mute
+                    OnToggleMic?.Invoke();
                     break;
                 case 2: // Gyro: toggle enable
                     OnToggleGyro?.Invoke();
@@ -393,13 +392,6 @@ namespace OpenDualHub
         {
             SelectTile(1);
             SystemHardwareMonitor.AdjustMasterVolume(5);
-            UpdateAudioTileDisplay();
-        }
-
-        private void BtnMuteToggle_Click(object sender, RoutedEventArgs e)
-        {
-            SelectTile(1);
-            SystemHardwareMonitor.ToggleMasterMute();
             UpdateAudioTileDisplay();
         }
 

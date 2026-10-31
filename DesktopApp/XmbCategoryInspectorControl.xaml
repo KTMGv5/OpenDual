@@ -109,8 +109,8 @@
                                 </Grid>
                                 <WrapPanel Orientation="Horizontal" Margin="0,0,0,6">
                                     <Button x:Name="BtnL2_0" Content="Off (Linear)" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="0"/>
-                                    <Button x:Name="BtnL2_1" Content="Game Specific SDK" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="1"/>
-                                    <Button x:Name="BtnL2_2" Content="Rigid Section Snap" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="2"/>
+                                    <Button x:Name="BtnL2_1" Content="Rigid Wall" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="1"/>
+                                    <Button x:Name="BtnL2_2" Content="Click-Snap Barrier" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="2"/>
                                     <Button x:Name="BtnL2_3" Content="Compound Bow" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="3"/>
                                     <Button x:Name="BtnL2_4" Content="Machine Gun Recoil" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnL2Mode_Click" Tag="4"/>
                                 </WrapPanel>
@@ -127,8 +127,8 @@
                                 </Grid>
                                 <WrapPanel Orientation="Horizontal" Margin="0,0,0,6">
                                     <Button x:Name="BtnR2_0" Content="Off (Linear)" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="0"/>
-                                    <Button x:Name="BtnR2_1" Content="Game Specific SDK" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="1"/>
-                                    <Button x:Name="BtnR2_2" Content="Rigid Section Snap" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="2"/>
+                                    <Button x:Name="BtnR2_1" Content="Rigid Wall" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="1"/>
+                                    <Button x:Name="BtnR2_2" Content="Click-Snap Barrier" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="2"/>
                                     <Button x:Name="BtnR2_3" Content="Compound Bow" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="3"/>
                                     <Button x:Name="BtnR2_4" Content="Machine Gun Recoil" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnR2Mode_Click" Tag="4"/>
                                 </WrapPanel>
@@ -558,6 +558,48 @@
                                     <ComboBoxItem Content="15 Minutes"/>
                                     <ComboBoxItem Content="Never"/>
                                 </ComboBox>
+                            </Grid>
+                        </Border>
+
+                        <!-- Nerd Stats Toggle (1000Hz Direct HID & Latency Timer) -->
+                        <Border x:Name="CardSetNerdStats" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="NERD STATS (1000Hz DIRECT HID &amp; LATENCY TIMER)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Display real-time kernel bus polling rate and sub-millisecond input latency in top bar" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleNerdStats" Content="Nerd Stats: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleNerdStats_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Date & Real-Time Clock Format Card -->
+                        <Border x:Name="CardSetClock" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="DATE &amp; REAL-TIME CLOCK FORMAT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                        <TextBlock Text="Configure 24-hour military time and calendar date display in hub header" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <ToggleButton x:Name="ToggleMilitaryTime" Content="Military Time: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleMilitaryTime_Click"/>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Date Format:" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <Button x:Name="BtnDateUk" Content="dd/MM (UK/EU)" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,0" Click="BtnDateFormat_Click" Tag="ddd dd/MM"/>
+                                    <Button x:Name="BtnDateUs" Content="MM/dd (US)" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,0" Click="BtnDateFormat_Click" Tag="ddd MM/dd"/>
+                                    <Button x:Name="BtnDateIso" Content="yyyy-MM-dd" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,0" Click="BtnDateFormat_Click" Tag="yyyy-MM-dd"/>
+                                    <Button x:Name="BtnDateNone" Content="Time Only" Style="{StaticResource XmbOptionBtn}" Click="BtnDateFormat_Click" Tag="None"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Lightweight Background Option for Low-Grade Hardware -->
+                        <Border x:Name="CardSetBackgroundMode" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="LIGHTWEIGHT BACKGROUND (LOW-END HARDWARE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Disables continuous GPU wave rendering loops to maximize smoothness on low-spec PCs" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleLightweightBg" Content="Lightweight Art: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleLightweightBg_Click"/>
                             </Grid>
                         </Border>
 

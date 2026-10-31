@@ -50,6 +50,33 @@ namespace OpenDualHub
         private bool _shareLongPressHandled = false;
         private DateTime _lastShareReleaseTime = DateTime.MinValue;
 
+        public bool ClockUseMilitaryTime { get; set; } = false;
+        public string ClockDateFormat { get; set; } = "ddd dd/MM";
+        public bool ShowNerdStats { get; set; } = false;
+
+        public string FormatCurrentClock(bool includeDate = true)
+        {
+            string timeFmt = ClockUseMilitaryTime ? "HH:mm" : "h:mm tt";
+            string timeStr = DateTime.Now.ToString(timeFmt);
+            if (!includeDate || string.IsNullOrEmpty(ClockDateFormat) || ClockDateFormat == "None")
+            {
+                return timeStr;
+            }
+            return $"{DateTime.Now.ToString(ClockDateFormat)}  {timeStr}";
+        }
+
+        public void UpdateClockDisplay()
+        {
+            if (TxtClock != null)
+            {
+                TxtClock.Text = FormatCurrentClock(includeDate: false);
+            }
+            if (XmbView != null && XmbView.TxtXmbClock != null)
+            {
+                XmbView.TxtXmbClock.Text = FormatCurrentClock(includeDate: true);
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -59,16 +86,10 @@ namespace OpenDualHub
 
             _clockTimer.Tick += (s, e) =>
             {
-                if (TxtClock != null)
-                {
-                    TxtClock.Text = DateTime.Now.ToString("h:mm tt");
-                }
+                UpdateClockDisplay();
             };
             _clockTimer.Start();
-            if (TxtClock != null)
-            {
-                TxtClock.Text = DateTime.Now.ToString("h:mm tt");
-            }
+            UpdateClockDisplay();
 
             if (TxtInstalledVersion != null)
             {
@@ -201,15 +222,65 @@ namespace OpenDualHub
                             insp.BtnPledAll.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
                         }
 
-                        XmbView?.Xmb.SelectCategory(4);
+                        // Test Triggers: Rigid Wall, Click-Snap, Compound Bow, Machine Gun
+                        XmbView?.Xmb.SelectCategory(2);
                         UpdateLayout();
                         await System.Threading.Tasks.Task.Delay(100);
                         if (insp != null)
                         {
-                            System.IO.File.AppendAllText("ui_test_result.log", "Clicking Trigger buttons...\n");
+                            System.IO.File.AppendAllText("ui_test_result.log", "Clicking Trigger buttons (Rigid, Snap, Bow, Machine Gun)...\n");
                             insp.BtnL2_0.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnL2_1.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
                             insp.BtnL2_2.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnL2_3.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnL2_4.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
                             insp.BtnR2_1.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnR2_2.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnR2_3.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnR2_4.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.SliderSnapTension.Value = 92;
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Triggers verified: L2={insp.TxtL2ModeBadge.Text}, R2={insp.TxtR2ModeBadge.Text}, Tension={insp.TxtSnapTensionVal.Text}\n");
+                        }
+
+                        // Test Profiles: Standard, Esports, FPS, Racing (Repeated switching)
+                        XmbView?.Xmb.SelectCategory(7);
+                        UpdateLayout();
+                        await System.Threading.Tasks.Task.Delay(100);
+                        if (insp != null)
+                        {
+                            System.IO.File.AppendAllText("ui_test_result.log", "Testing Profiles repeated activation...\n");
+                            insp.BtnActDefault.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Profile 1: {_currentProfile?.Name}\n");
+                            insp.BtnActEsports.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Profile 2: {_currentProfile?.Name}\n");
+                            insp.BtnActFps.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Profile 3: {_currentProfile?.Name}\n");
+                            insp.BtnActRacing.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Profile 4: {_currentProfile?.Name}\n");
+                            // Switch back again to ensure subsequent clicks work reliably
+                            insp.BtnActDefault.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Profile 1 re-activated: {_currentProfile?.Name}\n");
+                        }
+
+                        // Test Settings: Nerd stats, military time, date formats, lightweight background
+                        XmbView?.Xmb.SelectCategory(8);
+                        UpdateLayout();
+                        await System.Threading.Tasks.Task.Delay(100);
+                        if (insp != null)
+                        {
+                            System.IO.File.AppendAllText("ui_test_result.log", "Testing Settings toggles...\n");
+                            insp.ToggleNerdStats.IsChecked = true;
+                            insp.ToggleNerdStats.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Nerd Stats: {ShowNerdStats}, Pill: {XmbView?.PillNerdStats?.Visibility}\n");
+
+                            insp.ToggleMilitaryTime.IsChecked = true;
+                            insp.ToggleMilitaryTime.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            insp.BtnDateIso.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Clock Format: {FormatCurrentClock(true)}\n");
+
+                            insp.ToggleLightweightBg.IsChecked = true;
+                            insp.ToggleLightweightBg.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Lightweight Bg: {WaveBackground?.LightweightMode}\n");
                         }
 
                         XmbView?.Xmb.SelectCategory(5);
@@ -2384,8 +2455,11 @@ namespace OpenDualHub
         public void ApplyProfileByName(string name)
         {
             var prof = _profileManager.Profiles.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-
-                       ?? _profileManager.Profiles.FirstOrDefault(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+                       ?? _profileManager.Profiles.FirstOrDefault(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+                       ?? _profileManager.Profiles.FirstOrDefault(p => p.Id.Equals(name, StringComparison.OrdinalIgnoreCase))
+                       ?? (name.Contains("Esports", StringComparison.OrdinalIgnoreCase) ? _profileManager.Profiles.FirstOrDefault(p => p.Name.Contains("Esports", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Competitive", StringComparison.OrdinalIgnoreCase)) : null)
+                       ?? (name.Contains("FPS", StringComparison.OrdinalIgnoreCase) ? _profileManager.Profiles.FirstOrDefault(p => p.Name.Contains("FPS", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Competitive", StringComparison.OrdinalIgnoreCase)) : null)
+                       ?? (name.Contains("Racing", StringComparison.OrdinalIgnoreCase) ? _profileManager.Profiles.FirstOrDefault(p => p.Name.Contains("Racing", StringComparison.OrdinalIgnoreCase)) : null);
 
             if (prof != null)
             {
@@ -2394,6 +2468,9 @@ namespace OpenDualHub
                 _quickHud?.ShowNotification($"Profile: {prof.Name}", "Settings synchronized across system.");
                 if (FooterStatus != null) FooterStatus.Text = $"Active Profile: {prof.Name}";
                 _trayManager.ShowNotification("Profile Activated", $"Settings applied for: {prof.Name}");
+
+                XmbView?.CategoryInspector?.UpdateActiveProfileCard(prof.Name);
+                XmbView?.UpdateProfileBadge(prof.Name);
             }
         }
         #endregion

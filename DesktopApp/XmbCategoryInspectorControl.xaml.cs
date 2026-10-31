@@ -124,6 +124,9 @@ namespace OpenDualHub
             CardSetDriver.BorderBrush = defaultBorder;
             CardSetAutoStart.BorderBrush = defaultBorder;
             CardSetIdle.BorderBrush = defaultBorder;
+            if (CardSetNerdStats != null) CardSetNerdStats.BorderBrush = defaultBorder;
+            if (CardSetClock != null) CardSetClock.BorderBrush = defaultBorder;
+            if (CardSetBackgroundMode != null) CardSetBackgroundMode.BorderBrush = defaultBorder;
             CardSetUpdate.BorderBrush = defaultBorder;
 
             // 4. Activate target panel & highlight matching card
@@ -230,15 +233,36 @@ namespace OpenDualHub
         }
 
         #region Adaptive Triggers Handlers
+        private static int MapXmbTriggerMode(int btnTag) => btnTag switch
+        {
+            1 => 1, // Rigid Wall
+            2 => 6, // Click-Snap Barrier (Weapon / TriggerStop)
+            3 => 5, // Compound Bow
+            4 => 2, // Machine Gun Recoil (Pulse / Vibration)
+            _ => 0  // Off
+        };
+
+        private static int UnmapXmbTriggerMode(int mode) => mode switch
+        {
+            1 => 1,
+            6 => 2,
+            5 => 3,
+            2 => 4,
+            _ => 0
+        };
+
         private void BtnL2Mode_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string tagStr && int.TryParse(tagStr, out int mode))
+            if (sender is Button btn && btn.Tag is string tagStr && int.TryParse(tagStr, out int btnTag))
             {
-                _l2Mode = mode;
+                _l2Mode = MapXmbTriggerMode(btnTag);
                 TxtL2ModeBadge.Text = btn.Content.ToString();
-
-                // Highlight active button
                 HighlightOptionButton(new[] { BtnL2_0, BtnL2_1, BtnL2_2, BtnL2_3, BtnL2_4 }, btn);
+
+                if (_l2Mode == 2) { _l2Freq = 32; _l2Start = 1; }
+                else if (_l2Mode == 5) { _l2Start = 1; }
+                else if (_l2Mode == 6) { _l2Start = 2; }
+                else if (_l2Mode == 1) { _l2Start = 2; }
 
                 PushAdaptiveTriggers();
                 DrawTriggerOscilloscope(BarL2Inspector.Value / 100.0, BarR2Inspector.Value / 100.0);
@@ -247,13 +271,16 @@ namespace OpenDualHub
 
         private void BtnR2Mode_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string tagStr && int.TryParse(tagStr, out int mode))
+            if (sender is Button btn && btn.Tag is string tagStr && int.TryParse(tagStr, out int btnTag))
             {
-                _r2Mode = mode;
+                _r2Mode = MapXmbTriggerMode(btnTag);
                 TxtR2ModeBadge.Text = btn.Content.ToString();
-
-                // Highlight active button
                 HighlightOptionButton(new[] { BtnR2_0, BtnR2_1, BtnR2_2, BtnR2_3, BtnR2_4 }, btn);
+
+                if (_r2Mode == 2) { _r2Freq = 32; _r2Start = 1; }
+                else if (_r2Mode == 5) { _r2Start = 1; }
+                else if (_r2Mode == 6) { _r2Start = 2; }
+                else if (_r2Mode == 1) { _r2Start = 2; }
 
                 PushAdaptiveTriggers();
                 DrawTriggerOscilloscope(BarL2Inspector.Value / 100.0, BarR2Inspector.Value / 100.0);
@@ -267,8 +294,9 @@ namespace OpenDualHub
             {
                 TxtSnapTensionVal.Text = $"{_snapTension}% Force";
             }
-            _l2Force = Math.Clamp(_snapTension / 12, 1, 8);
-            _r2Force = Math.Clamp(_snapTension / 12, 1, 8);
+            // Scale accurately to DualSense 1..8 force strength
+            _l2Force = Math.Clamp((int)Math.Round(_snapTension / 100.0 * 8.0), 1, 8);
+            _r2Force = _l2Force;
             PushAdaptiveTriggers();
             DrawTriggerOscilloscope(0, 0);
         }
@@ -445,6 +473,24 @@ namespace OpenDualHub
             {
                 ToggleGestures.IsChecked = MainWindow.GestureEngine.GesturesEnabled;
                 ToggleGestures.Content = MainWindow.GestureEngine.GesturesEnabled ? "Gestures: ON" : "Gestures: OFF";
+            }
+
+            // Adaptive Triggers
+            _l2Mode = cfg.LtMode;
+            _r2Mode = cfg.RtMode;
+            int l2Idx = UnmapXmbTriggerMode(_l2Mode);
+            int r2Idx = UnmapXmbTriggerMode(_r2Mode);
+            var l2Buttons = new[] { BtnL2_0, BtnL2_1, BtnL2_2, BtnL2_3, BtnL2_4 };
+            var r2Buttons = new[] { BtnR2_0, BtnR2_1, BtnR2_2, BtnR2_3, BtnR2_4 };
+            if (l2Idx >= 0 && l2Idx < l2Buttons.Length)
+            {
+                HighlightOptionButton(l2Buttons, l2Buttons[l2Idx]);
+                if (TxtL2ModeBadge != null) TxtL2ModeBadge.Text = l2Buttons[l2Idx].Content.ToString();
+            }
+            if (r2Idx >= 0 && r2Idx < r2Buttons.Length)
+            {
+                HighlightOptionButton(r2Buttons, r2Buttons[r2Idx]);
+                if (TxtR2ModeBadge != null) TxtR2ModeBadge.Text = r2Buttons[r2Idx].Content.ToString();
             }
         }
 
@@ -750,19 +796,33 @@ namespace OpenDualHub
         #endregion
 
         #region Profiles Handlers
+        public void UpdateActiveProfileCard(string name)
+        {
+            var defaultBorder = GetBrush("BorderColor", Color.FromArgb(0x35, 0x29, 0x79, 0xFF));
+            var glowBorder = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4));
+
+            bool isDef = name.Equals("Standard Balanced", StringComparison.OrdinalIgnoreCase);
+            bool isEsports = name.Contains("Esports", StringComparison.OrdinalIgnoreCase);
+            bool isFps = name.Contains("FPS", StringComparison.OrdinalIgnoreCase);
+            bool isRacing = name.Contains("Racing", StringComparison.OrdinalIgnoreCase);
+
+            if (CardProfDefault != null) CardProfDefault.BorderBrush = isDef ? glowBorder : defaultBorder;
+            if (CardProfEsports != null) CardProfEsports.BorderBrush = isEsports ? glowBorder : defaultBorder;
+            if (CardProfFps != null) CardProfFps.BorderBrush = isFps ? glowBorder : defaultBorder;
+            if (CardProfRacing != null) CardProfRacing.BorderBrush = isRacing ? glowBorder : defaultBorder;
+
+            if (BtnActDefault != null) BtnActDefault.Content = isDef ? "✓ Active" : "Activate";
+            if (BtnActEsports != null) BtnActEsports.Content = isEsports ? "✓ Active" : "Activate";
+            if (BtnActFps != null) BtnActFps.Content = isFps ? "✓ Active" : "Activate";
+            if (BtnActRacing != null) BtnActRacing.Content = isRacing ? "✓ Active" : "Activate";
+        }
+
         private void BtnActivateProfile_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is string name && MainWindow != null)
             {
                 MainWindow.ApplyProfileByName(name);
-
-                var defaultBorder = GetBrush("BorderColor", Color.FromArgb(0x35, 0x29, 0x79, 0xFF));
-                var glowBorder = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4));
-
-                CardProfDefault.BorderBrush = (name == "Standard Balanced") ? glowBorder : defaultBorder;
-                CardProfEsports.BorderBrush = (name == "Esports Ultra 1000Hz") ? glowBorder : defaultBorder;
-                CardProfFps.BorderBrush = (name == "FPS Gyro Specialist") ? glowBorder : defaultBorder;
-                CardProfRacing.BorderBrush = (name == "Racing Force Feedback") ? glowBorder : defaultBorder;
+                UpdateActiveProfileCard(name);
             }
         }
         #endregion
@@ -817,6 +877,48 @@ namespace OpenDualHub
                     _ => 10
                 };
                 IpcClient?.SetPowerManagement(minutes, true);
+            }
+        }
+
+        private void ToggleNerdStats_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOn = ToggleNerdStats.IsChecked == true;
+            ToggleNerdStats.Content = isOn ? "Nerd Stats: ON" : "Nerd Stats: OFF";
+            if (MainWindow != null)
+            {
+                MainWindow.ShowNerdStats = isOn;
+                MainWindow.XmbView?.SetNerdStatsVisible(isOn);
+            }
+        }
+
+        private void ToggleMilitaryTime_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOn = ToggleMilitaryTime.IsChecked == true;
+            ToggleMilitaryTime.Content = isOn ? "Military Time: ON" : "Military Time: OFF";
+            if (MainWindow != null)
+            {
+                MainWindow.ClockUseMilitaryTime = isOn;
+                MainWindow.UpdateClockDisplay();
+            }
+        }
+
+        private void BtnDateFormat_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string fmt && MainWindow != null)
+            {
+                MainWindow.ClockDateFormat = fmt;
+                MainWindow.UpdateClockDisplay();
+                HighlightOptionButton(new[] { BtnDateUk, BtnDateUs, BtnDateIso, BtnDateNone }, btn);
+            }
+        }
+
+        private void ToggleLightweightBg_Click(object sender, RoutedEventArgs e)
+        {
+            bool isOn = ToggleLightweightBg.IsChecked == true;
+            ToggleLightweightBg.Content = isOn ? "Lightweight Art: ON" : "Lightweight Art: OFF";
+            if (MainWindow?.WaveBackground != null)
+            {
+                MainWindow.WaveBackground.LightweightMode = isOn;
             }
         }
 
