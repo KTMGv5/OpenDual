@@ -83,7 +83,7 @@ namespace OpenDualHub
 
             // 5. GYRO AIM
             var catGyro = new XmbCategory { Id = "gyro", Title = "GYRO AIM", Icon = "🎯" };
-            catGyro.Items.Add(new XmbItem { Id = "gyro_enable", Title = "6-Axis Gyroscope Aiming", Subtitle = "Natural motion-assisted crosshair tracking", Icon = "🎯", ValueBadge = "Enabled" });
+            catGyro.Items.Add(new XmbItem { Id = "gyro_enable", Title = "6-Axis Gyroscope Aiming", Subtitle = "Natural motion-assisted crosshair tracking", Icon = "🎯", ValueBadge = "Disabled" });
             catGyro.Items.Add(new XmbItem { Id = "gyro_output", Title = "Output Emulation Mode", Subtitle = "Direct Windows Mouse or XInput Right Thumbstick", Icon = "🖱️", ValueBadge = "Mouse Aim" });
             catGyro.Items.Add(new XmbItem { Id = "gyro_click", Title = "Mouse Click Keybindings", Subtitle = "Cross (A) / Square (X) or Triggers mouse clicks", Icon = "🖱️", ValueBadge = "Cross / Square" });
             catGyro.Items.Add(new XmbItem { Id = "gyro_tuning", Title = "Sensitivity & Response Curve", Subtitle = "X/Y sensitivity, smoothing filter, and deadzone", Icon = "🎚️", ValueBadge = "Sens 1.2x" });

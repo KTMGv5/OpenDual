@@ -66,7 +66,7 @@ namespace OpenDualHub
         private bool _wasTouching = false;
         private int _maxFingers = 0;
 
-        public bool GesturesEnabled { get; set; } = true;
+        public bool GesturesEnabled { get; set; } = false;
         public List<GestureMapping> Mappings { get; } = new();
 
         public event Action<TouchGestureType, GestureAction>? OnGestureRecognized;

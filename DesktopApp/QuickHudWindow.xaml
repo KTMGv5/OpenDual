@@ -165,9 +165,9 @@
                     <Border x:Name="Tile2" Tag="2" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" PreviewMouseWheel="Tile_PreviewMouseWheel" Grid.Column="2" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="112">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="🎯 GYRO AIMING" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
-                            <TextBlock x:Name="TxtTileGyroState" Text="ADS TRIGGER (L2)" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileGyroState" Text="DISABLED" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
                             <TextBlock x:Name="TxtTileGyroSens" Text="Sens: 1.2x (Yaw/Pitch)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
-                            <TextBlock x:Name="TxtTileGyroStatus" Text="Sub-Pixel Mouse (Active)" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileGyroStatus" Text="Press ✕ to Enable" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                             <!-- Action Controls -->
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                 <Button Content="Sens -" Style="{StaticResource HudMiniBtn}" Click="BtnGyroSensDown_Click"/>

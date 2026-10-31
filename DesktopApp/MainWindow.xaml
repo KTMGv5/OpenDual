@@ -988,7 +988,7 @@
                                         <TextBlock Text="AUDIO-REACTIVE HAPTIC BASS RUMBLE (WASAPI LOOPBACK)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentSignature}"/>
                                         <TextBlock Text="Captures Windows system and game audio in real time, isolates low-frequency explosions, footsteps, engine revs, and gunshots, and routes them directly to the controller's voice-coil haptic motors." TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                                     </StackPanel>
-                                    <CheckBox x:Name="ChkAudioHaptics" Grid.Column="1" Content="Enable Haptics" FontSize="13" FontWeight="Bold" IsChecked="False" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
+                                    <CheckBox x:Name="ChkAudioHaptics" Grid.Column="1" Content="Enable Haptics" FontSize="13" FontWeight="Bold" IsChecked="True" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Checked="AudioHaptics_Changed" Unchecked="AudioHaptics_Changed"/>
                                 </Grid>
 
                                 <!-- Haptic Intensity Slider -->

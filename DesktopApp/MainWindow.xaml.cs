@@ -154,6 +154,8 @@ namespace OpenDualHub
             _gameDetector.OnGameChanged += GameDetector_OnGameChanged;
             _gameDetector.Start();
             PopulateProfilesList();
+            var defaultProf = _profileManager.Profiles.FirstOrDefault(p => p.Id == "builtin-default") ?? _profileManager.Profiles[0];
+            ApplyProfile(defaultProf);
             UpdateSpeakerUi();
 
             // Background update check (non-blocking)
@@ -705,6 +707,11 @@ namespace OpenDualHub
                     if (FooterStatus != null) FooterStatus.Text = "Driver Service Disconnected";
                     if (DashModelTitle != null) DashModelTitle.Text = "Waiting for OpenDual Service...";
                     if (DashConnInfo != null) DashConnInfo.Text = "Start driver engine in System tab to begin low-latency Direct HID polling.";
+                }
+                else
+                {
+                    _ipc.SendConfig(_currentProfile.Config);
+                    XmbView?.CategoryInspector?.SyncFromConfig(_currentProfile.Config);
                 }
 
                 RefreshDriverStatus();
@@ -1828,6 +1835,7 @@ namespace OpenDualHub
                 // Send full config to driver
 
                 _ipc.SendConfig(prof.Config);
+                XmbView?.CategoryInspector?.SyncFromConfig(prof.Config);
 
                 // Update UI controls to match profile
 

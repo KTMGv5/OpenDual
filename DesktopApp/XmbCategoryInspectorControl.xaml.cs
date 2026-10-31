@@ -25,7 +25,8 @@ namespace OpenDualHub
         private int _r2Start = 30, _r2Force = 8, _r2Freq = 12;
 
         // Gyro Aim State
-        private bool _gyroEnabled = true;
+        private bool _gyroEnabled = false;
+        private bool _configInitialized = false;
         private int _gyroTriggerMode = 1; // 1 = Hold L2 (ADS)
         private int _gyroOutputMode = 0;  // 0 = Mouse
         private int _gyroSpace = 0;       // 0 = Player Space
@@ -201,6 +202,12 @@ namespace OpenDualHub
         {
             if (t == null) return;
 
+            if (!_configInitialized && t.Config != null)
+            {
+                _configInitialized = true;
+                SyncFromConfig(t.Config);
+            }
+
             // 1. Triggers Depth & Motor Oscilloscope
             BarL2Inspector.Value = t.L2 * 100.0;
             BarR2Inspector.Value = t.R2 * 100.0;
@@ -372,6 +379,74 @@ namespace OpenDualHub
             });
         }
         #endregion
+
+        public void SyncFromConfig(ConfigDto cfg)
+        {
+            if (cfg == null) return;
+
+            // Audio Haptics
+            if (ToggleHaptics != null)
+            {
+                ToggleHaptics.IsChecked = cfg.Haptic;
+                ToggleHaptics.Content = cfg.Haptic ? "Haptics: ON" : "Haptics: OFF";
+            }
+            if (SliderHapticIntensity != null)
+            {
+                SliderHapticIntensity.Value = (int)(cfg.HapticIntensity * 100.0);
+            }
+            if (TxtHapticIntensity != null)
+            {
+                TxtHapticIntensity.Text = $"{(int)(cfg.HapticIntensity * 100.0)}%";
+            }
+            if (ToggleSpeaker != null)
+            {
+                ToggleSpeaker.IsChecked = cfg.SpeakerEnabled;
+                ToggleSpeaker.Content = cfg.SpeakerEnabled ? "Speaker: ON" : "Speaker: OFF";
+            }
+            if (ToggleMicSync != null)
+            {
+                ToggleMicSync.IsChecked = cfg.SyncMic;
+                ToggleMicSync.Content = cfg.SyncMic ? "Mic Sync: ON" : "Mic Sync: OFF";
+            }
+
+            // Gyro Aiming
+            _gyroEnabled = cfg.Gyro;
+            if (ToggleGyroEnable != null)
+            {
+                ToggleGyroEnable.IsChecked = cfg.Gyro;
+                ToggleGyroEnable.Content = cfg.Gyro ? "Gyro Aim: ON" : "Gyro Aim: OFF";
+            }
+            _gyroSensX = cfg.GyroSensX;
+            _gyroSensY = cfg.GyroSensY;
+            if (SliderSensX != null) SliderSensX.Value = cfg.GyroSensX;
+            if (SliderSensY != null) SliderSensY.Value = cfg.GyroSensY;
+            if (TxtSensXVal != null) TxtSensXVal.Text = $"{cfg.GyroSensX:F2}x";
+            if (TxtSensYVal != null) TxtSensYVal.Text = $"{cfg.GyroSensY:F2}x";
+            _gyroOutputMode = cfg.GyroOutputMode;
+            if (BtnGyroMouse != null && BtnGyroStick != null)
+            {
+                HighlightOptionButton(new[] { BtnGyroMouse, BtnGyroStick }, cfg.GyroOutputMode == 1 ? BtnGyroStick : BtnGyroMouse);
+            }
+            _gyroClickMode = cfg.GyroClickMode;
+            if (BtnGyroClickCrossSquare != null && BtnGyroClickTriggers != null && BtnGyroClickBumpers != null && BtnGyroClickDisabled != null)
+            {
+                var clickBtn = cfg.GyroClickMode switch
+                {
+                    1 => BtnGyroClickTriggers,
+                    2 => BtnGyroClickBumpers,
+                    3 => BtnGyroClickDisabled,
+                    _ => BtnGyroClickCrossSquare
+                };
+                HighlightOptionButton(new[] { BtnGyroClickCrossSquare, BtnGyroClickTriggers, BtnGyroClickBumpers, BtnGyroClickDisabled }, clickBtn);
+            }
+
+            // Gestures
+            if (MainWindow != null && ToggleGestures != null)
+            {
+                ToggleGestures.IsChecked = MainWindow.GestureEngine.GesturesEnabled;
+                ToggleGestures.Content = MainWindow.GestureEngine.GesturesEnabled ? "Gestures: ON" : "Gestures: OFF";
+            }
+        }
 
         #region Gyro Handlers
         public void SetGyroEnabled(bool enabled)

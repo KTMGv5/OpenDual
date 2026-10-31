@@ -54,7 +54,7 @@ namespace OpenDualHub.Models
         public int RtMode { get; set; } = 0;
 
         [JsonPropertyName("haptic")]
-        public bool Haptic { get; set; } = false;
+        public bool Haptic { get; set; } = true;
 
         [JsonPropertyName("hapticIntensity")]
         public float HapticIntensity { get; set; } = 0.30f;

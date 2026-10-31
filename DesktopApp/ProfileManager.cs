@@ -158,7 +158,7 @@ namespace OpenDualHub
                         R = 0, G = 120, B = 255, Effect = 2, Speed = 1.0f,
                         Mouse = true, SyncMic = true,
                         LtMode = 0, RtMode = 0,
-                        Haptic = false, HapticIntensity = 0.30f, HapticCutoff = 40, HapticStereo = true,
+                        Haptic = true, HapticIntensity = 0.30f, HapticCutoff = 40, HapticStereo = true,
                         AudioTriggerKick = false, AudioTriggerThreshold = 0.20f,
                         SpeakerEnabled = false,
                         Gyro = false, GyroMode = 0, GyroOutputMode = 0, GyroSpace = 0, GyroSensX = 1.0f, GyroSensY = 1.0f,

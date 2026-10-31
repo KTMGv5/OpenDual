@@ -164,7 +164,7 @@
                                     <TextBlock Text="🎯 6-AXIS GYROSCOPE AIMING" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                                     <TextBlock Text="Natural motion crosshair assistance with high-rate 1000Hz IMU fusion." FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
                                 </StackPanel>
-                                <ToggleButton x:Name="ToggleGyroEnable" Content="Gyro Aim: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleGyroEnable_Click"/>
+                                <ToggleButton x:Name="ToggleGyroEnable" Content="Gyro Aim: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleGyroEnable_Click"/>
                             </Grid>
                         </Border>
 
@@ -371,7 +371,7 @@
                                         <TextBlock Text="✍️ PROGRAMMABLE UNISTROKE GESTURES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                                         <TextBlock Text="Draw shapes or letters on the touchpad to trigger customizable Windows actions" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
                                     </StackPanel>
-                                    <ToggleButton x:Name="ToggleGestures" Content="Gestures: ON" Style="{StaticResource XmbToggle}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleGestures_Click"/>
+                                    <ToggleButton x:Name="ToggleGestures" Content="Gestures: OFF" Style="{StaticResource XmbToggle}" IsChecked="False" HorizontalAlignment="Right" Click="ToggleGestures_Click"/>
                                 </Grid>
 
                                 <!-- Interactive Sandbox Canvas -->
