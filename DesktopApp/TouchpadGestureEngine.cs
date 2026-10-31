@@ -81,7 +81,6 @@ namespace OpenDualHub
         {
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.LetterC, Action = GestureAction.TakeScreenshot, Name = "Draw 'C' -> Screenshot (Win+Shift+S)" });
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.LetterV, Action = GestureAction.SaveReplayClip, Name = "Draw 'V' -> Save 30s Game Clip (Win+Alt+G)" });
-            Mappings.Add(new GestureMapping { Gesture = TouchGestureType.LetterS, Action = GestureAction.OpenQuickHud, Name = "Draw 'S' -> Open Control Center HUD" });
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.LetterO, Action = GestureAction.OpenDualHub, Name = "Draw 'O' -> Open OpenDual Hub" });
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.SwipeLeft, Action = GestureAction.PreviousTrack, Name = "Swipe Left -> Previous Music Track" });
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.SwipeRight, Action = GestureAction.NextTrack, Name = "Swipe Right -> Next Music Track" });
@@ -325,7 +324,7 @@ namespace OpenDualHub
                     break;
 
                 case GestureAction.ToggleMicMute:
-                    SystemHardwareMonitor.ToggleMasterMute();
+                    SystemHardwareMonitor.ToggleMicrophoneMute();
                     break;
 
                 case GestureAction.PlayPauseMedia:

@@ -211,6 +211,52 @@ namespace OpenDualHub
             }
             catch { }
         }
+
+        private static IAudioEndpointVolume? GetMicrophoneEndpointVolume()
+        {
+            try
+            {
+                var enumerator = (IMMDeviceEnumerator)new MMDeviceEnumeratorCom();
+                if (enumerator.GetDefaultAudioEndpoint(1 /* eCapture */, 1 /* eMultimedia */, out var dev) == 0 && dev != null)
+                {
+                    var iid = typeof(IAudioEndpointVolume).GUID;
+                    if (dev.Activate(ref iid, 1 /* CLSCTX_INPROC_SERVER */, IntPtr.Zero, out var volObj) == 0 && volObj != null)
+                    {
+                        return (IAudioEndpointVolume)volObj;
+                    }
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        public static bool IsMicrophoneMuted()
+        {
+            try
+            {
+                var vol = GetMicrophoneEndpointVolume();
+                if (vol != null && vol.GetMute(out bool muted) == 0)
+                {
+                    return muted;
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        public static void ToggleMicrophoneMute()
+        {
+            try
+            {
+                var vol = GetMicrophoneEndpointVolume();
+                if (vol != null && vol.GetMute(out bool muted) == 0)
+                {
+                    Guid guid = Guid.Empty;
+                    vol.SetMute(!muted, ref guid);
+                }
+            }
+            catch { }
+        }
         #endregion
     }
 }

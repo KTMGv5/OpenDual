@@ -362,6 +362,26 @@ namespace OpenDualHub
         #endregion
 
         #region Gyro Handlers
+        public void SetGyroEnabled(bool enabled)
+        {
+            _gyroEnabled = enabled;
+            if (ToggleGyroEnable != null)
+            {
+                ToggleGyroEnable.IsChecked = enabled;
+                ToggleGyroEnable.Content = enabled ? "Gyro Aim: ON" : "Gyro Aim: OFF";
+            }
+        }
+
+        public void SetGyroSensitivity(float sens)
+        {
+            _gyroSensX = sens;
+            _gyroSensY = sens;
+            if (SliderSensX != null) SliderSensX.Value = sens;
+            if (SliderSensY != null) SliderSensY.Value = sens;
+            if (TxtSensXVal != null) TxtSensXVal.Text = $"{sens:F2}x";
+            if (TxtSensYVal != null) TxtSensYVal.Text = $"{sens:F2}x";
+        }
+
         private void ToggleGyroEnable_Click(object sender, RoutedEventArgs e)
         {
             _gyroEnabled = ToggleGyroEnable.IsChecked == true;

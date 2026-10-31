@@ -622,6 +622,42 @@ namespace OpenDualHub
             _ => "Standard"
         };
 
+        public void UpdateGyroTile(bool enabled, float sens)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (TxtTileGyroState != null)
+                {
+                    TxtTileGyroState.Text = enabled ? "ACTIVE (ADS)" : "DISABLED";
+                    TxtTileGyroState.Foreground = enabled ? (Brush)FindResource("TextPrimary") : (Brush)FindResource("TextSecondary");
+                }
+                if (TxtTileGyroSens != null)
+                {
+                    TxtTileGyroSens.Text = $"Sens: {sens:F1}x (Yaw/Pitch)";
+                }
+                if (TxtTileGyroStatus != null)
+                {
+                    TxtTileGyroStatus.Text = enabled ? "Sub-Pixel Mouse (Active)" : "Press ✕ to Enable";
+                }
+                if (BtnGyroToggle != null)
+                {
+                    BtnGyroToggle.Content = enabled ? "ON" : "OFF";
+                }
+            });
+        }
+
+        public void UpdateMicStatus(bool isMuted)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (TxtTileMicBadge != null)
+                {
+                    TxtTileMicBadge.Text = isMuted ? "🎙️ MIC: MUTED" : "🎙️ MIC: ACTIVE";
+                    TxtTileMicBadge.Foreground = isMuted ? (Brush)FindResource("AccentAmber") : (Brush)FindResource("AccentGreen");
+                }
+            });
+        }
+
         public void ShowNotification(string title, string details)
         {
             Dispatcher.Invoke(() =>
@@ -629,11 +665,12 @@ namespace OpenDualHub
                 if (TxtTileGameName != null) TxtTileGameName.Text = title;
                 if (TxtTileProfileName != null) TxtTileProfileName.Text = details;
 
-                ShowHud();
-
-                // Toast notifications auto-dismiss after 3.5 seconds
-                _hideTimer.Stop();
-                _hideTimer.Start();
+                // Only refresh timer if HUD is already open by user; never force-open on background events
+                if (_isVisibleToUser)
+                {
+                    _hideTimer.Stop();
+                    _hideTimer.Start();
+                }
             });
         }
 
