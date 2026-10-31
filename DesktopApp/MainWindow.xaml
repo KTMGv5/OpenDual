@@ -904,7 +904,7 @@
                             <CheckBox x:Name="ChkSplitClick" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed">
                                 <TextBlock Text="Split Physical Click (Right 25% zone triggers Right Click)" TextWrapping="Wrap"/>
                             </CheckBox>
-                            <CheckBox x:Name="ChkTouchpadVolGesture" FontSize="13" IsChecked="True" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed">
+                            <CheckBox x:Name="ChkTouchpadVolGesture" FontSize="13" IsChecked="False" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed">
                                 <TextBlock Text="Touchpad Volume Slider (Slide finger up/down on right edge to adjust Master Volume)" TextWrapping="Wrap"/>
                             </CheckBox>
                             <CheckBox x:Name="ChkInvertY" Content="Invert Y Axis Movement" FontSize="13" Foreground="{DynamicResource TextPrimary}" Checked="TouchpadConfig_Changed" Unchecked="TouchpadConfig_Changed"/>

@@ -150,7 +150,8 @@ bool GyroEngine::Process(ControllerState& state, const ControllerConfig& config)
         horizDps = -dpsRoll;
     }
 
-    float vertDps = -dpsPitch;
+    // Default Vertical Aiming (Natural Pitch: tilting controller nose up aims up)
+    float vertDps = dpsPitch;
 
     // Smooth Deadzone Filtering (in deg/s):
     // Replaces harsh step deadzone with smooth cubic easing to eliminate hand tremors
