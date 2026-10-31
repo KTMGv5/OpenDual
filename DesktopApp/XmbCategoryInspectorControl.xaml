@@ -178,6 +178,19 @@
                             </StackPanel>
                         </Border>
 
+                        <Border x:Name="CardGyroClick" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="MOUSE CLICK BINDINGS (GYRO AIMING)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Trigger primary left / right mouse clicks directly using controller buttons while gyro aiming." FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button x:Name="BtnGyroClickCrossSquare" Content="✕ (A) Left  |  □ (X) Right" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnGyroClick_Click" Tag="0"/>
+                                    <Button x:Name="BtnGyroClickTriggers" Content="R2 Left  |  L2 Right" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnGyroClick_Click" Tag="1"/>
+                                    <Button x:Name="BtnGyroClickBumpers" Content="R1 Left  |  L1 Right" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnGyroClick_Click" Tag="2"/>
+                                    <Button x:Name="BtnGyroClickDisabled" Content="Disabled" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnGyroClick_Click" Tag="3"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
                         <Border x:Name="CardGyroTriggerMode" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
                             <StackPanel>
                                 <TextBlock Text="ACTIVATION TRIGGER MODE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>

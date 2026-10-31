@@ -207,12 +207,13 @@ void IpcServer::ProcessCommand(const std::string& msg) {
 
     // 6-Axis Gyro Motion Aiming
     bool gyroEn = false, gyroInvX = false, gyroInvY = false;
-    int gyroMode = 1, gyroOutMode = 0, gyroSp = 0, gyroDzone = 3;
+    int gyroMode = 1, gyroOutMode = 0, gyroSp = 0, gyroDzone = 3, gyroClick = 0;
     float gSensX = 1.0f, gSensY = 1.0f, gSmooth = 0.20f;
     if (getBool("gyroEnabled", gyroEn)) { cfg.gyroEnabled = gyroEn; changed = true; }
     if (getInt("gyroMode", gyroMode)) { cfg.gyroTriggerMode = gyroMode; changed = true; }
     if (getInt("gyroOutputMode", gyroOutMode)) { cfg.gyroOutputMode = gyroOutMode; changed = true; }
     if (getInt("gyroSpace", gyroSp)) { cfg.gyroSpace = gyroSp; changed = true; }
+    if (getInt("gyroClickMode", gyroClick)) { cfg.gyroClickMode = gyroClick; changed = true; }
     if (getFloat("gyroSensX", gSensX)) { cfg.gyroSensX = gSensX; changed = true; }
     if (getFloat("gyroSensY", gSensY)) { cfg.gyroSensY = gSensY; changed = true; }
     if (getBool("gyroInvertX", gyroInvX)) { cfg.gyroInvertX = gyroInvX; changed = true; }
@@ -328,6 +329,7 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"gyroMode\":" << c.gyroTriggerMode << ","
            << "\"gyroOutputMode\":" << c.gyroOutputMode << ","
            << "\"gyroSpace\":" << c.gyroSpace << ","
+           << "\"gyroClickMode\":" << c.gyroClickMode << ","
            << "\"gyroSensX\":" << c.gyroSensX << ","
            << "\"gyroSensY\":" << c.gyroSensY << ","
            << "\"gyroInvertX\":" << (c.gyroInvertX ? "true" : "false") << ","

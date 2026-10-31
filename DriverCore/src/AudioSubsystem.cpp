@@ -438,8 +438,6 @@ void AudioSubsystem::LoopbackCaptureThread() {
         m_filterL.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
         m_filterR.SetLowPass((double)m_sampleRate, (double)m_currentCutoffHz);
 
-
-
         // Dynamic capture loop on active endpoint
         while (m_loopbackRunning && !m_defaultDeviceChanged.load()) {
             UINT32 packetLength = 0;
@@ -504,8 +502,6 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
             isFloat = true;
         }
     }
-
-
 
     float localPeakL = 0.0f;
     float localPeakR = 0.0f;
@@ -603,8 +599,6 @@ void AudioSubsystem::ProcessAudioSamples(BYTE* pData, UINT32 numFrames, WAVEFORM
             if (aR > localPeakR) localPeakR = aR;
         }
     }
-
-
 
     std::lock_guard<std::mutex> lock(m_hapticMutex);
     // Instant attack on rising peaks, fast musical release on decay (~60ms)

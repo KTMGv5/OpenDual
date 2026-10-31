@@ -35,6 +35,8 @@ private:
     float m_biasZ = 0.0f;
 
     bool m_wasAiming = false;
+    bool m_holdingLeft = false;
+    bool m_holdingRight = false;
     std::chrono::steady_clock::time_point m_lastProcessTime{};
 };
 

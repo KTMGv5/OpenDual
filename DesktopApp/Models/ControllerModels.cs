@@ -105,6 +105,9 @@ namespace OpenDualHub.Models
         [JsonPropertyName("gyroSmooth")]
         public float GyroSmooth { get; set; } = 0.20f;
 
+        [JsonPropertyName("gyroClickMode")]
+        public int GyroClickMode { get; set; } = 0;
+
         // Power Management & Battery
         [JsonPropertyName("idleTimeout")]
         public int IdleTimeout { get; set; } = 10;

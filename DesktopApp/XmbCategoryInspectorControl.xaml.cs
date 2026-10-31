@@ -35,6 +35,7 @@ namespace OpenDualHub
         private bool _gyroInvertY = false;
         private int _gyroDeadzone = 3;
         private float _gyroSmooth = 0.20f;
+        private int _gyroClickMode = 0; // 0 = Cross (A) Left / Square (X) Right, 1 = R2/L2, 2 = R1/L1, 3 = Disabled
 
         // Lightbar State
         private int _activeLedEffect = 2; // Rainbow Wave
@@ -94,6 +95,7 @@ namespace OpenDualHub
             CardGyroEnable.BorderBrush = defaultBorder;
             CardGyroOutput.BorderBrush = defaultBorder;
             CardGyroTriggerMode.BorderBrush = defaultBorder;
+            CardGyroClick.BorderBrush = defaultBorder;
             CardGyroTuning.BorderBrush = defaultBorder;
 
             CardLedEffect.BorderBrush = defaultBorder;
@@ -138,6 +140,7 @@ namespace OpenDualHub
                     PanelGyro.Visibility = Visibility.Visible;
                     if (itemId == "gyro_enable") { CardGyroEnable.BorderBrush = glowBorder; CardGyroEnable.BringIntoView(); }
                     else if (itemId == "gyro_output") { CardGyroOutput.BorderBrush = glowBorder; CardGyroOutput.BringIntoView(); }
+                    else if (itemId == "gyro_click") { CardGyroClick.BorderBrush = glowBorder; CardGyroClick.BringIntoView(); }
                     else if (itemId == "gyro_tuning") { CardGyroTuning.BorderBrush = glowBorder; CardGyroTuning.BringIntoView(); }
                     else if (itemId == "gyro_wizard") { BtnLaunchCalibrator.BringIntoView(); }
                     else { CardGyroEnable.BringIntoView(); }
@@ -279,7 +282,10 @@ namespace OpenDualHub
             // Center grid baseline
             CanvasTrigOscilloscope.Children.Add(new Line
             {
-                X1 = 0, X2 = w, Y1 = h * 0.5, Y2 = h * 0.5,
+                X1 = 0,
+                X2 = w,
+                Y1 = h * 0.5,
+                Y2 = h * 0.5,
                 Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
                 StrokeDashArray = new DoubleCollection { 2, 2 }
             });
@@ -346,7 +352,10 @@ namespace OpenDualHub
             double markerL2X = Math.Clamp(l2Pos * (w * 0.5), 2, w * 0.5 - 2);
             CanvasTrigOscilloscope.Children.Add(new Line
             {
-                X1 = markerL2X, X2 = markerL2X, Y1 = 0, Y2 = h,
+                X1 = markerL2X,
+                X2 = markerL2X,
+                Y1 = 0,
+                Y2 = h,
                 Stroke = Brushes.White,
                 StrokeThickness = 1.5
             });
@@ -354,7 +363,10 @@ namespace OpenDualHub
             double markerR2X = w * 0.5 + Math.Clamp(r2Pos * (w * 0.5), 2, w * 0.5 - 2);
             CanvasTrigOscilloscope.Children.Add(new Line
             {
-                X1 = markerR2X, X2 = markerR2X, Y1 = 0, Y2 = h,
+                X1 = markerR2X,
+                X2 = markerR2X,
+                Y1 = 0,
+                Y2 = h,
                 Stroke = Brushes.White,
                 StrokeThickness = 1.5
             });
@@ -437,7 +449,17 @@ namespace OpenDualHub
 
         private void PushGyroConfig()
         {
-            IpcClient?.SetGyro(_gyroEnabled, _gyroTriggerMode, _gyroOutputMode, _gyroSpace, _gyroSensX, _gyroSensY, _gyroInvertX, _gyroInvertY, _gyroDeadzone, _gyroSmooth);
+            IpcClient?.SetGyro(_gyroEnabled, _gyroTriggerMode, _gyroOutputMode, _gyroSpace, _gyroSensX, _gyroSensY, _gyroInvertX, _gyroInvertY, _gyroDeadzone, _gyroSmooth, _gyroClickMode);
+        }
+
+        private void BtnGyroClick_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string tagStr && int.TryParse(tagStr, out int clickMode))
+            {
+                _gyroClickMode = clickMode;
+                HighlightOptionButton(new[] { BtnGyroClickCrossSquare, BtnGyroClickTriggers, BtnGyroClickBumpers, BtnGyroClickDisabled }, btn);
+                PushGyroConfig();
+            }
         }
 
         private void BtnLaunchCalibrator_Click(object sender, RoutedEventArgs e)
@@ -464,7 +486,8 @@ namespace OpenDualHub
 
             CanvasGyroMotion.Children.Add(new Ellipse
             {
-                Width = 10, Height = 10,
+                Width = 10,
+                Height = 10,
                 Fill = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4)),
                 Stroke = Brushes.White,
                 StrokeThickness = 1.5,

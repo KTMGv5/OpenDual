@@ -10,6 +10,20 @@ GyroEngine::GyroEngine() {
 }
 
 void GyroEngine::Reset() {
+    if (m_holdingLeft) {
+        INPUT input = { 0 };
+        input.type = INPUT_MOUSE;
+        input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+        SendInput(1, &input, sizeof(INPUT));
+        m_holdingLeft = false;
+    }
+    if (m_holdingRight) {
+        INPUT input = { 0 };
+        input.type = INPUT_MOUSE;
+        input.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+        SendInput(1, &input, sizeof(INPUT));
+        m_holdingRight = false;
+    }
     m_accumX = 0.0f;
     m_accumY = 0.0f;
     m_filterX = 0.0f;
@@ -80,6 +94,20 @@ bool GyroEngine::Process(ControllerState& state, const ControllerConfig& config)
     }
 
     if (!active) {
+        if (m_holdingLeft) {
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+            SendInput(1, &input, sizeof(INPUT));
+            m_holdingLeft = false;
+        }
+        if (m_holdingRight) {
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+            SendInput(1, &input, sizeof(INPUT));
+            m_holdingRight = false;
+        }
         m_wasAiming = false;
         m_filterX = 0.0f;
         m_filterY = 0.0f;
@@ -218,6 +246,57 @@ bool GyroEngine::Process(ControllerState& state, const ControllerConfig& config)
 
     if (moveX != 0 || moveY != 0) {
         SendMouseMove(moveX, moveY);
+    }
+
+    // Mouse Button Click Emulation when in Mouse Mode
+    if (config.gyroOutputMode == 0) {
+        bool leftWanted = false;
+        bool rightWanted = false;
+
+        switch (config.gyroClickMode) {
+        case 0: // Cross (A) = Left Click, Square (X) = Right Click
+            leftWanted = state.cross;
+            rightWanted = state.square;
+            break;
+        case 1: // R2 = Left Click, L2 = Right Click
+            leftWanted = (state.r2 > 0.40f || state.r2Btn);
+            rightWanted = (state.l2 > 0.40f || state.l2Btn);
+            break;
+        case 2: // R1 = Left Click, L1 = Right Click
+            leftWanted = state.r1;
+            rightWanted = state.l1;
+            break;
+        default:
+            break;
+        }
+
+        if (leftWanted && !m_holdingLeft) {
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+            SendInput(1, &input, sizeof(INPUT));
+            m_holdingLeft = true;
+        } else if (!leftWanted && m_holdingLeft) {
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+            SendInput(1, &input, sizeof(INPUT));
+            m_holdingLeft = false;
+        }
+
+        if (rightWanted && !m_holdingRight) {
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
+            SendInput(1, &input, sizeof(INPUT));
+            m_holdingRight = true;
+        } else if (!rightWanted && m_holdingRight) {
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+            SendInput(1, &input, sizeof(INPUT));
+            m_holdingRight = false;
+        }
     }
 
     return true;

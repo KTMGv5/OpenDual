@@ -94,6 +94,7 @@ struct ControllerConfig {
     bool gyroInvertY = false;
     int gyroDeadzone = 3;               // Sensor deadzone in deg/s (default 3 deg/s)
     float gyroSmooth = 0.20f;           // Smoothing factor (0.0 to 0.85)
+    int gyroClickMode = 0;              // 0 = Cross (A) Left / Square (X) Right, 1 = R2 Left / L2 Right, 2 = R1 Left / L1 Right, 3 = Disabled
 
     // Power Management & Battery
     int idleTimeoutMinutes = 10;        // 0 = Never, 5, 10, 15, 30 min

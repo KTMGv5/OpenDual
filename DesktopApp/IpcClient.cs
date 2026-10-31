@@ -175,7 +175,7 @@ namespace OpenDualHub
             SendCommand(json);
         }
 
-        public void SetGyro(bool enabled, int mode, int outputMode, int space, float sensX, float sensY, bool invertX, bool invertY, int deadzone, float smooth)
+        public void SetGyro(bool enabled, int mode, int outputMode, int space, float sensX, float sensY, bool invertX, bool invertY, int deadzone, float smooth, int clickMode = 0)
         {
             var inv = System.Globalization.CultureInfo.InvariantCulture;
             var json = $"{{\"gyroEnabled\":{(enabled ? "true" : "false")}," +
@@ -187,7 +187,8 @@ namespace OpenDualHub
                        $"\"gyroInvertX\":{(invertX ? "true" : "false")}," +
                        $"\"gyroInvertY\":{(invertY ? "true" : "false")}," +
                        $"\"gyroDeadzone\":{deadzone}," +
-                       $"\"gyroSmooth\":{smooth.ToString(inv)}}}";
+                       $"\"gyroSmooth\":{smooth.ToString(inv)}," +
+                       $"\"gyroClickMode\":{clickMode}}}";
             SendCommand(json);
         }
 
@@ -205,7 +206,7 @@ namespace OpenDualHub
                        $"\"ltMode\":{cfg.LtMode},\"rtMode\":{cfg.RtMode}," +
                        $"\"audioHaptics\":{(cfg.Haptic ? "true" : "false")},\"hapticIntensity\":{cfg.HapticIntensity.ToString(inv)},\"hapticCutoff\":{cfg.HapticCutoff},\"hapticStereo\":{(cfg.HapticStereo ? "true" : "false")}," +
                        $"\"audioTriggerKick\":{(cfg.AudioTriggerKick ? "true" : "false")},\"audioTriggerThreshold\":{cfg.AudioTriggerThreshold.ToString(inv)},\"speakerEnabled\":{(cfg.SpeakerEnabled ? "true" : "false")}," +
-                       $"\"gyroEnabled\":{(cfg.Gyro ? "true" : "false")},\"gyroMode\":{cfg.GyroMode},\"gyroOutputMode\":{cfg.GyroOutputMode},\"gyroSpace\":{cfg.GyroSpace},\"gyroSensX\":{cfg.GyroSensX.ToString(inv)},\"gyroSensY\":{cfg.GyroSensY.ToString(inv)},\"gyroInvertX\":{(cfg.GyroInvertX ? "true" : "false")},\"gyroInvertY\":{(cfg.GyroInvertY ? "true" : "false")},\"gyroDeadzone\":{cfg.GyroDeadzone},\"gyroSmooth\":{cfg.GyroSmooth.ToString(inv)}," +
+                       $"\"gyroEnabled\":{(cfg.Gyro ? "true" : "false")},\"gyroMode\":{cfg.GyroMode},\"gyroOutputMode\":{cfg.GyroOutputMode},\"gyroSpace\":{cfg.GyroSpace},\"gyroSensX\":{cfg.GyroSensX.ToString(inv)},\"gyroSensY\":{cfg.GyroSensY.ToString(inv)},\"gyroInvertX\":{(cfg.GyroInvertX ? "true" : "false")},\"gyroInvertY\":{(cfg.GyroInvertY ? "true" : "false")},\"gyroDeadzone\":{cfg.GyroDeadzone},\"gyroSmooth\":{cfg.GyroSmooth.ToString(inv)},\"gyroClickMode\":{cfg.GyroClickMode}," +
                        $"\"idleTimeout\":{cfg.IdleTimeout},\"lowBatteryWarning\":{(cfg.LowBatWarn ? "true" : "false")}," +
                        $"\"zeroShiftLX\":{cfg.ZeroShiftLX},\"zeroShiftLY\":{cfg.ZeroShiftLY},\"zeroShiftRX\":{cfg.ZeroShiftRX},\"zeroShiftRY\":{cfg.ZeroShiftRY}}}";
             SendCommand(json);
