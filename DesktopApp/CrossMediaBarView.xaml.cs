@@ -41,6 +41,12 @@ namespace OpenDualHub
             CategoryInspector.IpcClient = ipc;
         }
 
+        public void SetMainWindow(MainWindow main)
+        {
+            CategoryInspector.MainWindow = main;
+            ControllerInspector.MainWindow = main;
+        }
+
         #region Rendering XMB Elements
         private void RenderCategories()
         {

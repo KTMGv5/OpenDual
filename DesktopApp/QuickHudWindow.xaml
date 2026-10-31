@@ -26,6 +26,34 @@
         <SolidColorBrush x:Key="AccentGreen" Color="#00E676"/>
         <SolidColorBrush x:Key="AccentAmber" Color="#FFB300"/>
         <SolidColorBrush x:Key="AccentBlue" Color="#0070D1"/>
+
+        <!-- Sleek Interactive Button Style inside HUD Tiles -->
+        <Style x:Key="HudMiniBtn" TargetType="Button">
+            <Setter Property="Background" Value="#251C2B3F"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource HudBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="8.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="5,2"/>
+            <Setter Property="Margin" Value="0,0,3,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="{StaticResource AccentSignature}"/>
+                                <Setter Property="Foreground" Value="#080B13"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="24">
@@ -55,17 +83,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Left: PS Logo & Controller -->
+                    <!-- Left: Controller Status Badge -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Width="26" Height="26" Background="#1E00F5D4" BorderBrush="#6600F5D4" BorderThickness="1" CornerRadius="8" Margin="0,0,10,0">
-                            <TextBlock Text="PS" FontWeight="Bold" FontSize="13" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="🎮" FontWeight="Bold" FontSize="13" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock x:Name="TxtControllerName" Text="DualSense Wireless" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
                         <TextBlock Text="  •  " Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
                         <TextBlock x:Name="TxtConnection" Text="1000Hz (1.0ms) • USB" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" VerticalAlignment="Center" MinWidth="180"/>
                     </StackPanel>
 
-                    <!-- Center: Clock (Centered across entire HUD width, locked dead center regardless of left/right text) -->
+                    <!-- Center: Clock -->
                     <TextBlock x:Name="TxtClock" Grid.Column="0" Grid.ColumnSpan="3" Text="8:45 PM" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
 
                     <!-- Right: Battery & Stereo Tactile Mini-Meters -->
@@ -96,64 +124,93 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- TILE 0: ACTIVE GAME & PROFILE -->
-                    <Border x:Name="Tile0" Tag="0" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" Grid.Column="0" Background="{StaticResource TileSelectedBg}" BorderBrush="{StaticResource TileSelectedBorder}" BorderThickness="2" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="92">
+                    <Border x:Name="Tile0" Tag="0" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" PreviewMouseWheel="Tile_PreviewMouseWheel" Grid.Column="0" Background="{StaticResource TileSelectedBg}" BorderBrush="{StaticResource TileSelectedBorder}" BorderThickness="2" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="112">
                         <StackPanel VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🎮 PROFILE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                             </StackPanel>
-                            <TextBlock x:Name="TxtTileGameName" Text="Minecraft.exe" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="TxtTileProfileName" Text="Competitive FPS" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="TxtTileTriggersMode" Text="L2: Hair • R2: Pulse" FontSize="9.5" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileGameName" Text="Desktop Standard" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileProfileName" Text="Standard Balanced" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileTriggersMode" Text="L2: Snap • R2: SDK" FontSize="9.5" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                            <!-- Action Controls -->
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <Button Content="◀ Prev" Style="{StaticResource HudMiniBtn}" Click="BtnProfilePrev_Click"/>
+                                <Button Content="Next ▶" Style="{StaticResource HudMiniBtn}" Click="BtnProfileNext_Click"/>
+                                <Button Content="Open Hub" Style="{StaticResource HudMiniBtn}" Background="#332979FF" Click="BtnOpenHub_Click"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- TILE 1: MASTER AUDIO & MIC -->
-                    <Border x:Name="Tile1" Tag="1" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" Grid.Column="1" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="92">
+                    <Border x:Name="Tile1" Tag="1" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" PreviewMouseWheel="Tile_PreviewMouseWheel" Grid.Column="1" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="112">
                         <StackPanel VerticalAlignment="Center">
                             <Grid>
                                 <TextBlock Text="🔉 MASTER AUDIO" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                                 <TextBlock x:Name="TxtTileVolumePercent" Text="75%" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right"/>
                             </Grid>
-                            <ProgressBar x:Name="BarTileVolume" Height="6" Minimum="0" Maximum="100" Value="75" Background="#1A2333" Foreground="{StaticResource AccentSignature}" BorderThickness="0" Margin="0,6,0,4"/>
-                            <TextBlock x:Name="TxtTileAudioDevice" Text="DualSense Speakers" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="TxtTileMicBadge" Text="🎙️ MIC: ACTIVE" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" Margin="0,3,0,0"/>
+                            <ProgressBar x:Name="BarTileVolume" Height="6" Minimum="0" Maximum="100" Value="75" Background="#1A2333" Foreground="{StaticResource AccentSignature}" BorderThickness="0" Margin="0,4,0,3"/>
+                            <TextBlock x:Name="TxtTileAudioDevice" Text="DualSense Speakers" FontSize="9.5" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileMicBadge" Text="🎙️ MIC: ACTIVE" FontSize="9" FontWeight="SemiBold" Foreground="{StaticResource AccentGreen}" Margin="0,2,0,0"/>
+                            <!-- Action Controls -->
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Button Content="Vol -" Style="{StaticResource HudMiniBtn}" Click="BtnVolDown_Click"/>
+                                <Button Content="Vol +" Style="{StaticResource HudMiniBtn}" Click="BtnVolUp_Click"/>
+                                <Button x:Name="BtnMuteToggle" Content="Mute" Style="{StaticResource HudMiniBtn}" Click="BtnMuteToggle_Click"/>
+                                <Button Content="Mic" Style="{StaticResource HudMiniBtn}" Background="#33FFB300" Click="BtnMicToggle_Click"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- TILE 2: 6-AXIS GYRO AIMING -->
-                    <Border x:Name="Tile2" Tag="2" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" Grid.Column="2" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="92">
+                    <Border x:Name="Tile2" Tag="2" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" PreviewMouseWheel="Tile_PreviewMouseWheel" Grid.Column="2" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="112">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="🎯 GYRO AIMING" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                             <TextBlock x:Name="TxtTileGyroState" Text="ADS TRIGGER (L2)" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="TxtTileGyroSens" Text="Sens: 1.0x (Yaw/Pitch)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
-                            <TextBlock x:Name="TxtTileGyroStatus" Text="Sub-Pixel Mouse (Active)" FontSize="9.5" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileGyroSens" Text="Sens: 1.2x (Yaw/Pitch)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="TxtTileGyroStatus" Text="Sub-Pixel Mouse (Active)" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                            <!-- Action Controls -->
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Button Content="Sens -" Style="{StaticResource HudMiniBtn}" Click="BtnGyroSensDown_Click"/>
+                                <Button Content="Sens +" Style="{StaticResource HudMiniBtn}" Click="BtnGyroSensUp_Click"/>
+                                <Button x:Name="BtnGyroToggle" Content="Toggle" Style="{StaticResource HudMiniBtn}" Background="#3300F5D4" Click="BtnGyroToggle_Click"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- TILE 3: PC HARDWARE SPECS -->
-                    <Border x:Name="Tile3" Tag="3" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" Grid.Column="3" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="92">
+                    <Border x:Name="Tile3" Tag="3" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" Grid.Column="3" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="112">
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="💻 PC HARDWARE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                             <TextBlock x:Name="TxtTileCpuUsage" Text="CPU: 14%" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,3,0,0"/>
                             <TextBlock x:Name="TxtTileRamUsage" Text="RAM: 42% (13.4 GB)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="TxtTileRamTotal" Text="Total: 31.9 GB DDR" FontSize="9.5" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0"/>
+                            <TextBlock x:Name="TxtTileRamTotal" Text="Total: 32.0 GB DDR" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                            <!-- Action Controls -->
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Button Content="Task Mgr" Style="{StaticResource HudMiniBtn}" Click="BtnTaskMgr_Click"/>
+                                <Button Content="Refresh" Style="{StaticResource HudMiniBtn}" Click="BtnRefreshHardware_Click"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!-- TILE 4: CONTROLLER & TOUCHPAD -->
-                    <Border x:Name="Tile4" Tag="4" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" Grid.Column="4" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="92">
+                    <Border x:Name="Tile4" Tag="4" Cursor="Hand" MouseLeftButtonDown="Tile_MouseLeftButtonDown" PreviewMouseWheel="Tile_PreviewMouseWheel" Grid.Column="4" Background="{StaticResource TileNormalBg}" BorderBrush="{StaticResource TileNormalBorder}" BorderThickness="1.5" CornerRadius="12" Margin="4,0" Padding="12,10" MinHeight="112">
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="⚡ TOUCHPAD &amp; HAPTICS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                            <TextBlock Text="⚡ TOUCHPAD &amp; GESTURES" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                             <TextBlock x:Name="TxtTileTouchpadSens" Text="Touchpad: 1.2x" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,3,0,0"/>
                             <TextBlock x:Name="TxtTileTouchpadMode" Text="Precision Notch: ON" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
-                            <TextBlock x:Name="TxtTileHapticsSummary" Text="Haptics: 100% (Punchy)" FontSize="9.5" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtTileHapticsSummary" Text="Haptics: 100% (Punchy)" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                            <!-- Action Controls -->
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Button x:Name="BtnTouchMouseToggle" Content="Mouse" Style="{StaticResource HudMiniBtn}" Click="BtnTouchMouseToggle_Click"/>
+                                <Button x:Name="BtnGestureToggle" Content="Gestures" Style="{StaticResource HudMiniBtn}" Background="#3300E676" Click="BtnGestureToggle_Click"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
                 </Grid>
 
                 <!-- ROW 2: CONTROLLER NAVIGATION GUIDE -->
                 <Grid Grid.Row="2" Margin="0,2,0,2">
-                    <TextBlock x:Name="TxtNavGuide" Text="D-Pad ◄► Select Tile   •   ▲▼ Cycle Profile   •   ✕ Apply Profile   •   □ Mic Mute   •   R3 Scale   •   ○ / PS Close" FontSize="10.5" FontWeight="SemiBold" Foreground="#8898B0" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtNavGuide" Text="D-Pad ◄► Select Tile   •   ▲▼ Adjust Value   •   ✕ Action   •   △ Open Suite Hub   •   □ Mic Mute   •   R3 Scale   •   ○ / PS Close" FontSize="10.5" FontWeight="SemiBold" Foreground="#8898B0" HorizontalAlignment="Center"/>
                 </Grid>
             </Grid>
         </Border>

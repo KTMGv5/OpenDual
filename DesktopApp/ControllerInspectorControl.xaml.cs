@@ -9,6 +9,8 @@ namespace OpenDualHub
 {
     public partial class ControllerInspectorControl : UserControl
     {
+        public MainWindow? MainWindow { get; set; }
+
         public ControllerInspectorControl()
         {
             InitializeComponent();
@@ -123,15 +125,22 @@ namespace OpenDualHub
 
         private void BtnLaunchOverclock_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (MainWindow != null)
             {
-                var w = new OverclockAssistantWindow();
-                w.Owner = Window.GetWindow(this);
-                w.Show();
+                MainWindow.OpenOverclockAssistant();
             }
-            catch
+            else
             {
-                new OverclockAssistantWindow().Show();
+                try
+                {
+                    var w = new OverclockAssistantWindow();
+                    w.Owner = Window.GetWindow(this);
+                    w.Show();
+                }
+                catch
+                {
+                    new OverclockAssistantWindow().Show();
+                }
             }
         }
     }

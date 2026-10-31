@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
@@ -43,6 +44,7 @@ namespace OpenDualHub
         private bool _lastCross = false;
         private bool _lastCircle = false;
         private bool _lastSquare = false;
+        private bool _lastTriangle = false;
         private bool _lastR3 = false;
         private DateTime _lastDpadActionTime = DateTime.MinValue;
         private bool _dpadInRepeatMode = false;
@@ -53,9 +55,11 @@ namespace OpenDualHub
         public Action<int>? OnCycleProfile { get; set; }
         public Action<float>? OnAdjustTouchpadSens { get; set; }
         public Action? OnToggleTouchpad { get; set; }
+        public Action? OnToggleGestures { get; set; }
         public Action<float>? OnAdjustGyroSens { get; set; }
         public Action? OnToggleGyro { get; set; }
         public Action? OnToggleMic { get; set; }
+        public Action? OnOpenHub { get; set; }
         public Action<double>? OnHudScaleChanged { get; set; }
         public Func<string>? GetActiveGameName { get; set; }
         public Func<string>? GetActiveProfileName { get; set; }
@@ -273,6 +277,13 @@ namespace OpenDualHub
                 CycleHudScale();
             }
 
+            // Leading edge for Triangle (△) -> Open Main Suite Hub Window
+            if (t.Triangle && !_lastTriangle)
+            {
+                OnOpenHub?.Invoke();
+                HideHud();
+            }
+
             // Leading edge for Circle (○) -> Dismiss HUD
             if (t.Circle && !_lastCircle)
             {
@@ -283,6 +294,7 @@ namespace OpenDualHub
             _lastCross = t.Cross;
             _lastCircle = t.Circle;
             _lastSquare = t.Square;
+            _lastTriangle = t.Triangle;
             _lastR3 = t.R3;
         }
 
@@ -339,6 +351,104 @@ namespace OpenDualHub
                 SelectTile(idx);
             }
         }
+
+        private void Tile_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is FrameworkElement elem && elem.Tag is string tagStr && int.TryParse(tagStr, out int idx))
+            {
+                SelectTile(idx);
+                int direction = e.Delta > 0 ? 1 : -1;
+                AdjustSelectedTile(direction);
+                e.Handled = true;
+            }
+        }
+
+        #region HUD Interactive Tile Micro-Action Handlers
+        private void BtnProfilePrev_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(0);
+            OnCycleProfile?.Invoke(-1);
+        }
+
+        private void BtnProfileNext_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(0);
+            OnCycleProfile?.Invoke(1);
+        }
+
+        private void BtnOpenHub_Click(object sender, RoutedEventArgs e)
+        {
+            OnOpenHub?.Invoke();
+            HideHud();
+        }
+
+        private void BtnVolDown_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(1);
+            SystemHardwareMonitor.AdjustMasterVolume(-5);
+            UpdateAudioTileDisplay();
+        }
+
+        private void BtnVolUp_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(1);
+            SystemHardwareMonitor.AdjustMasterVolume(5);
+            UpdateAudioTileDisplay();
+        }
+
+        private void BtnMuteToggle_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(1);
+            SystemHardwareMonitor.ToggleMasterMute();
+            UpdateAudioTileDisplay();
+        }
+
+        private void BtnMicToggle_Click(object sender, RoutedEventArgs e)
+        {
+            OnToggleMic?.Invoke();
+        }
+
+        private void BtnGyroSensDown_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(2);
+            OnAdjustGyroSens?.Invoke(-0.1f);
+        }
+
+        private void BtnGyroSensUp_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(2);
+            OnAdjustGyroSens?.Invoke(0.1f);
+        }
+
+        private void BtnGyroToggle_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(2);
+            OnToggleGyro?.Invoke();
+        }
+
+        private void BtnTaskMgr_Click(object sender, RoutedEventArgs e)
+        {
+            try { Process.Start(new ProcessStartInfo { FileName = "taskmgr.exe", UseShellExecute = true }); } catch { }
+        }
+
+        private void BtnRefreshHardware_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(3);
+            UpdateHardwareTileDisplay();
+        }
+
+        private void BtnTouchMouseToggle_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(4);
+            OnToggleTouchpad?.Invoke();
+        }
+
+        private void BtnGestureToggle_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTile(4);
+            OnToggleGestures?.Invoke();
+        }
+        #endregion
 
         private void UpdateAudioTileDisplay()
         {
@@ -577,6 +687,30 @@ namespace OpenDualHub
                 }
             };
             HudRoot.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+        }
+
+        public void CaptureToPng(string outputPath)
+        {
+            UpdateLayout();
+            int width = (int)ActualWidth;
+            int height = (int)ActualHeight;
+            if (width <= 0) width = 1120;
+            if (height <= 0) height = 240;
+
+            var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+            rtb.Render(this);
+
+            var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb));
+
+            string? dir = System.IO.Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
+            {
+                System.IO.Directory.CreateDirectory(dir);
+            }
+
+            using var stream = System.IO.File.Create(outputPath);
+            encoder.Save(stream);
         }
     }
 }
