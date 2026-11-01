@@ -54,7 +54,7 @@ namespace OpenDualHub
             catSettings.Items.Add(new XmbItem { Id = "set_driver", Title = "Direct HID Driver Service", Subtitle = "Win32 overlapped 1000Hz kernel service", Icon = "⚡", ValueBadge = "1000Hz Active" });
             catSettings.Items.Add(new XmbItem { Id = "set_autostart", Title = "Launch on Windows Startup", Subtitle = "Start minimized in system tray on boot", Icon = "🚀", ValueBadge = "Enabled" });
             catSettings.Items.Add(new XmbItem { Id = "set_idle", Title = "Battery Idle Sleep Timer", Subtitle = "Auto turn off controller when idle", Icon = "💤", ValueBadge = "10 Mins" });
-            catSettings.Items.Add(new XmbItem { Id = "set_update", Title = "OpenDual Software Update", Subtitle = "Check for latest driver and hub releases", Icon = "🔄", ValueBadge = "v1.7.0 Latest" });
+            catSettings.Items.Add(new XmbItem { Id = "set_update", Title = "OpenDual Software Update", Subtitle = "Check for latest driver and hub releases", Icon = "🔄", ValueBadge = "v1.8.0 Latest" });
             Categories.Add(catSettings);
 
             // 2. CONTROLLER (DEFAULT)
@@ -65,6 +65,7 @@ namespace OpenDualHub
             catController.Items.Add(new XmbItem { Id = "ctrl_battery_sentinel", Title = "Battery Longevity Sentinel", Subtitle = "80% Esports smart charge limit & health", Icon = "🔋", ValueBadge = "98% Pro" });
             catController.Items.Add(new XmbItem { Id = "ctrl_hall_stabilizer", Title = "Virtual Hall-Effect Stabilizer", Subtitle = "Anti-jitter thumbstick noise suppressor", Icon = "🧠", ValueBadge = "Active" });
             catController.Items.Add(new XmbItem { Id = "ctrl_deep_suite", Title = "Pro Response & Sensor Tuning", Subtitle = "Rapid trigger, auto-sprint, recoil control & thermal guard", Icon = "⚡", ValueBadge = "Pro Suite" });
+            catController.Items.Add(new XmbItem { Id = "ctrl_pro_studio", Title = "Stick Curves, Emulation & Macros", Subtitle = "Bezier curves, DS4/X360 mode, Flick-Stick, HidHide & turbo", Icon = "🎛️", ValueBadge = "Studio" });
             Categories.Add(catController);
 
             // 3. LIGHTBAR

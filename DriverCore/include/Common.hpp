@@ -37,7 +37,8 @@ enum class RgbEffect : uint8_t {
     Breathing = 1,
     Rainbow = 2,
     BatteryGauge = 3,
-    AudioReactive = 4
+    AudioReactive = 4,
+    ScreenAmbience = 5
 };
 
 struct TriggerConfig {
@@ -118,8 +119,25 @@ struct ControllerConfig {
     bool recoilAssist = false;          // 9. Smart Adaptive Vertical Recoil Counter-Tension
     bool thermalGuard = false;          // 10. Worm-Gear Motor Thermal Protection & Anti-Stall Guard
 
-    // Output Mode
-    bool emulateXbox360 = true; // ViGEmBus XInput emulation
+    // Output Mode & v1.8.0 Pro Features
+    bool emulateXbox360 = true;         // ViGEmBus XInput emulation
+    int virtualPadMode = 0;             // 0 = Xbox 360 (XInput), 1 = DualShock 4 (Native DS4), 2 = Disabled
+    int activeControllerSlot = 0;       // 0..3 (Controller 1..4)
+    int leftStickCurve = 0;             // 0 = Linear, 1 = Precision Sniper, 2 = Aggressive Snap, 3 = Dynamic S-Curve
+    int rightStickCurve = 0;            // 0 = Linear, 1 = Precision Sniper, 2 = Aggressive Snap, 3 = Dynamic S-Curve
+    float antiDeadzoneL = 0.0f;         // 0.0 to 0.25
+    float antiDeadzoneR = 0.0f;         // 0.0 to 0.25
+    int axialDeadzoneShape = 0;         // 0 = Circular Radial, 1 = Axial Cross
+    bool flickStickEnabled = false;     // 360-degree Flick-Stick camera engine on Right Stick
+    float flickStickSens = 1.0f;        // Flick-Stick 360 turn multiplier
+    bool edgeShiftLayer = false;        // Hold FnL / Back Paddle Left for 50% Sniper Precision Shift
+    int l2ActuationMin = 0;             // 0..240
+    int l2ActuationMax = 255;           // 15..255
+    int r2ActuationMin = 0;             // 0..240
+    int r2ActuationMax = 255;           // 15..255
+    bool rapidFireMacro = false;        // Turbo Rapid-Fire on R2 / Cross when held
+    int rapidFireHz = 14;               // Turbo pulses per second (5..25 Hz)
+    bool forcePowerOff = false;         // Instant sleep / Bluetooth disconnect trigger
 };
 
 struct TouchPoint {
@@ -198,6 +216,11 @@ struct ControllerState {
     // Deep Hardware Telemetry Metrics
     float motorTempC = 26.4f;
     float impactGForce = 1.00f;
+    int connectedControllers = 1;
+    int activeSlot = 0;
+    std::string firmwareVersion = "01.04.00.08";
+    std::string hardwareVersion = "BDM-030 (Rev 3)";
+    std::string btMacAddress = "AC:89:95:4E:D2:11";
 
     // Active Audio endpoints
     std::string renderAudioDev;

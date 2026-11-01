@@ -344,7 +344,7 @@ namespace OpenDualHub
             string itemId = item?.Id ?? "";
 
             // 1. Pro Response & Sensor Tuning / Novel Features
-            if (itemId == "ctrl_battery_sentinel" || itemId == "ctrl_hall_stabilizer" || itemId == "ctrl_deep_suite" || itemId == "aud_spatial_radar")
+            if (itemId == "ctrl_battery_sentinel" || itemId == "ctrl_hall_stabilizer" || itemId == "ctrl_deep_suite" || itemId == "ctrl_pro_studio" || itemId == "aud_spatial_radar")
             {
                 NovelControl.FocusItem(itemId);
                 InspectorContentHost.Content = NovelControl;
@@ -409,7 +409,7 @@ namespace OpenDualHub
             {
                 InspectorContentHost.Content = LabControl;
             }
-            else if (item.Id == "ctrl_battery_sentinel" || item.Id == "ctrl_hall_stabilizer" || item.Id == "ctrl_deep_suite" || item.Id == "aud_spatial_radar")
+            else if (item.Id == "ctrl_battery_sentinel" || item.Id == "ctrl_hall_stabilizer" || item.Id == "ctrl_deep_suite" || item.Id == "ctrl_pro_studio" || item.Id == "aud_spatial_radar")
             {
                 InspectorContentHost.Content = NovelControl;
             }
@@ -462,6 +462,34 @@ namespace OpenDualHub
                 TxtFooterStatus.Text = "Controller Disconnected";
                 TxtFooterConnection.Text = "Waiting for HID Report...";
             }
+        }
+
+        private void BtnSlot_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && int.TryParse(btn.Tag?.ToString(), out int slot))
+            {
+                var btns = new[] { BtnSlot1, BtnSlot2, BtnSlot3, BtnSlot4 };
+                foreach (var b in btns)
+                {
+                    b.Background = Brushes.Transparent;
+                    b.Foreground = s_itemSubUnselFg;
+                }
+                btn.Background = s_catFrameSelBorder;
+                btn.Foreground = new SolidColorBrush(Color.FromRgb(0x08, 0x0B, 0x13));
+
+                if (MainWindow != null)
+                {
+                    MainWindow.CurrentConfig.ActiveControllerSlot = slot;
+                    MainWindow.CurrentConfig.PlayerLeds = slot switch { 0 => 4, 1 => 10, 2 => 21, _ => 27 };
+                    CategoryInspector.IpcClient?.SendConfig(MainWindow.CurrentConfig);
+                    MainWindow.PersistLiveHardwareConfig();
+                }
+            }
+        }
+
+        private void BtnMiniWidget_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow?.EnterMiniWidgetMode();
         }
         #endregion
     }

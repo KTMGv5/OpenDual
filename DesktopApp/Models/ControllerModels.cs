@@ -179,6 +179,55 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("thermalGuard")]
         public bool ThermalGuard { get; set; } = false;
+
+        // v1.8.0 Pro Suite Extensions
+        [JsonPropertyName("virtualPadMode")]
+        public int VirtualPadMode { get; set; } = 0; // 0=Xbox360, 1=DualShock4, 2=Disabled
+
+        [JsonPropertyName("activeControllerSlot")]
+        public int ActiveControllerSlot { get; set; } = 0; // 0..3
+
+        [JsonPropertyName("leftStickCurve")]
+        public int LeftStickCurve { get; set; } = 0; // 0=Linear, 1=Sniper, 2=Aggressive, 3=SCurve
+
+        [JsonPropertyName("rightStickCurve")]
+        public int RightStickCurve { get; set; } = 0;
+
+        [JsonPropertyName("antiDeadzoneL")]
+        public float AntiDeadzoneL { get; set; } = 0.0f;
+
+        [JsonPropertyName("antiDeadzoneR")]
+        public float AntiDeadzoneR { get; set; } = 0.0f;
+
+        [JsonPropertyName("axialDeadzoneShape")]
+        public int AxialDeadzoneShape { get; set; } = 0; // 0=Circle, 1=AxialCross
+
+        [JsonPropertyName("flickStickEnabled")]
+        public bool FlickStickEnabled { get; set; } = false;
+
+        [JsonPropertyName("flickStickSens")]
+        public float FlickStickSens { get; set; } = 1.0f;
+
+        [JsonPropertyName("edgeShiftLayer")]
+        public bool EdgeShiftLayer { get; set; } = false;
+
+        [JsonPropertyName("l2ActuationMin")]
+        public int L2ActuationMin { get; set; } = 0;
+
+        [JsonPropertyName("l2ActuationMax")]
+        public int L2ActuationMax { get; set; } = 255;
+
+        [JsonPropertyName("r2ActuationMin")]
+        public int R2ActuationMin { get; set; } = 0;
+
+        [JsonPropertyName("r2ActuationMax")]
+        public int R2ActuationMax { get; set; } = 255;
+
+        [JsonPropertyName("rapidFireMacro")]
+        public bool RapidFireMacro { get; set; } = false;
+
+        [JsonPropertyName("rapidFireHz")]
+        public int RapidFireHz { get; set; } = 14;
     }
 
     public class ControllerTelemetry
@@ -344,6 +393,15 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("impactG")]
         public float ImpactG { get; set; } = 1.0f;
+
+        [JsonPropertyName("fwVer")]
+        public string FirmwareVersion { get; set; } = "01.04.00.08";
+
+        [JsonPropertyName("hwVer")]
+        public string HardwareVersion { get; set; } = "BDM-030 (Rev 3)";
+
+        [JsonPropertyName("btMac")]
+        public string BtMacAddress { get; set; } = "AC:89:95:4E:D2:11";
 
         [JsonPropertyName("renderDev")]
         public string? RenderDev { get; set; }

@@ -213,8 +213,21 @@ namespace OpenDualHub
                        $"\"hapticDetent\":{(cfg.HapticDetent ? "true" : "false")},\"gShockGuard\":{(cfg.GShockGuard ? "true" : "false")}," +
                        $"\"playerLedTelemetry\":{(cfg.PlayerLedTelemetry ? "true" : "false")},\"micBeamforming\":{(cfg.MicBeamforming ? "true" : "false")}," +
                        $"\"recoilAssist\":{(cfg.RecoilAssist ? "true" : "false")},\"thermalGuard\":{(cfg.ThermalGuard ? "true" : "false")}," +
+                       $"\"virtualPadMode\":{cfg.VirtualPadMode},\"activeControllerSlot\":{cfg.ActiveControllerSlot}," +
+                       $"\"leftStickCurve\":{cfg.LeftStickCurve},\"rightStickCurve\":{cfg.RightStickCurve}," +
+                       $"\"antiDeadzoneL\":{cfg.AntiDeadzoneL.ToString(inv)},\"antiDeadzoneR\":{cfg.AntiDeadzoneR.ToString(inv)},\"axialDeadzoneShape\":{cfg.AxialDeadzoneShape}," +
+                       $"\"flickStickEnabled\":{(cfg.FlickStickEnabled ? "true" : "false")},\"flickStickSens\":{cfg.FlickStickSens.ToString(inv)}," +
+                       $"\"edgeShiftLayer\":{(cfg.EdgeShiftLayer ? "true" : "false")}," +
+                       $"\"l2ActuationMin\":{cfg.L2ActuationMin},\"l2ActuationMax\":{cfg.L2ActuationMax}," +
+                       $"\"r2ActuationMin\":{cfg.R2ActuationMin},\"r2ActuationMax\":{cfg.R2ActuationMax}," +
+                       $"\"rapidFireMacro\":{(cfg.RapidFireMacro ? "true" : "false")},\"rapidFireHz\":{cfg.RapidFireHz}," +
                        $"\"zeroShiftLX\":{cfg.ZeroShiftLX},\"zeroShiftLY\":{cfg.ZeroShiftLY},\"zeroShiftRX\":{cfg.ZeroShiftRX},\"zeroShiftRY\":{cfg.ZeroShiftRY}}}";
             SendCommand(json);
+        }
+
+        public void PowerOffControllerNow()
+        {
+            SendCommand("{\"forcePowerOff\":true}");
         }
 
         public void SetDeepFeature(string featureKey, bool enabled)

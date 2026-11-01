@@ -254,6 +254,7 @@
                                     <Button x:Name="BtnLedEff2" Content="Rainbow Wave" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="2"/>
                                     <Button x:Name="BtnLedEff3" Content="Battery Gauge" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="3"/>
                                     <Button x:Name="BtnLedEff4" Content="Audio Reactive" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="4"/>
+                                    <Button x:Name="BtnLedEff5" Content="🖥️ Screen Ambience" Style="{StaticResource XmbOptionBtn}" Margin="0,0,6,6" Click="BtnLedEffect_Click" Tag="5"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
@@ -363,6 +364,20 @@
                             </Grid>
                         </Border>
 
+                        <!-- 4-Zone Haptic Macro Pad & On-Screen Radial Wheel -->
+                        <Border x:Name="CardTouchZones" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="4-ZONE HAPTIC MACRO PAD &amp; RADIAL COMMAND WHEEL" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                                    <TextBlock Text="Split touchpad into 4 physical click corners (Discord Mute/Deafen, Clips, Radial Menu)" FontSize="10" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button x:Name="BtnOpenRadialMenu" Content="🎡 Radial Wheel" Style="{StaticResource XmbOptionBtn}" Margin="0,0,8,0" Click="BtnOpenRadialMenu_Click"/>
+                                    <ToggleButton x:Name="ToggleZoneMacroPad" Content="4-Zone Pad: ON" Style="{StaticResource XmbToggle}" IsChecked="True" Click="ToggleZoneMacroPad_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
                         <!-- Custom Gesture Shortcuts Engine -->
                         <Border x:Name="CardTouchGestures" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1.5" CornerRadius="8" Padding="12">
                             <StackPanel>
@@ -402,6 +417,10 @@
                                                 <ComboBoxItem Content="Swipe Right" Tag="SwipeRight"/>
                                                 <ComboBoxItem Content="Swipe Up" Tag="SwipeUp"/>
                                                 <ComboBoxItem Content="Swipe Down" Tag="SwipeDown"/>
+                                                <ComboBoxItem Content="Corner Click: Top-Left" Tag="ZoneTopLeft"/>
+                                                <ComboBoxItem Content="Corner Click: Top-Right" Tag="ZoneTopRight"/>
+                                                <ComboBoxItem Content="Corner Click: Bottom-Left" Tag="ZoneBottomLeft"/>
+                                                <ComboBoxItem Content="Corner Click: Bottom-Right" Tag="ZoneBottomRight"/>
                                             </ComboBox>
                                             <TextBlock Grid.Column="1" Text="  ➔  " FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" VerticalAlignment="Center"/>
                                             <ComboBox x:Name="CmbGestureAction" Grid.Column="2" SelectedIndex="1" SelectionChanged="CmbGestureAction_SelectionChanged">
@@ -409,6 +428,9 @@
                                                 <ComboBoxItem Content="Take Screenshot (Win+Shift+S)" Tag="TakeScreenshot"/>
                                                 <ComboBoxItem Content="Save 30s Clip (Win+Alt+G)" Tag="SaveReplayClip"/>
                                                 <ComboBoxItem Content="Toggle Microphone Mute" Tag="ToggleMicMute"/>
+                                                <ComboBoxItem Content="Discord Mute Toggle (Ctrl+Shift+M)" Tag="DiscordMute"/>
+                                                <ComboBoxItem Content="Discord Deafen Toggle (Ctrl+Shift+D)" Tag="DiscordDeafen"/>
+                                                <ComboBoxItem Content="Open Radial Command Wheel" Tag="ToggleRadialMenu"/>
                                                 <ComboBoxItem Content="Play / Pause Media" Tag="PlayPauseMedia"/>
                                                 <ComboBoxItem Content="Next Music Track" Tag="NextTrack"/>
                                                 <ComboBoxItem Content="Previous Music Track" Tag="PreviousTrack"/>
@@ -581,7 +603,11 @@
                                     <TextBox x:Name="TxtCustomProfileExe" Grid.Column="1" Text="" ToolTip="Optional comma-separated exe names e.g. Cyberpunk2077.exe, cod.exe" Background="#121A2A" Foreground="White" BorderBrush="{StaticResource BorderColor}" Padding="8,5" FontSize="11" Margin="0,0,6,0"/>
                                     <Button x:Name="BtnBrowseExe" Grid.Column="2" Content="📂 Browse .exe" Style="{StaticResource XmbOptionBtn}" Click="BtnBrowseExe_Click"/>
                                 </Grid>
-                                <Button x:Name="BtnSaveCustomProfile" Content="💾 Save Current Hardware Config as Profile" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" HorizontalAlignment="Left" Click="BtnSaveCustomProfile_Click"/>
+                                <WrapPanel Orientation="Horizontal">
+                                    <Button x:Name="BtnSaveCustomProfile" Content="💾 Save Current Hardware Config as Profile" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" Margin="0,0,8,0" Click="BtnSaveCustomProfile_Click"/>
+                                    <Button x:Name="BtnExportShareCode" Content="📋 Copy Share Code (OD1)" Style="{StaticResource XmbOptionBtn}" Margin="0,0,8,0" Click="BtnExportShareCode_Click"/>
+                                    <Button x:Name="BtnImportShareCode" Content="📥 Import Share Code" Style="{StaticResource XmbOptionBtn}" Click="BtnImportShareCode_Click"/>
+                                </WrapPanel>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -688,7 +714,7 @@
                                 <Grid Margin="0,0,0,8">
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="SOFTWARE RELEASE VERSION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                        <TextBlock x:Name="TxtXmbUpdateStatus" Text="OpenDual Suite v1.7.0 (Click Check for Updates to query GitHub releases)" FontSize="10" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
+                                        <TextBlock x:Name="TxtXmbUpdateStatus" Text="OpenDual Suite v1.8.0 (Click Check for Updates to query GitHub releases)" FontSize="10" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <Button x:Name="BtnCheckUpdates" Content="Check for Updates" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentBlue}" HorizontalAlignment="Right" Click="BtnCheckUpdates_Click"/>
                                 </Grid>

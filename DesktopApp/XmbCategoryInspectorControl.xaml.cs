@@ -807,7 +807,7 @@ namespace OpenDualHub
             if (sender is Button btn && btn.Tag is string tagStr && int.TryParse(tagStr, out int effect))
             {
                 _activeLedEffect = effect;
-                HighlightOptionButton(new[] { BtnLedEff0, BtnLedEff1, BtnLedEff2, BtnLedEff3, BtnLedEff4 }, btn);
+                HighlightOptionButton(new[] { BtnLedEff0, BtnLedEff1, BtnLedEff2, BtnLedEff3, BtnLedEff4, BtnLedEff5 }, btn);
                 PushLightbarConfig();
             }
         }
@@ -826,7 +826,7 @@ namespace OpenDualHub
 
                     ColorPreviewPill.Background = new SolidColorBrush(col);
                     TxtHexCode.Text = hex;
-                    HighlightOptionButton(new[] { BtnLedEff0, BtnLedEff1, BtnLedEff2, BtnLedEff3, BtnLedEff4 }, BtnLedEff0);
+                    HighlightOptionButton(new[] { BtnLedEff0, BtnLedEff1, BtnLedEff2, BtnLedEff3, BtnLedEff4, BtnLedEff5 }, BtnLedEff0);
 
                     PushLightbarConfig();
                 }
@@ -898,6 +898,18 @@ namespace OpenDualHub
             PushTouchpadConfig();
         }
 
+        private void ToggleZoneMacroPad_Click(object sender, RoutedEventArgs e)
+        {
+            bool isZone = ToggleZoneMacroPad.IsChecked == true;
+            ToggleZoneMacroPad.Content = isZone ? "4-Zone Pad: ON" : "4-Zone Pad: OFF";
+            if (MainWindow != null) MainWindow.GestureEngine.ZoneMacroPadEnabled = isZone;
+        }
+
+        private void BtnOpenRadialMenu_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow?.ToggleRadialMenu();
+        }
+
         private void ToggleGestures_Click(object sender, RoutedEventArgs e)
         {
             bool isGestures = ToggleGestures.IsChecked == true;
@@ -955,6 +967,9 @@ namespace OpenDualHub
             GestureAction.TakeScreenshot => "Screenshot (Win+Shift+S)",
             GestureAction.SaveReplayClip => "30s Replay Clip (Win+Alt+G)",
             GestureAction.ToggleMicMute => "Mute / Unmute Mic",
+            GestureAction.DiscordMute => "Discord Mute (Ctrl+Shift+M)",
+            GestureAction.DiscordDeafen => "Discord Deafen (Ctrl+Shift+D)",
+            GestureAction.ToggleRadialMenu => "Open Radial Command Wheel",
             GestureAction.PlayPauseMedia => "Play / Pause Media",
             GestureAction.NextTrack => "Next Music Track",
             GestureAction.PreviousTrack => "Previous Music Track",
@@ -1121,6 +1136,17 @@ namespace OpenDualHub
 
             SaveLiveHardwareConfig();
             MainWindow.SaveAndActivateCustomProfile(name, exe);
+            RefreshCustomProfilesList();
+        }
+
+        private void BtnExportShareCode_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow?.ExportProfileShareCodeToClipboard();
+        }
+
+        private void BtnImportShareCode_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow?.ImportProfileShareCodeFromClipboard();
             RefreshCustomProfilesList();
         }
 

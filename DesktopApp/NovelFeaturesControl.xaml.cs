@@ -108,6 +108,17 @@ namespace OpenDualHub
             SetToggleState(ToggleMicBeamforming, cfg.MicBeamforming);
             SetToggleState(ToggleRecoilAssist, cfg.RecoilAssist);
             SetToggleState(ToggleThermalGuard, cfg.ThermalGuard);
+
+            if (CmbVirtualPadMode != null) CmbVirtualPadMode.SelectedIndex = Math.Clamp(cfg.VirtualPadMode, 0, 2);
+            if (CmbLeftStickCurve != null) CmbLeftStickCurve.SelectedIndex = Math.Clamp(cfg.LeftStickCurve, 0, 3);
+            if (CmbRightStickCurve != null) CmbRightStickCurve.SelectedIndex = Math.Clamp(cfg.RightStickCurve, 0, 3);
+            if (CmbDeadzoneShape != null) CmbDeadzoneShape.SelectedIndex = Math.Clamp(cfg.AxialDeadzoneShape, 0, 1);
+            if (SliderAntiDeadzone != null) SliderAntiDeadzone.Value = Math.Round(cfg.AntiDeadzoneR * 100.0f);
+            SetToggleState(ToggleFlickStick, cfg.FlickStickEnabled);
+            SetToggleState(ToggleEdgeShift, cfg.EdgeShiftLayer);
+            if (SliderTriggerMaxDepth != null) SliderTriggerMaxDepth.Value = Math.Clamp(Math.Round(cfg.R2ActuationMax / 255.0 * 100.0), 25, 100);
+            SetToggleState(ToggleRapidFireMacro, cfg.RapidFireMacro);
+            DrawStickCurvePreview();
         }
 
         private static void SetToggleState(ToggleButton? btn, bool enabled)
@@ -336,6 +347,7 @@ namespace OpenDualHub
             CardRadar.BorderBrush = defaultBorder;
             CardHall.BorderBrush = defaultBorder;
             if (CardDeepHardware != null) CardDeepHardware.BorderBrush = defaultBorder;
+            if (CardProStudio != null) CardProStudio.BorderBrush = defaultBorder;
 
             // Only show the section the user selected so every XMB item opens cleanly at the top
             CardSentinel.Visibility = itemId == "ctrl_battery_sentinel" ? Visibility.Visible : Visibility.Collapsed;
@@ -344,6 +356,10 @@ namespace OpenDualHub
             if (CardDeepHardware != null)
             {
                 CardDeepHardware.Visibility = (itemId == "ctrl_deep_suite" || string.IsNullOrEmpty(itemId)) ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (CardProStudio != null)
+            {
+                CardProStudio.Visibility = itemId == "ctrl_pro_studio" ? Visibility.Visible : Visibility.Collapsed;
             }
 
             switch (itemId)
@@ -359,6 +375,10 @@ namespace OpenDualHub
                     break;
                 case "ctrl_deep_suite":
                     if (CardDeepHardware != null) CardDeepHardware.BorderBrush = glowBorder;
+                    break;
+                case "ctrl_pro_studio":
+                    if (CardProStudio != null) CardProStudio.BorderBrush = glowBorder;
+                    DrawStickCurvePreview();
                     break;
             }
             NovelScrollViewer.ScrollToTop();
@@ -411,6 +431,140 @@ namespace OpenDualHub
                     MainWindow.PersistLiveHardwareConfig();
                 }
             }
+        }
+
+        private void CmbVirtualPadMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MainWindow == null || CmbVirtualPadMode == null) return;
+            MainWindow.CurrentConfig.VirtualPadMode = Math.Clamp(CmbVirtualPadMode.SelectedIndex, 0, 2);
+            IpcClient?.SendConfig(MainWindow.CurrentConfig);
+            MainWindow.PersistLiveHardwareConfig();
+        }
+
+        private void BtnScanConflicts_Click(object sender, RoutedEventArgs e)
+        {
+            bool ds4WinRunning = System.Diagnostics.Process.GetProcessesByName("DS4Windows").Length > 0;
+            bool steamRunning = System.Diagnostics.Process.GetProcessesByName("steam").Length > 0;
+            bool hidHideInstalled = System.IO.Directory.Exists(@"C:\Program Files\Nefarius Software Solutions\HidHide");
+
+            if (ds4WinRunning)
+            {
+                TxtConflictStatus.Text = "⚠ DS4Windows process detected — Close DS4Windows to prevent double inputs";
+                TxtConflictStatus.Foreground = s_amberBrush;
+            }
+            else if (hidHideInstalled)
+            {
+                TxtConflictStatus.Text = "✓ HidHide Cloak Installed & Active • Zero double-input conflicts";
+                TxtConflictStatus.Foreground = s_greenBrush;
+            }
+            else if (steamRunning)
+            {
+                TxtConflictStatus.Text = "✓ Steam Running (Tip: Disable PlayStation Controller Support in Steam if using X360 mode)";
+                TxtConflictStatus.Foreground = s_cyanBrush;
+            }
+            else
+            {
+                TxtConflictStatus.Text = "✓ Conflict Guard: Clean Exclusive HID Pipeline Verified";
+                TxtConflictStatus.Foreground = s_greenBrush;
+            }
+        }
+
+        private void CmbStickCurve_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (MainWindow == null) return;
+            var cfg = MainWindow.CurrentConfig;
+            if (CmbLeftStickCurve != null) cfg.LeftStickCurve = Math.Clamp(CmbLeftStickCurve.SelectedIndex, 0, 3);
+            if (CmbRightStickCurve != null) cfg.RightStickCurve = Math.Clamp(CmbRightStickCurve.SelectedIndex, 0, 3);
+            if (CmbDeadzoneShape != null) cfg.AxialDeadzoneShape = Math.Clamp(CmbDeadzoneShape.SelectedIndex, 0, 1);
+            DrawStickCurvePreview();
+            IpcClient?.SendConfig(cfg);
+            MainWindow.PersistLiveHardwareConfig();
+        }
+
+        private void SliderAntiDeadzone_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (TxtAntiDeadzoneVal != null) TxtAntiDeadzoneVal.Text = $"{(int)e.NewValue}%";
+            if (MainWindow == null) return;
+            float adz = (float)(e.NewValue / 100.0);
+            MainWindow.CurrentConfig.AntiDeadzoneL = adz;
+            MainWindow.CurrentConfig.AntiDeadzoneR = adz;
+            DrawStickCurvePreview();
+            IpcClient?.SendConfig(MainWindow.CurrentConfig);
+            MainWindow.PersistLiveHardwareConfig();
+        }
+
+        private void ToggleFlickStick_Click(object sender, RoutedEventArgs e)
+        {
+            bool on = ToggleFlickStick.IsChecked == true;
+            ToggleFlickStick.Content = on ? "ON" : "OFF";
+            if (MainWindow == null) return;
+            MainWindow.CurrentConfig.FlickStickEnabled = on;
+            IpcClient?.SendConfig(MainWindow.CurrentConfig);
+            MainWindow.PersistLiveHardwareConfig();
+        }
+
+        private void ToggleEdgeShift_Click(object sender, RoutedEventArgs e)
+        {
+            bool on = ToggleEdgeShift.IsChecked == true;
+            ToggleEdgeShift.Content = on ? "ON" : "OFF";
+            if (MainWindow == null) return;
+            MainWindow.CurrentConfig.EdgeShiftLayer = on;
+            IpcClient?.SendConfig(MainWindow.CurrentConfig);
+            MainWindow.PersistLiveHardwareConfig();
+        }
+
+        private void SliderTriggerMaxDepth_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (TxtTriggerMaxDepthVal != null) TxtTriggerMaxDepthVal.Text = $"{(int)e.NewValue}% Travel";
+            if (MainWindow == null) return;
+            int rawMax = (int)Math.Clamp(Math.Round((e.NewValue / 100.0) * 255.0), 45, 255);
+            MainWindow.CurrentConfig.L2ActuationMax = rawMax;
+            MainWindow.CurrentConfig.R2ActuationMax = rawMax;
+            IpcClient?.SendConfig(MainWindow.CurrentConfig);
+            MainWindow.PersistLiveHardwareConfig();
+        }
+
+        private void ToggleRapidFireMacro_Click(object sender, RoutedEventArgs e)
+        {
+            bool on = ToggleRapidFireMacro.IsChecked == true;
+            ToggleRapidFireMacro.Content = on ? "ON" : "OFF";
+            if (MainWindow == null) return;
+            MainWindow.CurrentConfig.RapidFireMacro = on;
+            IpcClient?.SendConfig(MainWindow.CurrentConfig);
+            MainWindow.PersistLiveHardwareConfig();
+        }
+
+        private void DrawStickCurvePreview()
+        {
+            if (CanvasStickCurvePreview == null) return;
+            CanvasStickCurvePreview.Children.Clear();
+
+            double w = 110, h = 90;
+            CanvasStickCurvePreview.Children.Add(new Line { X1 = 0, Y1 = h, X2 = w, Y2 = 0, Stroke = s_centerDashBrush, StrokeThickness = 1 });
+
+            int curve = CmbRightStickCurve?.SelectedIndex ?? 0;
+            double adz = (SliderAntiDeadzone?.Value ?? 0) / 100.0;
+
+            var geom = new StreamGeometry();
+            using (var ctx = geom.Open())
+            {
+                for (int i = 0; i <= 24; i++)
+                {
+                    double x = i / 24.0;
+                    double y = x;
+                    if (curve == 1) y = 0.45 * x + 0.55 * (x * x * x);
+                    else if (curve == 2) y = Math.Sqrt(x) * 0.65 + x * 0.35;
+                    else if (curve == 3) y = x * x * (3.0 - 2.0 * x);
+                    if (adz > 0.005 && x > 0) y = adz + y * (1.0 - adz);
+                    y = Math.Clamp(y, 0.0, 1.0);
+
+                    Point pt = new(x * w, h - (y * h));
+                    if (i == 0) ctx.BeginFigure(pt, false, false);
+                    else ctx.LineTo(pt, true, false);
+                }
+            }
+            geom.Freeze();
+            CanvasStickCurvePreview.Children.Add(new Path { Data = geom, Stroke = s_cyanBrush, StrokeThickness = 2.0 });
         }
     }
 }

@@ -100,7 +100,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock x:Name="TxtWindowTitle" Text="OPENDUAL CONTROLLER SUITE INSTALLER" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextMain}"/>
                                 <Border Background="#1A00F5D4" BorderBrush="#00F5D4" BorderThickness="1" CornerRadius="5" Padding="7,1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="v1.7.0 RELEASE" FontSize="9.5" FontWeight="Bold" Foreground="#00F5D4"/>
+                                    <TextBlock Text="v1.8.0 RELEASE" FontSize="9.5" FontWeight="Bold" Foreground="#00F5D4"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock x:Name="TxtWindowSubtitle" Text="1000Hz C++20 Direct HID Kernel Driver &amp; Cross-Media Bar Desktop Hub" FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
@@ -214,7 +214,7 @@
                                     <TextBlock Text="✓" FontSize="18" FontWeight="Bold" Foreground="#00E676" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock x:Name="TxtFinishTitle" Text="OpenDual v1.7.0 Installed Successfully!" FontSize="16" FontWeight="Bold" Foreground="#00E676"/>
+                                    <TextBlock x:Name="TxtFinishTitle" Text="OpenDual v1.8.0 Installed Successfully!" FontSize="16" FontWeight="Bold" Foreground="#00E676"/>
                                     <TextBlock x:Name="TxtFinishSub" Text="All kernel driver services, desktop hub binaries, and shortcuts are ready." FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </StackPanel>

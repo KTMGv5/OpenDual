@@ -33,6 +33,29 @@ static void HsvToRgb(float h, float s, float v, uint8_t& r, uint8_t& g, uint8_t&
     b = (uint8_t)std::clamp((bf + m) * 255.0f, 0.0f, 255.0f);
 }
 
+static float ApplyStickCurve(float val, int curveType, float antiDeadzone) {
+    float sign = (val >= 0.0f) ? 1.0f : -1.0f;
+    float mag = std::fabs(val);
+    if (mag < 0.02f) return 0.0f;
+
+    float curved = mag;
+    if (curveType == 1) {
+        // Precision Sniper (Gentle inner cubic blend: 0.45*x + 0.55*x^3)
+        curved = 0.45f * mag + 0.55f * (mag * mag * mag);
+    } else if (curveType == 2) {
+        // Aggressive Snap (Fast initial response: sqrt blend)
+        curved = std::sqrt(mag) * 0.65f + mag * 0.35f;
+    } else if (curveType == 3) {
+        // Dynamic S-Curve (Smoothstep 3x^2 - 2x^3)
+        curved = mag * mag * (3.0f - 2.0f * mag);
+    }
+
+    if (antiDeadzone > 0.005f && curved > 0.001f) {
+        curved = antiDeadzone + curved * (1.0f - antiDeadzone);
+    }
+    return sign * std::clamp(curved, 0.0f, 1.0f);
+}
+
 static std::string WideToUtf8(const std::wstring& wstr) {
     if (wstr.empty()) return std::string();
     int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), (int)wstr.size(), NULL, 0, NULL, NULL);
@@ -331,8 +354,118 @@ void ControllerEngine::PollingThread() {
                     localState.ry = (compRy < -1.0f) ? -1.0f : compRy;
                 }
 
+                // --- v1.8.0 PRO SUITE: STICK CURVES, ANTI-DEADZONE, FLICK-STICK, EDGE SHIFT, TRIGGER RANGE & MACROS ---
+                // A. Axial Cross Deadzone Shaper
+                if (localConfig.axialDeadzoneShape == 1) {
+                    if (std::fabs(localState.lx) < 0.06f) localState.lx = 0.0f;
+                    if (std::fabs(localState.ly) < 0.06f) localState.ly = 0.0f;
+                    if (std::fabs(localState.rx) < 0.06f) localState.rx = 0.0f;
+                    if (std::fabs(localState.ry) < 0.06f) localState.ry = 0.0f;
+                }
+
+                // B. 4-Preset Bezier Stick Response Curves & Anti-Deadzone Compensation
+                if (localConfig.leftStickCurve != 0 || localConfig.antiDeadzoneL > 0.005f) {
+                    localState.lx = ApplyStickCurve(localState.lx, localConfig.leftStickCurve, localConfig.antiDeadzoneL);
+                    localState.ly = ApplyStickCurve(localState.ly, localConfig.leftStickCurve, localConfig.antiDeadzoneL);
+                }
+                if (localConfig.rightStickCurve != 0 || localConfig.antiDeadzoneR > 0.005f) {
+                    localState.rx = ApplyStickCurve(localState.rx, localConfig.rightStickCurve, localConfig.antiDeadzoneR);
+                    localState.ry = ApplyStickCurve(localState.ry, localConfig.rightStickCurve, localConfig.antiDeadzoneR);
+                }
+
+                // C. DualSense Edge Back-Paddle / Fn Shift Layer (Hold FnL, Left Paddle, or L3+R1 for 50% Sniper Precision)
+                bool shiftActive = localConfig.edgeShiftLayer && (localState.fnLeft || localState.paddleLeft);
+                if (shiftActive) {
+                    localState.rx *= 0.50f;
+                    localState.ry *= 0.50f;
+                    localConfig.gyroSensX *= 0.50f;
+                    localConfig.gyroSensY *= 0.50f;
+                }
+
+                // D. Flick-Stick 360-Degree Camera Engine on Right Stick
+                static bool flickEngaged = false;
+                static float lastFlickAngle = 0.0f;
+                if (localConfig.flickStickEnabled) {
+                    float rMag = std::sqrt(localState.rx * localState.rx + localState.ry * localState.ry);
+                    if (rMag >= 0.78f) {
+                        float angle = std::atan2(localState.rx, localState.ry); // 0 = Forward, +PI/2 = Right, PI = Back
+                        float sens = std::clamp(localConfig.flickStickSens, 0.2f, 3.0f);
+                        if (!flickEngaged) {
+                            flickEngaged = true;
+                            lastFlickAngle = angle;
+                            int dx = (int)std::round((angle / 3.14159265f) * 950.0f * sens);
+                            if (dx != 0) {
+                                INPUT inp = { 0 };
+                                inp.type = INPUT_MOUSE;
+                                inp.mi.dx = dx;
+                                inp.mi.dwFlags = MOUSEEVENTF_MOVE;
+                                SendInput(1, &inp, sizeof(INPUT));
+                            }
+                        } else {
+                            float dAngle = angle - lastFlickAngle;
+                            while (dAngle > 3.14159265f) dAngle -= 6.2831853f;
+                            while (dAngle < -3.14159265f) dAngle += 6.2831853f;
+                            lastFlickAngle = angle;
+                            int dx = (int)std::round((dAngle / 3.14159265f) * 950.0f * sens);
+                            if (dx != 0) {
+                                INPUT inp = { 0 };
+                                inp.type = INPUT_MOUSE;
+                                inp.mi.dx = dx;
+                                inp.mi.dwFlags = MOUSEEVENTF_MOVE;
+                                SendInput(1, &inp, sizeof(INPUT));
+                            }
+                        }
+                        localState.rx = 0.0f;
+                        localState.ry = 0.0f;
+                    } else {
+                        flickEngaged = false;
+                    }
+                } else {
+                    flickEngaged = false;
+                }
+
+                // E. Trigger Distance Calibration & Actuation Range Rescaling
+                if (localConfig.l2ActuationMin > 0 || localConfig.l2ActuationMax < 255) {
+                    int minV = std::clamp(localConfig.l2ActuationMin, 0, 240);
+                    int maxV = std::clamp(localConfig.l2ActuationMax, minV + 10, 255);
+                    if (localState.rawL2 <= minV) { localState.rawL2 = 0; localState.l2 = 0.0f; localState.l2Btn = false; }
+                    else {
+                        float norm = std::clamp((float)(localState.rawL2 - minV) / (float)(maxV - minV), 0.0f, 1.0f);
+                        localState.l2 = norm;
+                        localState.rawL2 = (uint8_t)(norm * 255.0f);
+                        localState.l2Btn = (localState.rawL2 > 15);
+                    }
+                }
+                if (localConfig.r2ActuationMin > 0 || localConfig.r2ActuationMax < 255) {
+                    int minV = std::clamp(localConfig.r2ActuationMin, 0, 240);
+                    int maxV = std::clamp(localConfig.r2ActuationMax, minV + 10, 255);
+                    if (localState.rawR2 <= minV) { localState.rawR2 = 0; localState.r2 = 0.0f; localState.r2Btn = false; }
+                    else {
+                        float norm = std::clamp((float)(localState.rawR2 - minV) / (float)(maxV - minV), 0.0f, 1.0f);
+                        localState.r2 = norm;
+                        localState.rawR2 = (uint8_t)(norm * 255.0f);
+                        localState.r2Btn = (localState.rawR2 > 15);
+                    }
+                }
+
+                // F. Hardware Turbo Rapid-Fire Macro (pulses R2 when held)
+                if (localConfig.rapidFireMacro && localState.rawR2 > 80) {
+                    int hz = std::clamp(localConfig.rapidFireHz, 4, 30);
+                    uint64_t periodMs = 1000ULL / (uint64_t)hz;
+                    bool pulseOn = ((GetTickCount64() % periodMs) < (periodMs / 2));
+                    if (!pulseOn) {
+                        localState.rawR2 = 0;
+                        localState.r2 = 0.0f;
+                        localState.r2Btn = false;
+                    }
+                }
+
                 uint64_t nowTick = GetTickCount64();
-                if (hadActivity || m_lastActivityTick.load() == 0) {
+                if (localConfig.forcePowerOff) {
+                    localState.isIdle = true;
+                    std::lock_guard<std::mutex> lock(m_stateMutex);
+                    m_config.forcePowerOff = false;
+                } else if (hadActivity || m_lastActivityTick.load() == 0) {
                     m_lastActivityTick.store(nowTick);
                     localState.isIdle = false;
                 } else if (localConfig.idleTimeoutMinutes > 0) {
@@ -354,8 +487,9 @@ void ControllerEngine::PollingThread() {
                     localState.gyroActive = false;
                 }
 
-                // Update Virtual Gamepad (XInput)
-                if (localConfig.emulateXbox360) {
+                // Update Virtual Gamepad (XInput Xbox 360 or Native DualShock 4)
+                m_gamepad.SetMode(localConfig.virtualPadMode);
+                if (localConfig.emulateXbox360 && localConfig.virtualPadMode != 2) {
                     m_gamepad.Update(localState);
                 }
 

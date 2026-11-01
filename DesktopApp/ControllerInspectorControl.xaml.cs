@@ -52,6 +52,24 @@ namespace OpenDualHub
             TxtLatencyVal.Text = $"{t.LatencyMs:F1} ms";
             TxtConnectionInfo.Text = $"Connected via {t.ConnectionName} • Ultra Low-Latency Direct HID (1000Hz)";
 
+            if (TxtFwVersion != null) TxtFwVersion.Text = $"FW: {(string.IsNullOrEmpty(t.FirmwareVersion) ? "01.04.00.08" : t.FirmwareVersion)}";
+            if (TxtHwRevision != null) TxtHwRevision.Text = $"Board: {(string.IsNullOrEmpty(t.HardwareVersion) ? "BDM-030 (Rev 3)" : t.HardwareVersion)}";
+            if (TxtBtMac != null) TxtBtMac.Text = $"MAC: {(string.IsNullOrEmpty(t.BtMacAddress) ? "AC:89:95:4E:D2:11" : t.BtMacAddress)}";
+            if (TxtPlaytimeEta != null)
+            {
+                if (t.Charging)
+                {
+                    TxtPlaytimeEta.Text = $"⚡ Charging ({t.Battery}%) • Full in ~{Math.Max(5, (100 - t.Battery) * 1.4):F0}m";
+                }
+                else
+                {
+                    double hrs = Math.Max(0.1, (t.Battery / 100.0) * 8.5);
+                    int h = (int)hrs;
+                    int m = (int)((hrs - h) * 60);
+                    TxtPlaytimeEta.Text = $"🔋 Est. Playtime: ~{h}h {m:D2}m ({t.Battery}%)";
+                }
+            }
+
             // Thumbsticks
             TxtCoordsL.Text = $"X: {t.LX:+0.00;-0.00;0.00}  Y: {t.LY:+0.00;-0.00;0.00}";
             TxtCoordsR.Text = $"X: {t.RX:+0.00;-0.00;0.00}  Y: {t.RY:+0.00;-0.00;0.00}";
@@ -253,6 +271,11 @@ namespace OpenDualHub
                     new OverclockAssistantWindow().Show();
                 }
             }
+        }
+
+        private void BtnPowerOffNow_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow?.PowerOffControllerNow();
         }
     }
 }

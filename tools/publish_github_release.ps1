@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.7.0",
-    [string]$ReleaseName = "OpenDual v1.7.0 - Pro Response Suite, 3D Hardware Lab, Modern Installer & Initial Setup Wizard",
+    [string]$TagName = "v1.8.0",
+    [string]$ReleaseName = "OpenDual v1.8.0 - 20-Feature Pro Suite: Native DS4 Mode, Stick Curves, Flick-Stick, Ambilight & Radial Wheel",
     [string]$DistDir = "dist"
 )
 
@@ -46,34 +46,34 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.7.0
+## Highlights in OpenDual v1.8.0
 
-OpenDual v1.7.0 is a major desktop & kernel release featuring a **Modern Dark-Glass Installer Suite**, a **Guided First-Run Initial Setup Wizard**, the **Pro Response & Sensor Tuning Suite** (10 kernel-level DualSense hardware modifiers), an **Interactive 2D Controller Schematic**, and an overhauled **3D Spatial Gimbal & Hardware Diagnostic Lab**.
+OpenDual v1.8.0 is a massive 20-feature expansion of the C++20 Direct HID kernel driver and Cross-Media Bar Desktop Hub, introducing **Dual-Mode Virtual Gamepad Emulation (`Xbox 360` + `Native DualShock 4`)**, **Interactive Stick Response Curves (`Linear`, `Precision Sniper`, `Aggressive Snap`, `Dynamic S-Curve`)**, **Flick-Stick 360° Camera Engine**, **DualSense Edge Back-Paddle Sniper Shift**, **Screen-Sync Ambilight Lightbar**, **4-Zone Touchpad Macro Pad**, **On-Screen Radial Wheel**, **Always-on-Top Mini-Widget Mode**, and **One-Click Profile Share Codes (`OD1-...`)**.
 
 ---
 
-### What's New in v1.7.0
+### All 20 New Features in v1.8.0
 
-* **Modern Dark-Glass Installer & Uninstaller (`OpenDualSetup.exe`)**:
-  * Redesigned WPF installer wizard with live progress tracking, component toggles (1000Hz Direct HID Startup Service, ViGEmBus verification, Desktop/Start Menu shortcuts), automatic update/repair detection, and built-in clean uninstaller.
-* **Guided Initial Setup Wizard (`InitialSetupWindow`)**:
-  * 3-step onboarding assistant on first launch (and accessible anytime from `Settings -> Initial Setup Wizard`) to configure UI rendering performance (`Dynamic 60 FPS Wave Art` vs `Lightweight Low-Spec Mode`), starting playstyle preset (`Standard Balanced`, `Esports Pro Response`, `FPS Gyro & Recoil Assist`, `Sim Racing`), Audio-to-Haptics, and header clock/telemetry display.
-* **Pro Response & Sensor Tuning Suite (1000Hz C++20 Kernel Engine)**:
-  * **Dual-Stage Trigger**: Half-pull R2 aims down sights (L2); full pull past the 85% tactile wall fires R2.
-  * **Rapid Trigger Instant Reset (`<1.2mm`)**: Dynamically tracks peak trigger depth and resets the moment you release upward by 1.2mm.
-  * **Outer-Ring Auto-Sprint (`L3 at 96%`)**: Automatically engages L3 sprint at outer stick deflection without clicking the physical switch.
-  * **Touchpad Gyro Pause**: Touching the capacitive touchpad pauses gyro aiming so you can recenter your wrists like lifting a mouse.
-  * **Touchpad Haptic Scroll Detents**: Pulses the palm voice coils for 1ms as your finger crosses virtual touchpad scroll notches.
-  * **G-Shock Impact Stabilizer**: Detects `>1.85G` physical controller jolts and damps stick/gyro spikes for 25ms.
-  * **Player LED Live Telemetry Meter**: Uses the 5 under-touchpad Player LEDs as a real-time trigger pressure or audio peak meter.
-  * **Microphone Hardware Preamp Boost**: Optimizes the internal DualSense microphone array gain and noise gate.
-  * **Adaptive Vertical Recoil Assist**: Applies subtle downward pitch stabilization while firing R2 with Gyro Aim active.
-  * **Trigger Motor Thermal Protection**: Tracks L2/R2 actuator coil duty cycle and prevents overheating during sustained resistance.
-* **3D Spatial Gimbal & Interactive Controller Schematic**:
-  * Authentic two-tone 3D DualSense model in the **Hardware Lab** with accurate BMI260 6-axis IMU orientation (`Pitch`, `Roll`, `Yaw`, `G-Force`) and one-click **Recenter View**.
-  * Live 2D vector schematic in **Live Input Visualizer** highlighting every pressed button, bumper, trigger, analog stick position, and multi-touch finger coordinate in real time.
-* **Zero-Allocation UI Responsiveness**:
-  * Cached XMB visual trees, active-only inspector telemetry rendering, and single-timer smooth scrolling for zero UI lag even on low-end hardware.
+1. **Dual-Mode Virtual Gamepad Emulation (`Xbox 360` vs. `Native DualShock 4`)**: Switch between XInput (`Xbox 360`) and native PlayStation (`DualShock 4`) ViGEmBus output on the fly for native PlayStation button prompts and motion pass-through.
+2. **HidHide Double-Input Cloak Integration & Scanner**: Built-in conflict scanner detects `HidHide`, `Steam Input`, and `DS4Windows` and launches HidHide configuration with one click.
+3. **Interactive Stick Response Curve Studio**: Choose `Linear`, `Precision Sniper` (cubic fine-aim), `Aggressive Snap`, or `Dynamic S-Curve` independently for Left & Right thumbsticks with a live response curve graph.
+4. **Anti-Deadzone (`0%–25%`) & Axial Deadzone Shaper**: Counteract inner game deadzones and switch between `Circular Radial` and `Axial Cross` movement snapping.
+5. **Flick-Stick 360° Camera Engine**: Point the right stick in any direction for instant 360° horizontal orientation, then sweep smoothly to rotate.
+6. **DualSense Edge Back-Paddle & Fn Sniper Shift Layer**: Holding DualSense Edge Fn / Back Paddles dynamically scales stick and gyro sensitivity by 50% for pixel-accurate sniping.
+7. **Trigger Actuation Depth Calibration (`25%–100%`)**: Compress full 0–100% trigger output into a shorter physical pull distance.
+8. **Hardware Turbo Rapid-Fire Macro (`15 Hz R2 Pulse`)**: Kernel-level 15 Hz auto-pulse while holding R2 past 50% for semi-automatic weapons.
+9. **Multi-Controller Support (`P1–P4` Header Slot Selector)**: Switch active telemetry and configuration across up to 4 connected DualSense / DS4 controllers.
+10. **Touchpad 4-Zone Haptic Macro Pad**: Split physical touchpad clicks into 4 independent corner macro buttons (`Top-Left`, `Top-Right`, `Bottom-Left`, `Bottom-Right`).
+11. **On-Screen Radial Command Wheel (`RadialMenuWindow`)**: Summon an 8-slot circular command overlay for instant profile switching, gyro toggle, clips, and media controls.
+12. **Discord (`Ctrl+Shift+M` / `Ctrl+Shift+D`) & Media Transport Shortcuts**: Bind touchpad gestures or corner clicks directly to Discord Mute/Deafen and media transport.
+13. **Screen-Sync Ambient Lightbar (`🖥️ Screen Ambience`)**: Samples dominant screen colors in real time and mirrors them onto the DualSense RGB lightbar.
+14. **Controller Hardware & Factory Revision Inspector**: Displays live `Firmware Version`, `Board Revision (BDM-010/020/030/040)`, and `Bluetooth MAC Address`.
+15. **Battery Playtime Estimator (`~Xh Ym remaining`)**: Calculates remaining wireless playtime or time-to-full charge based on live battery telemetry.
+16. **Instant Wireless Power-Off Button (`⏻ Power Off Pad`)**: Immediately powers down the controller over Bluetooth without waiting for the idle timer.
+17. **Compact Mini-Widget Mode (`⧉ Mini`)**: Collapses the hub into a sleek always-on-top streamer pill showing battery, polling rate, latency, and profile.
+18. **One-Click Profile Share Codes (`OD1-...`)**: Export and import complete hardware setups via compact Base64 share strings on the clipboard.
+19. **Visual Button & Gesture Action Remapper**: Expanded action remapping across unistroke gestures, swipes, and 4-zone corner clicks.
+20. **Automated Conflict & Environment Diagnostics**: Real-time verification of ViGEmBus, HidHide, Steam, and DS4Windows processes.
 
 ---
 
@@ -81,7 +81,7 @@ OpenDual v1.7.0 is a major desktop & kernel release featuring a **Modern Dark-Gl
 * `OpenDualSetup.exe` - Complete standalone GUI installer, updater, and uninstaller suite (Recommended)
 * `OpenDualHub.exe` - Standalone Cross-Media Bar Controller Hub executable
 * `OpenDualDriver.exe` - Standalone 1000Hz C++20 Direct HID Driver engine
-* `OpenDual-v1.7.0.zip` - Portable bundle including all signed binaries and assets
+* `OpenDual-v1.8.0.zip` - Portable bundle including all signed binaries and assets
 "@
 
 # 3. Check if release already exists

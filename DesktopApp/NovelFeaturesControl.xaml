@@ -319,6 +319,126 @@
                 </StackPanel>
             </Border>
 
+            <!-- 5. STICK CURVES, VIRTUAL EMULATION & MACRO STUDIO -->
+            <Border x:Name="CardProStudio" Background="{StaticResource BgCard}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1.5" CornerRadius="12" Padding="18" Margin="0,12,0,0" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="STICK CURVES, VIRTUAL EMULATION &amp; MACRO STUDIO" FontSize="13" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                    <TextBlock Text="Switch between Xbox 360 and native DualShock 4 emulation, shape Bezier stick curves, calibrate trigger travel, and configure macros." FontSize="10.5" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+
+                    <!-- 1. Virtual Controller Emulation Mode (Xbox 360 vs Native DS4) -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="VIRTUAL CONTROLLER EMULATION MODE (ViGEmBus)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Choose Xbox 360 for universal XInput compatibility or Native DualShock 4 for PlayStation glyphs &amp; touchpad" FontSize="9.5" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                                <ComboBox x:Name="CmbVirtualPadMode" Width="175" HorizontalAlignment="Right" SelectedIndex="0" SelectionChanged="CmbVirtualPadMode_SelectionChanged">
+                                    <ComboBoxItem Content="Xbox 360 (XInput)"/>
+                                    <ComboBoxItem Content="DualShock 4 (Native PS)"/>
+                                    <ComboBoxItem Content="Disabled (Raw HID Only)"/>
+                                </ComboBox>
+                            </Grid>
+
+                            <!-- HidHide Double-Input Cloak & Conflict Guard -->
+                            <Grid>
+                                <TextBlock x:Name="TxtConflictStatus" Text="Conflict Guard: No Steam Input / DS4Windows double-input hooks detected" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentGreen}" VerticalAlignment="Center"/>
+                                <Button x:Name="BtnScanConflicts" Content="Scan &amp; Cloak Check" Padding="10,4" FontSize="10" FontWeight="Bold" Background="#162238" Foreground="{StaticResource AccentSignature}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1" HorizontalAlignment="Right" Cursor="Hand" Click="BtnScanConflicts_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 2. 4-Point Bezier Stick Response Curves & Live Graph -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="4-PRESET BEZIER ANALOG STICK RESPONSE CURVES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="120"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <Grid Margin="0,0,0,6">
+                                        <TextBlock Text="Left Stick (Movement):" FontSize="10.5" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ComboBox x:Name="CmbLeftStickCurve" Width="165" HorizontalAlignment="Right" SelectedIndex="0" SelectionChanged="CmbStickCurve_SelectionChanged">
+                                            <ComboBoxItem Content="Linear (1:1 Raw)"/>
+                                            <ComboBoxItem Content="Precision Sniper"/>
+                                            <ComboBoxItem Content="Aggressive Snap"/>
+                                            <ComboBoxItem Content="Dynamic S-Curve"/>
+                                        </ComboBox>
+                                    </Grid>
+                                    <Grid Margin="0,0,0,6">
+                                        <TextBlock Text="Right Stick (Camera/Aim):" FontSize="10.5" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ComboBox x:Name="CmbRightStickCurve" Width="165" HorizontalAlignment="Right" SelectedIndex="0" SelectionChanged="CmbStickCurve_SelectionChanged">
+                                            <ComboBoxItem Content="Linear (1:1 Raw)"/>
+                                            <ComboBoxItem Content="Precision Sniper"/>
+                                            <ComboBoxItem Content="Aggressive Snap"/>
+                                            <ComboBoxItem Content="Dynamic S-Curve"/>
+                                        </ComboBox>
+                                    </Grid>
+                                    <Grid>
+                                        <TextBlock Text="Deadzone Gate Shape:" FontSize="10.5" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                        <ComboBox x:Name="CmbDeadzoneShape" Width="165" HorizontalAlignment="Right" SelectedIndex="0" SelectionChanged="CmbStickCurve_SelectionChanged">
+                                            <ComboBoxItem Content="Circular Radial Gate"/>
+                                            <ComboBoxItem Content="Axial Cross Gate"/>
+                                        </ComboBox>
+                                    </Grid>
+                                </StackPanel>
+                                <Border Grid.Column="2" Background="#090D16" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="4">
+                                    <Canvas x:Name="CanvasStickCurvePreview" Width="110" Height="90" ClipToBounds="True"/>
+                                </Border>
+                            </Grid>
+
+                            <Grid Margin="0,8,0,2">
+                                <TextBlock Text="ANTI-DEADZONE BOOST (COUNTERACTS BUILT-IN GAME DEADZONES)" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                                <TextBlock x:Name="TxtAntiDeadzoneVal" Text="0%" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Slider x:Name="SliderAntiDeadzone" Minimum="0" Maximum="25" Value="0" ValueChanged="SliderAntiDeadzone_ValueChanged"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 3. Flick-Stick 360 Camera & DualSense Edge Shift Layer -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                    <TextBlock Text="FLICK-STICK 360 CAMERA ENGINE (RIGHT STICK + GYRO)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Snapping Right Stick rotates your camera to that exact 360 angle; rotating the rim smoothly turns you" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleFlickStick" Content="OFF" Style="{StaticResource NovelToggleBtn}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleFlickStick_Click"/>
+                            </Grid>
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                    <TextBlock Text="DUALSENSE EDGE BACK-PADDLE / FN SNIPER SHIFT LAYER (50%)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Holding Fn Left or Left Back Paddle temporarily halves stick and gyro sensitivity for pinpoint sniping" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleEdgeShift" Content="OFF" Style="{StaticResource NovelToggleBtn}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleEdgeShift_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 4. Trigger Actuation Distance & Hardware Rapid-Fire Macro -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,4">
+                                <TextBlock Text="TRIGGER FULL-PULL ACTUATION DEPTH (L2 &amp; R2 MAX TRAVEL)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtTriggerMaxDepthVal" Text="100% Travel" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Slider x:Name="SliderTriggerMaxDepth" Minimum="25" Maximum="100" Value="100" Margin="0,0,0,10" ValueChanged="SliderTriggerMaxDepth_ValueChanged"/>
+
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                    <TextBlock Text="HARDWARE TURBO RAPID-FIRE MACRO (15 Hz R2 PULSE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock Text="Automatically pulses R2 at 15 shots/sec while held down for semi-auto weapons" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton x:Name="ToggleRapidFireMacro" Content="OFF" Style="{StaticResource NovelToggleBtn}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleRapidFireMacro_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

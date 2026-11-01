@@ -21,7 +21,11 @@ namespace OpenDualHub
         LetterZ,
         LetterO,
         TwoFingerTap,
-        ThreeFingerTap
+        ThreeFingerTap,
+        ZoneTopLeft,
+        ZoneTopRight,
+        ZoneBottomLeft,
+        ZoneBottomRight
     }
 
     public enum GestureAction
@@ -36,7 +40,10 @@ namespace OpenDualHub
         OpenQuickHud,       // Open PS Control Center
         OpenDualHub,        // Bring Hub window to front
         OpenGameBar,        // Win + G
-        LaunchCalculator    // calc.exe
+        LaunchCalculator,   // calc.exe
+        DiscordMute,        // Ctrl + Shift + M
+        DiscordDeafen,      // Ctrl + Shift + D
+        ToggleRadialMenu    // On-screen 8-slot radial wheel
     }
 
     public class GestureMapping
@@ -64,13 +71,16 @@ namespace OpenDualHub
         private readonly List<Point> _rawPoints = new();
         private DateTime _strokeStartTime = DateTime.MinValue;
         private bool _wasTouching = false;
+        private bool _wasPadPressed = false;
         private int _maxFingers = 0;
 
         public bool GesturesEnabled { get; set; } = false;
+        public bool ZoneMacroPadEnabled { get; set; } = false;
         public List<GestureMapping> Mappings { get; } = new();
 
         public event Action<TouchGestureType, GestureAction>? OnGestureRecognized;
         public event Action<List<Point>>? OnStrokeUpdated;
+        public event Action? OnToggleRadialMenuRequested;
 
         public TouchpadGestureEngine()
         {
@@ -87,6 +97,10 @@ namespace OpenDualHub
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.SwipeUp, Action = GestureAction.PlayPauseMedia, Name = "Swipe Up -> Play / Pause Media" });
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.SwipeDown, Action = GestureAction.ToggleMicMute, Name = "Swipe Down -> Mute / Unmute Mic" });
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.LetterZ, Action = GestureAction.OpenGameBar, Name = "Draw 'Z' -> Open Xbox Game Bar" });
+            Mappings.Add(new GestureMapping { Gesture = TouchGestureType.ZoneTopLeft, Action = GestureAction.DiscordMute, Name = "Top-Left Quadrant Click -> Discord Mute" });
+            Mappings.Add(new GestureMapping { Gesture = TouchGestureType.ZoneTopRight, Action = GestureAction.DiscordDeafen, Name = "Top-Right Quadrant Click -> Discord Deafen" });
+            Mappings.Add(new GestureMapping { Gesture = TouchGestureType.ZoneBottomLeft, Action = GestureAction.PlayPauseMedia, Name = "Bottom-Left Quadrant Click -> Play/Pause Media" });
+            Mappings.Add(new GestureMapping { Gesture = TouchGestureType.ZoneBottomRight, Action = GestureAction.TakeScreenshot, Name = "Bottom-Right Quadrant Click -> Screenshot" });
         }
 
         public void LoadSavedMappings(Dictionary<string, string>? saved)
@@ -134,7 +148,25 @@ namespace OpenDualHub
 
         public void ProcessTelemetry(ControllerTelemetry t)
         {
-            if (!GesturesEnabled || t == null) return;
+            if (t == null) return;
+
+            // 4-Zone Touchpad Haptic Macro Pad (triggers on physical touchpad button click in quadrant)
+            if (ZoneMacroPadEnabled && t.Touch1.On && t.TouchpadBtn && !_wasPadPressed)
+            {
+                bool leftHalf = t.Touch1.X < 960;
+                bool topHalf = t.Touch1.Y < 470;
+                TouchGestureType zone = (topHalf, leftHalf) switch
+                {
+                    (true, true) => TouchGestureType.ZoneTopLeft,
+                    (true, false) => TouchGestureType.ZoneTopRight,
+                    (false, true) => TouchGestureType.ZoneBottomLeft,
+                    _ => TouchGestureType.ZoneBottomRight
+                };
+                ExecuteGesture(zone);
+            }
+            _wasPadPressed = t.TouchpadBtn;
+
+            if (!GesturesEnabled) return;
 
             bool isTouching = t.Touch1.On;
             int fingers = (t.Touch1.On ? 1 : 0) + (t.Touch2.On ? 1 : 0);
@@ -394,6 +426,60 @@ namespace OpenDualHub
 
                 case GestureAction.LaunchCalculator:
                     try { Process.Start(new ProcessStartInfo { FileName = "calc.exe", UseShellExecute = true }); } catch { }
+                    break;
+
+                case GestureAction.DiscordMute:
+                    // Ctrl + Shift + M
+                    keybd_event(VK_CONTROL, 0, 0, UIntPtr.Zero);
+                    keybd_event(VK_SHIFT, 0, 0, UIntPtr.Zero);
+                    keybd_event(0x4D, 0, 0, UIntPtr.Zero); // 'M'
+                    keybd_event(0x4D, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                    keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                    break;
+
+                case GestureAction.DiscordDeafen:
+                    // Ctrl + Shift + D
+                    keybd_event(VK_CONTROL, 0, 0, UIntPtr.Zero);
+                    keybd_event(VK_SHIFT, 0, 0, UIntPtr.Zero);
+                    keybd_event(0x44, 0, 0, UIntPtr.Zero); // 'D'
+                    keybd_event(0x44, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                    keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                    break;
+
+                case GestureAction.ToggleRadialMenu:
+                    OnToggleRadialMenuRequested?.Invoke();
+                    break;
+            }
+        }
+
+        public void ExecuteDirectAction(GestureAction action)
+        {
+            if (action == GestureAction.None) return;
+            var temp = new GestureMapping { Gesture = TouchGestureType.None, Action = action, Enabled = true };
+            OnGestureRecognized?.Invoke(TouchGestureType.None, action);
+            switch (action)
+            {
+                case GestureAction.TakeScreenshot:
+                case GestureAction.SaveReplayClip:
+                case GestureAction.ToggleMicMute:
+                case GestureAction.PlayPauseMedia:
+                case GestureAction.NextTrack:
+                case GestureAction.PreviousTrack:
+                case GestureAction.OpenGameBar:
+                case GestureAction.LaunchCalculator:
+                case GestureAction.DiscordMute:
+                case GestureAction.DiscordDeafen:
+                case GestureAction.ToggleRadialMenu:
+                    var prev = Mappings.FirstOrDefault(m => m.Gesture == TouchGestureType.TwoFingerTap);
+                    if (prev != null)
+                    {
+                        var saved = prev.Action;
+                        prev.Action = action;
+                        ExecuteGesture(TouchGestureType.TwoFingerTap);
+                        prev.Action = saved;
+                    }
                     break;
             }
         }

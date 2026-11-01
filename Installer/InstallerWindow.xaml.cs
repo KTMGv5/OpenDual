@@ -40,7 +40,7 @@ namespace OpenDualSetup
             if (File.Exists(existingHub))
             {
                 TxtDetectTitle.Text = "Existing OpenDual Installation Detected";
-                TxtDetectSub.Text = "Click 'Update / Repair Suite' to upgrade to v1.7.0 while preserving your saved profiles.";
+                TxtDetectSub.Text = "Click 'Update / Repair Suite' to upgrade to v1.8.0 while preserving your saved profiles.";
                 BtnPrimaryAction.Content = "Update / Repair Suite →";
                 BtnUninstallExisting.Visibility = Visibility.Visible;
             }
@@ -190,7 +190,7 @@ namespace OpenDualSetup
                 PageProgress.Visibility = Visibility.Collapsed;
                 PageFinished.Visibility = Visibility.Visible;
 
-                TxtFinishTitle.Text = "OpenDual v1.7.0 Installed Successfully!";
+                TxtFinishTitle.Text = "OpenDual v1.8.0 Installed Successfully!";
                 TxtFinishSub.Text = $"Installed to: {targetDir}";
                 TxtFinishSummary.Text =
                     "✓ 1000Hz C++20 Direct HID Kernel Driver (OpenDualDriver.exe)\n" +

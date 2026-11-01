@@ -20,6 +20,19 @@ typedef struct _XUSB_REPORT {
     SHORT sThumbRY;
 } XUSB_REPORT, *PXUSB_REPORT;
 
+#pragma pack(push, 1)
+typedef struct _DS4_REPORT {
+    BYTE bThumbLX;
+    BYTE bThumbLY;
+    BYTE bThumbRX;
+    BYTE bThumbRY;
+    USHORT wButtons;
+    BYTE bSpecial;
+    BYTE bTriggerL;
+    BYTE bTriggerR;
+} DS4_REPORT, *PDS4_REPORT;
+#pragma pack(pop)
+
 typedef void(__stdcall* PVIGEM_X360_NOTIFICATION)(
     PVIGEM_CLIENT Client,
     PVIGEM_TARGET Target,
@@ -36,11 +49,13 @@ public:
     VirtualGamepad();
     ~VirtualGamepad();
 
-    bool Initialize();
+    bool Initialize(int padMode = 0);
     void Shutdown();
+    void SetMode(int padMode);
 
     bool IsAvailable() const { return m_available; }
     bool IsConnected() const { return m_connected; }
+    int GetMode() const { return m_currentMode; }
 
     void Update(const ControllerState& state);
     void SetRumbleCallback(RumbleCallback cb) { m_rumbleCb = cb; }
@@ -54,6 +69,7 @@ private:
     PVIGEM_CLIENT m_client = nullptr;
     PVIGEM_TARGET m_target = nullptr;
 
+    int m_currentMode = 0; // 0 = X360, 1 = DS4, 2 = Off
     bool m_available = false;
     bool m_connected = false;
     RumbleCallback m_rumbleCb;
@@ -64,10 +80,12 @@ private:
     typedef INT(__stdcall* vigem_connect_fn)(PVIGEM_CLIENT vigem);
     typedef void(__stdcall* vigem_disconnect_fn)(PVIGEM_CLIENT vigem);
     typedef PVIGEM_TARGET(__stdcall* vigem_target_x360_alloc_fn)();
+    typedef PVIGEM_TARGET(__stdcall* vigem_target_ds4_alloc_fn)();
     typedef void(__stdcall* vigem_target_free_fn)(PVIGEM_TARGET target);
     typedef INT(__stdcall* vigem_target_add_fn)(PVIGEM_CLIENT vigem, PVIGEM_TARGET target);
     typedef INT(__stdcall* vigem_target_remove_fn)(PVIGEM_CLIENT vigem, PVIGEM_TARGET target);
     typedef INT(__stdcall* vigem_target_x360_send_fn)(PVIGEM_CLIENT vigem, PVIGEM_TARGET target, XUSB_REPORT report);
+    typedef INT(__stdcall* vigem_target_ds4_send_fn)(PVIGEM_CLIENT vigem, PVIGEM_TARGET target, DS4_REPORT report);
     typedef INT(__stdcall* vigem_target_x360_register_notification_fn)(PVIGEM_CLIENT vigem, PVIGEM_TARGET target, PVIGEM_X360_NOTIFICATION notification, LPVOID userData);
     typedef void(__stdcall* vigem_target_x360_unregister_notification_fn)(PVIGEM_TARGET target);
 
@@ -76,10 +94,12 @@ private:
     vigem_connect_fn fn_vigem_connect = nullptr;
     vigem_disconnect_fn fn_vigem_disconnect = nullptr;
     vigem_target_x360_alloc_fn fn_vigem_target_x360_alloc = nullptr;
+    vigem_target_ds4_alloc_fn fn_vigem_target_ds4_alloc = nullptr;
     vigem_target_free_fn fn_vigem_target_free = nullptr;
     vigem_target_add_fn fn_vigem_target_add = nullptr;
     vigem_target_remove_fn fn_vigem_target_remove = nullptr;
     vigem_target_x360_send_fn fn_vigem_target_x360_send = nullptr;
+    vigem_target_ds4_send_fn fn_vigem_target_ds4_send = nullptr;
     vigem_target_x360_register_notification_fn fn_vigem_target_x360_register_notification = nullptr;
     vigem_target_x360_unregister_notification_fn fn_vigem_target_x360_unregister_notification = nullptr;
 };

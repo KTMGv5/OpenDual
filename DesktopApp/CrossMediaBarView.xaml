@@ -83,8 +83,17 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Right: Date, Real-Time Clock & Battery -->
+                <!-- Right: Controller Slot (1-4), Mini-Widget Mode, Clock & Battery -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#121A2B" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="3,2" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="BtnSlot1" Content="P1" Width="24" Height="20" FontSize="9.5" FontWeight="Bold" Background="{StaticResource AccentSignature}" Foreground="#080B13" BorderThickness="0" Cursor="Hand" Click="BtnSlot_Click" Tag="0" ToolTip="Controller Slot 1"/>
+                            <Button x:Name="BtnSlot2" Content="P2" Width="24" Height="20" FontSize="9.5" FontWeight="Bold" Background="Transparent" Foreground="{StaticResource TextSecondary}" BorderThickness="0" Cursor="Hand" Click="BtnSlot_Click" Tag="1" ToolTip="Controller Slot 2"/>
+                            <Button x:Name="BtnSlot3" Content="P3" Width="24" Height="20" FontSize="9.5" FontWeight="Bold" Background="Transparent" Foreground="{StaticResource TextSecondary}" BorderThickness="0" Cursor="Hand" Click="BtnSlot_Click" Tag="2" ToolTip="Controller Slot 3"/>
+                            <Button x:Name="BtnSlot4" Content="P4" Width="24" Height="20" FontSize="9.5" FontWeight="Bold" Background="Transparent" Foreground="{StaticResource TextSecondary}" BorderThickness="0" Cursor="Hand" Click="BtnSlot_Click" Tag="3" ToolTip="Controller Slot 4"/>
+                        </StackPanel>
+                    </Border>
+                    <Button x:Name="BtnMiniWidget" Content="⧉ Mini" Style="{StaticResource XmbActionBtn}" Padding="9,3" FontSize="10" Margin="0,0,10,0" Click="BtnMiniWidget_Click" ToolTip="Collapse into Always-on-Top Streamer Mini-Widget"/>
                     <TextBlock x:Name="TxtXmbClock" Text="Sat 31/10  1:15 AM" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="8,4">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -206,7 +215,7 @@
                 </StackPanel>
 
                 <!-- Right: OpenDual Version -->
-                <TextBlock Grid.Column="2" Text="v1.7.0" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="v1.8.0" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
     </Grid>

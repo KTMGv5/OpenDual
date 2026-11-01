@@ -15,7 +15,7 @@ namespace OpenDualSetup
     {
         public const string AppName = "OpenDual";
         public const string AppFullName = "OpenDual Controller Suite";
-        public const string AppVersion = "1.7.0";
+        public const string AppVersion = "1.8.0";
         public const string AppPublisher = "OpenDual Team";
 
         [STAThread]

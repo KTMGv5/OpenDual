@@ -42,6 +42,8 @@ namespace OpenDualHub
         private bool _criticalBatteryWarned5 = false;
         private OverclockAssistantWindow? _overclockAssistant;
         private CaptureBarWindow? _captureBar;
+        private MiniWidgetWindow? _miniWidget;
+        private RadialMenuWindow? _radialMenu;
         private bool _lastShareState = false;
         private DateTime _sharePressStartTime = DateTime.MinValue;
         private bool _shareLongPressHandled = false;
@@ -74,11 +76,20 @@ namespace OpenDualHub
         {
             InitializeComponent();
             ThemeManager.Initialize(Resources);
-            _clockTimer.Interval = TimeSpan.FromSeconds(1);
-            _clockTimer.Tick += (s, e) => UpdateClockDisplay();
+            _clockTimer.Interval = TimeSpan.FromMilliseconds(250);
+            _clockTimer.Tick += (s, e) =>
+            {
+                UpdateClockDisplay();
+                if (_currentProfile?.Config?.Effect == 5)
+                {
+                    var (r, g, b) = ScreenAmbienceSampler.SampleScreenColor();
+                    _ipc.SetRgbColor(r, g, b, 0, _currentProfile.Config.PlayerLeds, 1.0f);
+                }
+            };
             _clockTimer.Start();
             UpdateClockDisplay();
 
+            _gestureEngine.OnToggleRadialMenuRequested += () => Dispatcher.Invoke(ToggleRadialMenu);
             _ipc.OnTelemetryReceived += OnTelemetryReceived;
             _ipc.OnConnectionChanged += OnIpcConnectionChanged;
             Loaded += MainWindow_Loaded;
@@ -371,6 +382,36 @@ namespace OpenDualHub
                                 tBtn.IsChecked = false;
                                 tBtn.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
                             }
+
+                            // Test v1.8.0 Pro Studio (Stick Curves, Emulation & Macros)
+                            System.IO.File.AppendAllText("ui_test_result.log", "Testing v1.8.0 Stick Curves, Emulation & Macros Studio...\n");
+                            XmbView?.Xmb.SelectCategory(2);
+                            XmbView?.Xmb.SelectItem(6); // ctrl_pro_studio
+                            UpdateLayout();
+                            await Task.Delay(100);
+
+                            novel.CmbVirtualPadMode.SelectedIndex = 1;
+                            novel.CmbLeftStickCurve.SelectedIndex = 1;
+                            novel.CmbRightStickCurve.SelectedIndex = 2;
+                            novel.ToggleFlickStick.IsChecked = true;
+                            novel.ToggleFlickStick.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            novel.ToggleEdgeShift.IsChecked = true;
+                            novel.ToggleEdgeShift.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            novel.ToggleRapidFireMacro.IsChecked = true;
+                            novel.ToggleRapidFireMacro.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+
+                            var cfgV180 = AppSettingsManager.Load().SavedHardwareConfig;
+                            System.IO.File.AppendAllText("ui_test_result.log", $"v1.8.0 Studio Saved: PadMode={cfgV180?.VirtualPadMode}, CurveL={cfgV180?.LeftStickCurve}, CurveR={cfgV180?.RightStickCurve}, Flick={cfgV180?.FlickStickEnabled}, EdgeShift={cfgV180?.EdgeShiftLayer}, RapidFire={cfgV180?.RapidFireMacro}\n");
+
+                            novel.CmbVirtualPadMode.SelectedIndex = 0;
+                            novel.CmbLeftStickCurve.SelectedIndex = 0;
+                            novel.CmbRightStickCurve.SelectedIndex = 0;
+                            novel.ToggleFlickStick.IsChecked = false;
+                            novel.ToggleFlickStick.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            novel.ToggleEdgeShift.IsChecked = false;
+                            novel.ToggleEdgeShift.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            novel.ToggleRapidFireMacro.IsChecked = false;
+                            novel.ToggleRapidFireMacro.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
                         }
 
                         // Restore Standard Balanced clean defaults after test
@@ -659,6 +700,7 @@ namespace OpenDualHub
         private void ApplyTelemetryToUi(ControllerTelemetry t)
         {
             XmbView?.UpdateTelemetry(t);
+            _miniWidget?.UpdateTelemetry(t, ActiveProfileName);
 
             if (t.Connected)
             {
@@ -816,6 +858,88 @@ namespace OpenDualHub
         #endregion
 
         #region Driver & Assistants
+        public void EnterMiniWidgetMode()
+        {
+            if (_miniWidget == null || !_miniWidget.IsLoaded)
+            {
+                _miniWidget = new MiniWidgetWindow(this);
+            }
+            _miniWidget.Show();
+            _miniWidget.Activate();
+            Hide();
+        }
+
+        public void RestoreFromMiniWidget()
+        {
+            _miniWidget?.Hide();
+            RestoreFromTray();
+        }
+
+        public void ToggleRadialMenu()
+        {
+            if (_radialMenu == null || !_radialMenu.IsLoaded)
+            {
+                _radialMenu = new RadialMenuWindow(this);
+            }
+            _radialMenu.ToggleMenu();
+        }
+
+        public void ToggleGyroFromExternal() => ToggleGyroEnabled();
+        public void CycleProfileFromExternal() => CycleProfile(1);
+
+        public void PowerOffControllerNow()
+        {
+            _ipc.PowerOffControllerNow();
+            _quickHud?.ShowNotification("Controller Power-Off Sent", "Bluetooth disconnect & sleep command dispatched.");
+            _trayManager.ShowNotification("Controller Power Off", "Sent immediate wireless sleep command to DualSense.");
+        }
+
+        public void ExportProfileShareCodeToClipboard()
+        {
+            try
+            {
+                string json = System.Text.Json.JsonSerializer.Serialize(_currentProfile.Config);
+                string b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
+                string code = $"OD1-{b64}";
+                Clipboard.SetText(code);
+                _quickHud?.ShowNotification("Profile Share Code Copied", $"Copied {code[..Math.Min(18, code.Length)]}... to clipboard!");
+                MessageBox.Show($"Copied OpenDual v1.8.0 Share Code to Clipboard:\n\n{code[..Math.Min(64, code.Length)]}...\n\nAnyone can paste this code using 'Import Share Code' to load your exact stick curves, triggers, gyro, and hardware settings!", "Share Code Copied", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not export share code: {ex.Message}", "Export Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        public void ImportProfileShareCodeFromClipboard()
+        {
+            try
+            {
+                string clip = Clipboard.GetText()?.Trim() ?? "";
+                if (!clip.StartsWith("OD1-", StringComparison.OrdinalIgnoreCase))
+                {
+                    MessageBox.Show("Clipboard does not contain a valid OpenDual Share Code (starts with 'OD1-').\n\nCopy an OD1-... share code first, then click Import.", "Invalid Share Code", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                string b64 = clip.Substring(4);
+                string json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(b64));
+                var cfg = System.Text.Json.JsonSerializer.Deserialize<ConfigDto>(json);
+                if (cfg != null)
+                {
+                    var imported = _currentProfile.Clone($"Imported Setup ({DateTime.Now:HHmm})");
+                    imported.Config = cfg;
+                    _profileManager.SaveProfile(imported);
+                    ApplyProfile(imported, savePreference: true);
+                    _quickHud?.ShowNotification("Share Code Imported", $"Activated {imported.Name}");
+                    MessageBox.Show($"Successfully imported and activated profile '{imported.Name}' from clipboard share code!", "Share Code Imported", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to decode share code from clipboard:\n{ex.Message}", "Import Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         public void RestartDriverEngine()
         {
             _driver.StopDriverEngine();

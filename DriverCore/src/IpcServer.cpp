@@ -260,6 +260,27 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getBool("recoilAssist", bVal)) { cfg.recoilAssist = bVal; changed = true; }
     if (getBool("thermalGuard", bVal)) { cfg.thermalGuard = bVal; changed = true; }
 
+    // v1.8.0 Pro Suite Extensions
+    int iVal = 0;
+    float fVal = 0.0f;
+    if (getInt("virtualPadMode", iVal)) { cfg.virtualPadMode = iVal; changed = true; }
+    if (getInt("activeControllerSlot", iVal)) { cfg.activeControllerSlot = iVal; changed = true; }
+    if (getInt("leftStickCurve", iVal)) { cfg.leftStickCurve = iVal; changed = true; }
+    if (getInt("rightStickCurve", iVal)) { cfg.rightStickCurve = iVal; changed = true; }
+    if (getFloat("antiDeadzoneL", fVal)) { cfg.antiDeadzoneL = fVal; changed = true; }
+    if (getFloat("antiDeadzoneR", fVal)) { cfg.antiDeadzoneR = fVal; changed = true; }
+    if (getInt("axialDeadzoneShape", iVal)) { cfg.axialDeadzoneShape = iVal; changed = true; }
+    if (getBool("flickStickEnabled", bVal)) { cfg.flickStickEnabled = bVal; changed = true; }
+    if (getFloat("flickStickSens", fVal)) { cfg.flickStickSens = fVal; changed = true; }
+    if (getBool("edgeShiftLayer", bVal)) { cfg.edgeShiftLayer = bVal; changed = true; }
+    if (getInt("l2ActuationMin", iVal)) { cfg.l2ActuationMin = iVal; changed = true; }
+    if (getInt("l2ActuationMax", iVal)) { cfg.l2ActuationMax = iVal; changed = true; }
+    if (getInt("r2ActuationMin", iVal)) { cfg.r2ActuationMin = iVal; changed = true; }
+    if (getInt("r2ActuationMax", iVal)) { cfg.r2ActuationMax = iVal; changed = true; }
+    if (getBool("rapidFireMacro", bVal)) { cfg.rapidFireMacro = bVal; changed = true; }
+    if (getInt("rapidFireHz", iVal)) { cfg.rapidFireHz = iVal; changed = true; }
+    if (getBool("forcePowerOff", bVal)) { cfg.forcePowerOff = bVal; changed = true; }
+
     if (changed) {
         m_lastConfig = cfg;
         m_configCb(cfg);
@@ -320,6 +341,9 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
        << "\"hapticR\":" << (int)s.hapticMotorR << ","
        << "\"motorTempC\":" << s.motorTempC << ","
        << "\"impactG\":" << s.impactGForce << ","
+       << "\"fwVer\":\"" << EscapeJsonString(s.firmwareVersion) << "\","
+       << "\"hwVer\":\"" << EscapeJsonString(s.hardwareVersion) << "\","
+       << "\"btMac\":\"" << EscapeJsonString(s.btMacAddress) << "\","
        << "\"renderDev\":\"" << EscapeJsonString(s.renderAudioDev) << "\","
        << "\"captureDev\":\"" << EscapeJsonString(s.captureAudioDev) << "\","
        << "\"t1\":{\"on\":" << (s.touch1.active ? "true" : "false") << ",\"x\":" << s.touch1.x << ",\"y\":" << s.touch1.y << "},"
@@ -367,6 +391,22 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"micBeamforming\":" << (c.micBeamforming ? "true" : "false") << ","
            << "\"recoilAssist\":" << (c.recoilAssist ? "true" : "false") << ","
            << "\"thermalGuard\":" << (c.thermalGuard ? "true" : "false") << ","
+           << "\"virtualPadMode\":" << c.virtualPadMode << ","
+           << "\"activeControllerSlot\":" << c.activeControllerSlot << ","
+           << "\"leftStickCurve\":" << c.leftStickCurve << ","
+           << "\"rightStickCurve\":" << c.rightStickCurve << ","
+           << "\"antiDeadzoneL\":" << c.antiDeadzoneL << ","
+           << "\"antiDeadzoneR\":" << c.antiDeadzoneR << ","
+           << "\"axialDeadzoneShape\":" << c.axialDeadzoneShape << ","
+           << "\"flickStickEnabled\":" << (c.flickStickEnabled ? "true" : "false") << ","
+           << "\"flickStickSens\":" << c.flickStickSens << ","
+           << "\"edgeShiftLayer\":" << (c.edgeShiftLayer ? "true" : "false") << ","
+           << "\"l2ActuationMin\":" << c.l2ActuationMin << ","
+           << "\"l2ActuationMax\":" << c.l2ActuationMax << ","
+           << "\"r2ActuationMin\":" << c.r2ActuationMin << ","
+           << "\"r2ActuationMax\":" << c.r2ActuationMax << ","
+           << "\"rapidFireMacro\":" << (c.rapidFireMacro ? "true" : "false") << ","
+           << "\"rapidFireHz\":" << c.rapidFireHz << ","
            << "\"ltMode\":" << (int)c.leftTrigger.mode << ","
            << "\"rtMode\":" << (int)c.rightTrigger.mode
        << "}"
