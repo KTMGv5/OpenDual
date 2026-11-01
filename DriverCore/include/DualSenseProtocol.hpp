@@ -41,10 +41,11 @@ public:
         float centerRX = 128.0f + (float)config.zeroShiftRX;
         float centerRY = 128.0f + (float)config.zeroShiftRY;
 
-        state.lx = std::clamp(((float)p[1] - centerLX) / 128.0f, -1.0f, 1.0f);
-        state.ly = std::clamp(-((float)p[2] - centerLY) / 128.0f, -1.0f, 1.0f); // Invert Y so up is positive
-        state.rx = std::clamp(((float)p[3] - centerRX) / 128.0f, -1.0f, 1.0f);
-        state.ry = std::clamp(-((float)p[4] - centerRY) / 128.0f, -1.0f, 1.0f);
+        auto clampUnit = [](float v) { return v < -1.0f ? -1.0f : (v > 1.0f ? 1.0f : v); };
+        state.lx = clampUnit(((float)p[1] - centerLX) / 128.0f);
+        state.ly = clampUnit(-((float)p[2] - centerLY) / 128.0f); // Invert Y so up is positive
+        state.rx = clampUnit(((float)p[3] - centerRX) / 128.0f);
+        state.ry = clampUnit(-((float)p[4] - centerRY) / 128.0f);
 
         // Triggers
         state.rawL2 = p[5];
@@ -231,8 +232,9 @@ public:
         // 0x08: Left Trigger Motor Enable
         // 0x10: Headphone Volume Enable
         // 0x20: Speaker Volume Enable
+        // 0x40: Internal Microphone Volume / Preamp Enable
         // 0x80: Audio Control Enable
-        out[1] = 0x0F | 0x10 | 0x20 | 0x80; 
+        out[1] = 0x0F | 0x10 | 0x20 | 0x40 | 0x80; 
 
         // valid_flag1:
         // 0x01: Mic Mute LED
@@ -246,8 +248,8 @@ public:
         out[4] = leftRumble;
 
         // Hardware volume scaling mapped from Windows master volume (0.0 .. 1.0f)
-        uint8_t hpVol = (uint8_t)std::clamp((int)(masterVol * 127.0f), 0, 127);
-        uint8_t spkVol = (uint8_t)std::clamp((int)(masterVol * 255.0f), 0, 255);
+        uint8_t hpVol = (uint8_t)((masterVol * 127.0f < 0.0f) ? 0 : (masterVol * 127.0f > 127.0f ? 127 : (int)(masterVol * 127.0f)));
+        uint8_t spkVol = (uint8_t)((masterVol * 255.0f < 0.0f) ? 0 : (masterVol * 255.0f > 255.0f ? 255 : (int)(masterVol * 255.0f)));
 
         if (config.speakerEnabled) {
             // Speaker Output Enabled:
@@ -264,6 +266,9 @@ public:
             out[5] = hpVol;
             out[6] = 0x00;
         }
+
+        // Internal Dual-Mic Array Preamp Gain (0x00..0x40, boosted when micBeamforming enabled)
+        out[7] = micMuted ? 0x00 : (config.micBeamforming ? 0x40 : 0x2C);
 
         // Mic Mute LED (0=off, 1=solid amber, 2=pulse)
         out[9] = micMuted ? 0x01 : 0x00;
@@ -294,14 +299,14 @@ public:
         out[0] = 0x31; // DualSense BT Output Report ID
         out[1] = 0x02; // Tag
 
-        out[2] = 0x0F | 0x10 | 0x20 | 0x80; // valid_flag0 (rumble + triggers + headphone/speaker volume + audio control)
+        out[2] = 0x0F | 0x10 | 0x20 | 0x40 | 0x80; // valid_flag0 (rumble + triggers + headphone/speaker/mic volume + audio control)
         out[3] = 0x35; // valid_flag1 (LEDs + lightbar)
 
         out[4] = rightRumble;
         out[5] = leftRumble;
 
-        uint8_t hpVol = (uint8_t)std::clamp((int)(masterVol * 127.0f), 0, 127);
-        uint8_t spkVol = (uint8_t)std::clamp((int)(masterVol * 255.0f), 0, 255);
+        uint8_t hpVol = (uint8_t)((masterVol * 127.0f < 0.0f) ? 0 : (masterVol * 127.0f > 127.0f ? 127 : (int)(masterVol * 127.0f)));
+        uint8_t spkVol = (uint8_t)((masterVol * 255.0f < 0.0f) ? 0 : (masterVol * 255.0f > 255.0f ? 255 : (int)(masterVol * 255.0f)));
 
         if (config.speakerEnabled) {
             out[9] = 0x30;
@@ -312,6 +317,7 @@ public:
             out[6] = hpVol;
             out[7] = 0x00;
         }
+        out[8] = micMuted ? 0x00 : (config.micBeamforming ? 0x40 : 0x2C);
 
         out[10] = micMuted ? 0x01 : 0x00;
 

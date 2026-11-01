@@ -89,6 +89,49 @@ namespace OpenDualHub
             Mappings.Add(new GestureMapping { Gesture = TouchGestureType.LetterZ, Action = GestureAction.OpenGameBar, Name = "Draw 'Z' -> Open Xbox Game Bar" });
         }
 
+        public void LoadSavedMappings(Dictionary<string, string>? saved)
+        {
+            if (saved == null || saved.Count == 0) return;
+            foreach (var kv in saved)
+            {
+                if (Enum.TryParse<TouchGestureType>(kv.Key, true, out var gType) &&
+                    Enum.TryParse<GestureAction>(kv.Value, true, out var gAct))
+                {
+                    var existing = Mappings.FirstOrDefault(m => m.Gesture == gType);
+                    if (existing != null)
+                    {
+                        existing.Action = gAct;
+                    }
+                    else
+                    {
+                        Mappings.Add(new GestureMapping { Gesture = gType, Action = gAct, Name = $"{gType} -> {gAct}" });
+                    }
+                }
+            }
+        }
+
+        public void SetMapping(TouchGestureType gesture, GestureAction action)
+        {
+            var existing = Mappings.FirstOrDefault(m => m.Gesture == gesture);
+            if (existing != null)
+            {
+                existing.Action = action;
+            }
+            else
+            {
+                Mappings.Add(new GestureMapping { Gesture = gesture, Action = action, Name = $"{gesture} -> {action}" });
+            }
+
+            AppSettingsManager.Current.GestureMappings[gesture.ToString()] = action.ToString();
+            AppSettingsManager.Save();
+        }
+
+        public GestureAction GetMapping(TouchGestureType gesture)
+        {
+            var existing = Mappings.FirstOrDefault(m => m.Gesture == gesture);
+            return existing?.Action ?? GestureAction.None;
+        }
+
         public void ProcessTelemetry(ControllerTelemetry t)
         {
             if (!GesturesEnabled || t == null) return;

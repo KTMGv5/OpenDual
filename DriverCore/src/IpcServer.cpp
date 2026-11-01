@@ -247,6 +247,19 @@ void IpcServer::ProcessCommand(const std::string& msg) {
     if (getInt("rtForce", rForce)) { cfg.rightTrigger.force = (uint8_t)rForce; changed = true; }
     if (getInt("rtFreq", rFreq)) { cfg.rightTrigger.frequency = (uint8_t)rFreq; changed = true; }
 
+    // 10 Deep DualSense Hardware Features
+    bool bVal = false;
+    if (getBool("dualStageTriggers", bVal)) { cfg.dualStageTriggers = bVal; changed = true; }
+    if (getBool("hairTriggerRelease", bVal)) { cfg.hairTriggerRelease = bVal; changed = true; }
+    if (getBool("sprintShelfL3", bVal)) { cfg.sprintShelfL3 = bVal; changed = true; }
+    if (getBool("gyroRatcheting", bVal)) { cfg.gyroRatcheting = bVal; changed = true; }
+    if (getBool("hapticDetent", bVal)) { cfg.hapticDetent = bVal; changed = true; }
+    if (getBool("gShockGuard", bVal)) { cfg.gShockGuard = bVal; changed = true; }
+    if (getBool("playerLedTelemetry", bVal)) { cfg.playerLedTelemetry = bVal; changed = true; }
+    if (getBool("micBeamforming", bVal)) { cfg.micBeamforming = bVal; changed = true; }
+    if (getBool("recoilAssist", bVal)) { cfg.recoilAssist = bVal; changed = true; }
+    if (getBool("thermalGuard", bVal)) { cfg.thermalGuard = bVal; changed = true; }
+
     if (changed) {
         m_lastConfig = cfg;
         m_configCb(cfg);
@@ -305,6 +318,8 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
        << "\"accelZ\":" << s.accelZ << ","
        << "\"hapticL\":" << (int)s.hapticMotorL << ","
        << "\"hapticR\":" << (int)s.hapticMotorR << ","
+       << "\"motorTempC\":" << s.motorTempC << ","
+       << "\"impactG\":" << s.impactGForce << ","
        << "\"renderDev\":\"" << EscapeJsonString(s.renderAudioDev) << "\","
        << "\"captureDev\":\"" << EscapeJsonString(s.captureAudioDev) << "\","
        << "\"t1\":{\"on\":" << (s.touch1.active ? "true" : "false") << ",\"x\":" << s.touch1.x << ",\"y\":" << s.touch1.y << "},"
@@ -342,6 +357,16 @@ void IpcServer::BroadcastState(const ControllerState& s, const ControllerConfig&
            << "\"zeroShiftLY\":" << (int)c.zeroShiftLY << ","
            << "\"zeroShiftRX\":" << (int)c.zeroShiftRX << ","
            << "\"zeroShiftRY\":" << (int)c.zeroShiftRY << ","
+           << "\"dualStageTriggers\":" << (c.dualStageTriggers ? "true" : "false") << ","
+           << "\"hairTriggerRelease\":" << (c.hairTriggerRelease ? "true" : "false") << ","
+           << "\"sprintShelfL3\":" << (c.sprintShelfL3 ? "true" : "false") << ","
+           << "\"gyroRatcheting\":" << (c.gyroRatcheting ? "true" : "false") << ","
+           << "\"hapticDetent\":" << (c.hapticDetent ? "true" : "false") << ","
+           << "\"gShockGuard\":" << (c.gShockGuard ? "true" : "false") << ","
+           << "\"playerLedTelemetry\":" << (c.playerLedTelemetry ? "true" : "false") << ","
+           << "\"micBeamforming\":" << (c.micBeamforming ? "true" : "false") << ","
+           << "\"recoilAssist\":" << (c.recoilAssist ? "true" : "false") << ","
+           << "\"thermalGuard\":" << (c.thermalGuard ? "true" : "false") << ","
            << "\"ltMode\":" << (int)c.leftTrigger.mode << ","
            << "\"rtMode\":" << (int)c.rightTrigger.mode
        << "}"

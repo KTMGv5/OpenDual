@@ -93,6 +93,11 @@ bool GyroEngine::Process(ControllerState& state, const ControllerConfig& config)
         break;
     }
 
+    // Feature 4: Touchpad-Touch Gyro Ratcheting (Touching pad pauses gyro so player can recenter wrist)
+    if (config.gyroRatcheting && config.gyroTriggerMode != 2 && (state.touch1.active || state.touch2.active)) {
+        active = false;
+    }
+
     if (!active) {
         if (m_holdingLeft) {
             INPUT input = { 0 };

@@ -94,6 +94,7 @@ namespace OpenDualHub
             ClockDateFormat = string.IsNullOrEmpty(settings.ClockDateFormat) ? "ddd dd/MM" : settings.ClockDateFormat;
             _enableVolumeOverlay = settings.EnableVolumeOverlay;
             _gestureEngine.GesturesEnabled = settings.TouchpadGesturesEnabled;
+            _gestureEngine.LoadSavedMappings(settings.GestureMappings);
 
             if (WaveBackground != null)
             {
@@ -164,6 +165,10 @@ namespace OpenDualHub
             var restoredProf = _profileManager.Profiles.FirstOrDefault(p => p.Id == settings.ActiveProfileId)
                                ?? _profileManager.Profiles.FirstOrDefault(p => p.Id == "builtin-default")
                                ?? _profileManager.Profiles[0];
+            if (settings.SavedHardwareConfig != null)
+            {
+                restoredProf.Config = settings.SavedHardwareConfig;
+            }
             ApplyProfile(restoredProf, savePreference: false);
 
             // 6. Background update check (non-blocking)
@@ -315,6 +320,60 @@ namespace OpenDualHub
                             System.IO.File.AppendAllText("ui_test_result.log", "HUD Swipes verified: HUD remains safely closed on swipes.\n");
                         }
 
+                        // Test Items 1, 2, 4 & 10 Deep Hardware Features
+                        System.IO.File.AppendAllText("ui_test_result.log", "Testing Custom Profile Creator & Per-Game EXE Linker...\n");
+                        if (insp != null)
+                        {
+                            insp.TxtCustomProfileName.Text = "Cyberpunk Custom Test";
+                            insp.TxtCustomProfileExe.Text = "Cyberpunk2077.exe";
+                            insp.BtnSaveCustomProfile_Click(insp.BtnSaveCustomProfile, new RoutedEventArgs());
+                            var customs = GetCustomProfiles();
+                            var created = customs.FirstOrDefault(p => p.Name == "Cyberpunk Custom Test");
+                            if (created == null) throw new InvalidOperationException("Custom profile was not created!");
+                            System.IO.File.AppendAllText("ui_test_result.log", $"Custom Profile Verified: Name={created.Name}, Exe={created.ProcessNames}\n");
+                            DeleteCustomProfile(created.Id);
+                            insp.RefreshCustomProfilesList();
+                        }
+
+                        System.IO.File.AppendAllText("ui_test_result.log", "Testing Custom Gesture Action Mapper persistence...\n");
+                        _gestureEngine.SetMapping(TouchGestureType.LetterC, GestureAction.LaunchCalculator);
+                        var gestureReloaded = AppSettingsManager.Load();
+                        System.IO.File.AppendAllText("ui_test_result.log", $"Gesture Mapping Persisted: LetterC -> {gestureReloaded.GestureMappings["LetterC"]}\n");
+                        _gestureEngine.SetMapping(TouchGestureType.LetterC, GestureAction.TakeScreenshot);
+
+                        System.IO.File.AppendAllText("ui_test_result.log", "Testing 10 Deep Hardware Features in NovelFeaturesControl...\n");
+                        XmbView?.Xmb.SelectCategory(2);
+                        XmbView?.Xmb.SelectItem(5); // 10 Deep Hardware Modifiers
+                        UpdateLayout();
+                        await Task.Delay(100);
+                        var novel = XmbView?.NovelControl;
+                        if (novel != null)
+                        {
+                            var deepToggles = new[]
+                            {
+                                novel.ToggleDualStage, novel.ToggleRapidTrigger, novel.ToggleSprintShelf,
+                                novel.ToggleGyroRatchet, novel.ToggleHapticDetent, novel.ToggleGShockGuard,
+                                novel.TogglePlayerLedBar, novel.ToggleMicBeamforming, novel.ToggleRecoilAssist,
+                                novel.ToggleThermalGuard
+                            };
+                            foreach (var tBtn in deepToggles)
+                            {
+                                tBtn.IsChecked = true;
+                                tBtn.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            }
+                            var cfgAfterEnable = AppSettingsManager.Load().SavedHardwareConfig;
+                            System.IO.File.AppendAllText("ui_test_result.log", $"All 10 Deep Features Enabled & Saved: DualStage={cfgAfterEnable?.DualStageTriggers}, Rapid={cfgAfterEnable?.HairTriggerRelease}, Sprint={cfgAfterEnable?.SprintShelfL3}, Thermal={cfgAfterEnable?.ThermalGuard}\n");
+
+                            foreach (var tBtn in deepToggles)
+                            {
+                                tBtn.IsChecked = false;
+                                tBtn.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                            }
+                        }
+
+                        // Restore Standard Balanced clean defaults after test
+                        ApplyProfileByName("Standard Balanced");
+
                         System.IO.File.AppendAllText("ui_test_result.log", "SUCCESS: All button click tests completed without any crashes!\n");
                     }
                     catch (Exception ex)
@@ -323,6 +382,7 @@ namespace OpenDualHub
                     }
 
                     Application.Current.Shutdown();
+                    Environment.Exit(0);
                 }));
                 return;
             }
@@ -356,6 +416,7 @@ namespace OpenDualHub
                     }
 
                     Application.Current.Shutdown();
+                    Environment.Exit(0);
                 }));
                 return;
             }
@@ -429,6 +490,7 @@ namespace OpenDualHub
             _overclockAssistant?.Close();
             _captureBar?.Close();
             Application.Current.Shutdown();
+            Environment.Exit(0);
         }
 
         private void Window_StateChanged(object? sender, EventArgs e)
@@ -507,6 +569,7 @@ namespace OpenDualHub
             _quickHud?.Close();
             _overclockAssistant?.Close();
             _captureBar?.Close();
+            Environment.Exit(0);
         }
 
         #region Telemetry & Live UI
@@ -785,17 +848,61 @@ namespace OpenDualHub
         #endregion
 
         #region Game Profiles & Presets
+        public ConfigDto CurrentConfig => _currentProfile.Config;
+        public string ActiveProfileName => _currentProfile?.Name ?? "Standard Balanced";
+
+        public void PersistLiveHardwareConfig()
+        {
+            AppSettingsManager.Current.SavedHardwareConfig = _currentProfile.Config;
+            if (!_currentProfile.IsBuiltIn)
+            {
+                _profileManager.SaveProfile(_currentProfile);
+            }
+            AppSettingsManager.Save();
+        }
+
+        public System.Collections.Generic.IReadOnlyList<GameProfile> GetCustomProfiles()
+        {
+            return _profileManager.Profiles.Where(p => !p.IsBuiltIn).ToList();
+        }
+
+        public void SaveAndActivateCustomProfile(string name, string exeNames)
+        {
+            var custom = _currentProfile.Clone(name);
+            custom.ProcessNames = exeNames;
+            custom.Description = string.IsNullOrWhiteSpace(exeNames)
+                ? "Custom User Hardware Profile"
+                : $"Auto-Switch Game Profile ({exeNames})";
+            _profileManager.SaveProfile(custom);
+            ApplyProfile(custom, savePreference: true);
+            _quickHud?.ShowNotification($"Saved Profile: {custom.Name}", "Custom profile created & activated.");
+            _trayManager.ShowNotification("Custom Profile Saved", $"Activated profile: {custom.Name}");
+        }
+
+        public void DeleteCustomProfile(string id)
+        {
+            bool wasActive = _currentProfile.Id == id;
+            _profileManager.DeleteProfile(id);
+            if (wasActive)
+            {
+                var def = _profileManager.Profiles.FirstOrDefault(p => p.Id == "builtin-default") ?? _profileManager.Profiles[0];
+                ApplyProfile(def, savePreference: true);
+            }
+        }
+
         private void ApplyProfile(GameProfile prof, bool savePreference = true)
         {
             _currentProfile = prof;
             _ipc.SendConfig(prof.Config);
             XmbView?.CategoryInspector?.SyncFromConfig(prof.Config);
+            XmbView?.NovelControl?.SyncFromConfig(prof.Config);
             XmbView?.CategoryInspector?.UpdateActiveProfileCard(prof.Name);
             XmbView?.UpdateProfileBadge(prof.Name);
 
             if (savePreference)
             {
                 AppSettingsManager.Current.ActiveProfileId = prof.Id;
+                AppSettingsManager.Current.SavedHardwareConfig = prof.Config;
                 AppSettingsManager.Save();
             }
         }

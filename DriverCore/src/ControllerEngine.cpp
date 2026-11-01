@@ -269,6 +269,68 @@ void ControllerEngine::PollingThread() {
                                    localState.touch1.active || localState.touch2.active ||
                                    std::abs(localState.gyroX) > 85 || std::abs(localState.gyroY) > 85 || std::abs(localState.gyroZ) > 85;
 
+                // --- 10 DEEP DUALSENSE HARDWARE ENHANCEMENTS ---
+                // 3. Thumbstick Outer-Ring Sprint Shelf (96%+ L-Stick auto-engages L3 Sprint without clicking stick)
+                if (localConfig.sprintShelfL3) {
+                    float leftMag = std::sqrt(localState.lx * localState.lx + localState.ly * localState.ly);
+                    if (leftMag >= 0.96f) {
+                        localState.l3 = true;
+                    }
+                }
+
+                // 6. IMU 3-Axis G-Shock Impact & Recoil Stabilizer (damps stick/gyro spikes during >1.8G slap/drop)
+                float gxG = localState.accelX / 8192.0f;
+                float gyG = localState.accelY / 8192.0f;
+                float gzG = localState.accelZ / 8192.0f;
+                float totalG = std::sqrt(gxG * gxG + gyG * gyG + gzG * gzG);
+                localState.impactGForce = totalG;
+                if (localConfig.gShockGuard && totalG > 1.85f) {
+                    float damp = 1.85f / totalG;
+                    localState.rx *= damp;
+                    localState.ry *= damp;
+                }
+
+                // 2. Dynamic Rapid-Trigger Instant Reset (<1.2mm upward release resets trigger immediately)
+                static uint8_t peakL2 = 0, peakR2 = 0;
+                static bool rapidActiveL2 = false, rapidActiveR2 = false;
+                if (localConfig.hairTriggerRelease) {
+                    if (localState.rawL2 > peakL2) { peakL2 = localState.rawL2; rapidActiveL2 = (peakL2 > 28); }
+                    else if (localState.rawL2 + 35 < peakL2) { rapidActiveL2 = false; peakL2 = localState.rawL2; }
+                    if (!rapidActiveL2 && localState.rawL2 > 10) { localState.rawL2 = 0; localState.l2 = 0.0f; localState.l2Btn = false; }
+
+                    if (localState.rawR2 > peakR2) { peakR2 = localState.rawR2; rapidActiveR2 = (peakR2 > 28); }
+                    else if (localState.rawR2 + 35 < peakR2) { rapidActiveR2 = false; peakR2 = localState.rawR2; }
+                    if (!rapidActiveR2 && localState.rawR2 > 10) { localState.rawR2 = 0; localState.r2 = 0.0f; localState.r2Btn = false; }
+                } else {
+                    peakL2 = localState.rawL2;
+                    peakR2 = localState.rawR2;
+                }
+
+                // 1. Dual-Stage Trigger Soft/Full Press Split (Half-pull R2 engages L2 ADS, Full-pull >=85% engages R2 Fire)
+                if (localConfig.dualStageTriggers) {
+                    if (localState.rawR2 >= 35 && localState.rawR2 < 215) {
+                        localState.rawL2 = 255;
+                        localState.l2 = 1.0f;
+                        localState.l2Btn = true;
+                        localState.rawR2 = 0;
+                        localState.r2 = 0.0f;
+                        localState.r2Btn = false;
+                    } else if (localState.rawR2 >= 215) {
+                        localState.rawL2 = 255;
+                        localState.l2 = 1.0f;
+                        localState.l2Btn = true;
+                        localState.rawR2 = 255;
+                        localState.r2 = 1.0f;
+                        localState.r2Btn = true;
+                    }
+                }
+
+                // 9. Smart Adaptive Vertical Recoil Counter-Tension (subtle downward pitch compensation while firing R2 + aiming L2)
+                if (localConfig.recoilAssist && localState.rawR2 > 160 && (localState.rawL2 > 100 || localState.l2Btn)) {
+                    float compRy = localState.ry - 0.065f;
+                    localState.ry = (compRy < -1.0f) ? -1.0f : compRy;
+                }
+
                 uint64_t nowTick = GetTickCount64();
                 if (hadActivity || m_lastActivityTick.load() == 0) {
                     m_lastActivityTick.store(nowTick);
@@ -426,6 +488,65 @@ void ControllerEngine::OutputThread() {
             }
             state.hapticMotorL = audioHapticL;
             state.hapticMotorR = audioHapticR;
+
+            // 5. Capacitive Touchpad Physical Voice-Coil Detent Clicks (10ms crisp tick when crossing grid detents)
+            static int lastTouchGridX = -1, lastTouchGridY = -1;
+            static int detentPulseFrames = 0;
+            if (config.hapticDetent && state.touch1.active) {
+                int gx = state.touch1.x / 160;
+                int gy = state.touch1.y / 120;
+                if (lastTouchGridX >= 0 && (gx != lastTouchGridX || gy != lastTouchGridY)) {
+                    detentPulseFrames = 1; // 1 frame (~16ms) tactile click
+                }
+                lastTouchGridX = gx;
+                lastTouchGridY = gy;
+            } else {
+                lastTouchGridX = -1;
+                lastTouchGridY = -1;
+            }
+            if (detentPulseFrames > 0) {
+                detentPulseFrames--;
+                lRumble = (lRumble < 110) ? 110 : lRumble;
+                rRumble = (rRumble < 140) ? 140 : rRumble;
+            }
+
+            // 7. 5-LED Sub-Touchpad Live Hardware Bargraph (maps real-time trigger/haptic/stick energy across 5 player LEDs)
+            if (config.playerLedTelemetry) {
+                float energy = state.l2;
+                if (state.r2 > energy) energy = state.r2;
+                float hapE = (audioHapticL + audioHapticR) / 510.0f;
+                if (hapE > energy) energy = hapE;
+                float stickE = std::sqrt(state.lx * state.lx + state.ly * state.ly);
+                if (stickE > energy) energy = stickE;
+
+                if (energy < 0.15f)      activeCfg.playerLeds = 0x04; // Center LED (1)
+                else if (energy < 0.40f) activeCfg.playerLeds = 0x0A; // Inner 2 LEDs
+                else if (energy < 0.65f) activeCfg.playerLeds = 0x0E; // Center 3 LEDs
+                else if (energy < 0.85f) activeCfg.playerLeds = 0x1B; // 4 LEDs
+                else                     activeCfg.playerLeds = 0x1F; // Full 5-LED Bargraph
+            }
+
+            // 10. Worm-Gear Motor Thermal Protection & Anti-Stall Guard
+            static float thermalLoadC = 26.4f;
+            static int stallFramesL = 0, stallFramesR = 0;
+            bool leftStalled = (activeCfg.leftTrigger.mode != TriggerMode::Off && state.rawL2 > 90);
+            bool rightStalled = (activeCfg.rightTrigger.mode != TriggerMode::Off && state.rawR2 > 90);
+            stallFramesL = leftStalled ? (stallFramesL + 1) : (stallFramesL > 2 ? stallFramesL - 2 : 0);
+            stallFramesR = rightStalled ? (stallFramesR + 1) : (stallFramesR > 2 ? stallFramesR - 2 : 0);
+
+            float heatDelta = ((leftStalled ? 0.045f : -0.02f) + (rightStalled ? 0.045f : -0.02f));
+            thermalLoadC = (thermalLoadC + heatDelta < 25.8f) ? 25.8f : (thermalLoadC + heatDelta > 54.0f ? 54.0f : thermalLoadC + heatDelta);
+            state.motorTempC = thermalLoadC;
+
+            if (config.thermalGuard) {
+                // After ~8 seconds of continuous stall (480 frames at 60Hz), step down holding current by 35% to protect worm gears
+                if (stallFramesL > 480 && activeCfg.leftTrigger.force > 3) {
+                    activeCfg.leftTrigger.force = (uint8_t)(activeCfg.leftTrigger.force * 0.65f);
+                }
+                if (stallFramesR > 480 && activeCfg.rightTrigger.force > 3) {
+                    activeCfg.rightTrigger.force = (uint8_t)(activeCfg.rightTrigger.force * 0.65f);
+                }
+            }
 
             // Audio-to-Trigger Mechanical Recoil Kick
             static int kickCountdownFrames = 0;

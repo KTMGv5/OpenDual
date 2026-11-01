@@ -36,6 +36,64 @@ namespace OpenDualHub
         private int _zeroShiftRY = 0;
         private ControllerTelemetry? _lastTelemetry;
 
+        // Cached Frozen Brushes & Persistent Canvas Visuals (Zero Per-Frame GC Allocations)
+        private static readonly SolidColorBrush s_cyanBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xF5, 0xD4));
+        private static readonly SolidColorBrush s_cyanFillBrush = CreateFrozenBrush(Color.FromArgb(40, 0, 245, 212));
+        private static readonly SolidColorBrush s_cyanDimBrush = CreateFrozenBrush(Color.FromArgb(80, 0, 245, 212));
+        private static readonly SolidColorBrush s_cyanRingBrush = CreateFrozenBrush(Color.FromArgb(120, 0, 245, 212));
+        private static readonly SolidColorBrush s_gridDimBrush = CreateFrozenBrush(Color.FromArgb(40, 255, 255, 255));
+        private static readonly SolidColorBrush s_cursorBrush = CreateFrozenBrush(Color.FromArgb(160, 255, 255, 255));
+        private static readonly SolidColorBrush s_magentaBrush = CreateFrozenBrush(Color.FromRgb(0xFF, 0x00, 0x7F));
+        private static readonly SolidColorBrush s_trailBrush = CreateFrozenBrush(Color.FromArgb(90, 41, 121, 255));
+        private static readonly SolidColorBrush s_greenBrush = CreateFrozenBrush(Color.FromRgb(0x00, 0xE6, 0x76));
+        private static readonly SolidColorBrush s_amberBrush = CreateFrozenBrush(Color.FromRgb(0xFF, 0xA0, 0x00));
+        private static readonly LinearGradientBrush s_jitterFillBrush = CreateFrozenGradient();
+
+        private Path? _l2CurvePath;
+        private Line? _l2CursorLine;
+        private Ellipse? _l2GlowDot;
+        private int _lastL2CurveMode = -999;
+
+        private Path? _r2CurvePath;
+        private Line? _r2CursorLine;
+        private Ellipse? _r2GlowDot;
+        private int _lastR2CurveMode = -999;
+
+        private Path? _radarPolyL;
+        private readonly Ellipse[] _trailDotsL = new Ellipse[16];
+        private Ellipse? _stickDotL;
+
+        private Path? _radarPolyR;
+        private readonly Ellipse[] _trailDotsR = new Ellipse[16];
+        private Ellipse? _stickDotR;
+
+        private Line? _jitterRefLine;
+        private Path? _jitterFillPath;
+        private Path? _jitterLinePath;
+
+        private static SolidColorBrush CreateFrozenBrush(Color c)
+        {
+            var b = new SolidColorBrush(c);
+            b.Freeze();
+            return b;
+        }
+
+        private static LinearGradientBrush CreateFrozenGradient()
+        {
+            var g = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new(Color.FromArgb(40, 0, 245, 212), 0.0),
+                    new(Color.FromArgb(0, 0, 245, 212), 1.0)
+                }
+            };
+            g.Freeze();
+            return g;
+        }
+
         public HardwareLabControl()
         {
             InitializeComponent();
@@ -259,56 +317,61 @@ namespace OpenDualHub
 
         private void DrawTriggerCurve(Canvas canvas, int mode, float pullDepth)
         {
-            canvas.Children.Clear();
+            bool isL2 = ReferenceEquals(canvas, CanvasL2Curve);
+            ref Path? curvePath = ref (isL2 ? ref _l2CurvePath : ref _r2CurvePath);
+            ref Line? cursorLine = ref (isL2 ? ref _l2CursorLine : ref _r2CursorLine);
+            ref Ellipse? glowDot = ref (isL2 ? ref _l2GlowDot : ref _r2GlowDot);
+            ref int lastMode = ref (isL2 ? ref _lastL2CurveMode : ref _lastR2CurveMode);
+
             double w = canvas.ActualWidth > 0 ? canvas.ActualWidth : 180;
             double h = canvas.ActualHeight > 0 ? canvas.ActualHeight : 48;
 
-            // Draw Base Resistance Curve
-            var pathGeom = new PathGeometry();
-            var fig = new PathFigure { StartPoint = new Point(0, h * 0.85) };
-
-            for (int i = 1; i <= 20; i++)
+            if (curvePath == null || cursorLine == null || glowDot == null)
             {
-                double xFrac = i / 20.0;
-                double x = xFrac * w;
-                double resistance = CalculateTriggerForce(mode, (float)xFrac);
-                double y = h * 0.85 - (resistance * h * 0.70);
-                fig.Segments.Add(new LineSegment(new Point(x, y), true));
+                canvas.Children.Clear();
+                var dash = new DoubleCollection { 2, 2 };
+                dash.Freeze();
+
+                curvePath = new Path { Stroke = s_cyanBrush, StrokeThickness = 2.0 };
+                cursorLine = new Line { Y1 = 0, Y2 = h, Stroke = s_cursorBrush, StrokeDashArray = dash };
+                glowDot = new Ellipse { Width = 7, Height = 7, Fill = s_magentaBrush };
+
+                canvas.Children.Add(curvePath);
+                canvas.Children.Add(cursorLine);
+                canvas.Children.Add(glowDot);
+                lastMode = -999;
             }
-            pathGeom.Figures.Add(fig);
 
-            var curvePath = new Path
+            if (lastMode != mode)
             {
-                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xF5, 0xD4)),
-                StrokeThickness = 2.0,
-                Data = pathGeom
-            };
-            canvas.Children.Add(curvePath);
+                lastMode = mode;
+                var streamGeom = new StreamGeometry();
+                using (var ctx = streamGeom.Open())
+                {
+                    ctx.BeginFigure(new Point(0, h * 0.85), false, false);
+                    for (int i = 1; i <= 20; i++)
+                    {
+                        double xFrac = i / 20.0;
+                        double x = xFrac * w;
+                        double resistance = CalculateTriggerForce(mode, (float)xFrac);
+                        double y = h * 0.85 - (resistance * h * 0.70);
+                        ctx.LineTo(new Point(x, y), true, false);
+                    }
+                }
+                streamGeom.Freeze();
+                curvePath.Data = streamGeom;
+            }
 
-            // Draw Real-time Current Position Cursor
             double curX = pullDepth * w;
             double curForce = CalculateTriggerForce(mode, pullDepth);
             double curY = h * 0.85 - (curForce * h * 0.70);
 
-            var cursorLine = new Line
-            {
-                X1 = curX,
-                X2 = curX,
-                Y1 = 0,
-                Y2 = h,
-                Stroke = new SolidColorBrush(Color.FromArgb(160, 255, 255, 255)),
-                StrokeDashArray = new DoubleCollection { 2, 2 }
-            };
-            canvas.Children.Add(cursorLine);
+            cursorLine.X1 = curX;
+            cursorLine.X2 = curX;
+            cursorLine.Y2 = h;
 
-            var glowDot = new Ellipse
-            {
-                Width = 7,
-                Height = 7,
-                Fill = new SolidColorBrush(Color.FromRgb(0xFF, 0x00, 0x7F)),
-                Margin = new Thickness(curX - 3.5, curY - 3.5, 0, 0)
-            };
-            canvas.Children.Add(glowDot);
+            Canvas.SetLeft(glowDot, curX - 3.5);
+            Canvas.SetTop(glowDot, curY - 3.5);
         }
 
         private double CalculateTriggerForce(int mode, float depth) => mode switch
@@ -329,43 +392,71 @@ namespace OpenDualHub
 
         private void UpdateSingleRadar(Canvas canvas, float x, float y, double[] bins, Queue<Point> trail, TextBlock txtErr, TextBlock txtDrift, bool isLeft)
         {
-            canvas.Children.Clear();
             double size = canvas.ActualWidth > 0 ? canvas.ActualWidth : 140;
             double center = size * 0.5;
             double radius = center - 8;
 
-            // Draw Background Concentric Circles (25%, 50%, 75%, 100%)
-            for (int r = 1; r <= 4; r++)
-            {
-                double curR = radius * (r / 4.0);
-                var circle = new Ellipse
-                {
-                    Width = curR * 2,
-                    Height = curR * 2,
-                    Stroke = new SolidColorBrush(r == 4 ? Color.FromArgb(120, 0, 245, 212) : Color.FromArgb(40, 255, 255, 255)),
-                    StrokeThickness = r == 4 ? 1.5 : 0.8,
-                    Margin = new Thickness(center - curR, center - curR, 0, 0)
-                };
-                canvas.Children.Add(circle);
-            }
+            ref Path? radarPoly = ref (isLeft ? ref _radarPolyL : ref _radarPolyR);
+            ref Ellipse? stickDot = ref (isLeft ? ref _stickDotL : ref _stickDotR);
+            Ellipse[] trailDots = isLeft ? _trailDotsL : _trailDotsR;
 
-            // Crosshair
-            var hLine = new Line { X1 = 0, X2 = size, Y1 = center, Y2 = center, Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)) };
-            var vLine = new Line { X1 = center, X2 = center, Y1 = 0, Y2 = size, Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)) };
-            canvas.Children.Add(hLine);
-            canvas.Children.Add(vLine);
+            if (radarPoly == null || stickDot == null)
+            {
+                canvas.Children.Clear();
+                for (int r = 1; r <= 4; r++)
+                {
+                    double curR = radius * (r / 4.0);
+                    var circle = new Ellipse
+                    {
+                        Width = curR * 2,
+                        Height = curR * 2,
+                        Stroke = r == 4 ? s_cyanRingBrush : s_gridDimBrush,
+                        StrokeThickness = r == 4 ? 1.5 : 0.8
+                    };
+                    Canvas.SetLeft(circle, center - curR);
+                    Canvas.SetTop(circle, center - curR);
+                    canvas.Children.Add(circle);
+                }
+
+                canvas.Children.Add(new Line { X1 = 0, X2 = size, Y1 = center, Y2 = center, Stroke = s_gridDimBrush });
+                canvas.Children.Add(new Line { X1 = center, X2 = center, Y1 = 0, Y2 = size, Stroke = s_gridDimBrush });
+
+                radarPoly = new Path
+                {
+                    Fill = s_cyanFillBrush,
+                    Stroke = s_cyanBrush,
+                    StrokeThickness = 1.2
+                };
+                canvas.Children.Add(radarPoly);
+
+                for (int i = 0; i < trailDots.Length; i++)
+                {
+                    var td = new Ellipse { Width = 3, Height = 3, Fill = s_trailBrush, Visibility = Visibility.Collapsed };
+                    trailDots[i] = td;
+                    canvas.Children.Add(td);
+                }
+
+                stickDot = new Ellipse
+                {
+                    Width = 9,
+                    Height = 9,
+                    Fill = Brushes.White,
+                    Stroke = s_cyanBrush,
+                    StrokeThickness = 2
+                };
+                canvas.Children.Add(stickDot);
+            }
 
             // Record outer boundary in angular bins
             double mag = Math.Sqrt(x * x + y * y);
             if (mag > 0.40)
             {
-                double angle = Math.Atan2(y, x); // -pi to +pi
+                double angle = Math.Atan2(y, x);
                 if (angle < 0) angle += 2 * Math.PI;
                 int binIdx = Math.Clamp((int)(angle / (2 * Math.PI) * RadarBins), 0, RadarBins - 1);
                 bins[binIdx] = Math.Max(bins[binIdx], mag);
             }
 
-            // Draw Outer Observed Boundary Polygon
             var polyGeom = new StreamGeometry();
             using (var ctx = polyGeom.Open())
             {
@@ -382,48 +473,32 @@ namespace OpenDualHub
                 }
             }
             polyGeom.Freeze();
+            radarPoly.Data = polyGeom;
 
-            var radarPoly = new Path
-            {
-                Data = polyGeom,
-                Fill = new SolidColorBrush(Color.FromArgb(40, 0, 245, 212)),
-                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xF5, 0xD4)),
-                StrokeThickness = 1.2
-            };
-            canvas.Children.Add(radarPoly);
-
-            // Stick Position & Trail
             double posX = center + x * radius;
             double posY = center - y * radius;
             trail.Enqueue(new Point(posX, posY));
             if (trail.Count > 16) trail.Dequeue();
 
-            // Render Trail
+            int tIdx = 0;
             foreach (var tp in trail)
             {
-                var trailDot = new Ellipse
+                if (tIdx < trailDots.Length)
                 {
-                    Width = 3,
-                    Height = 3,
-                    Fill = new SolidColorBrush(Color.FromArgb(90, 41, 121, 255)),
-                    Margin = new Thickness(tp.X - 1.5, tp.Y - 1.5, 0, 0)
-                };
-                canvas.Children.Add(trailDot);
+                    var td = trailDots[tIdx++];
+                    td.Visibility = Visibility.Visible;
+                    Canvas.SetLeft(td, tp.X - 1.5);
+                    Canvas.SetTop(td, tp.Y - 1.5);
+                }
+            }
+            for (; tIdx < trailDots.Length; tIdx++)
+            {
+                trailDots[tIdx].Visibility = Visibility.Collapsed;
             }
 
-            // Current Stick Dot
-            var stickDot = new Ellipse
-            {
-                Width = 9,
-                Height = 9,
-                Fill = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)),
-                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xF5, 0xD4)),
-                StrokeThickness = 2,
-                Margin = new Thickness(posX - 4.5, posY - 4.5, 0, 0)
-            };
-            canvas.Children.Add(stickDot);
+            Canvas.SetLeft(stickDot, posX - 4.5);
+            Canvas.SetTop(stickDot, posY - 4.5);
 
-            // Compute Circularity Error
             int populated = bins.Count(b => b > 0.40);
             if (populated > 6)
             {
@@ -433,18 +508,17 @@ namespace OpenDualHub
                 if (isLeft) TxtTopCircError.Text = $"{avgErr:F1}% (Pro)";
             }
 
-            // Drift resting measurement
             if (mag < 0.20)
             {
                 if (mag < 0.015)
                 {
                     txtDrift.Text = "Rest Offset: 0.00 (Zero Drift)";
-                    txtDrift.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76));
+                    txtDrift.Foreground = s_greenBrush;
                 }
                 else
                 {
                     txtDrift.Text = $"Rest Offset: {mag:F2} (Drift Bias)";
-                    txtDrift.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xA0, 0x00));
+                    txtDrift.Foreground = s_amberBrush;
                 }
             }
         }
@@ -473,24 +547,42 @@ namespace OpenDualHub
 
         private void DrawJitterSparkline(Canvas canvas, List<double> history)
         {
-            canvas.Children.Clear();
             double w = canvas.ActualWidth > 0 ? canvas.ActualWidth : 480;
             double h = canvas.ActualHeight > 0 ? canvas.ActualHeight : 64;
 
+            if (_jitterRefLine == null || _jitterFillPath == null || _jitterLinePath == null)
+            {
+                canvas.Children.Clear();
+                var dash = new DoubleCollection { 3, 3 };
+                dash.Freeze();
+
+                _jitterRefLine = new Line
+                {
+                    Stroke = s_cyanDimBrush,
+                    StrokeDashArray = dash
+                };
+                _jitterFillPath = new Path
+                {
+                    Fill = s_jitterFillBrush
+                };
+                _jitterLinePath = new Path
+                {
+                    Stroke = s_cyanBrush,
+                    StrokeThickness = 1.8
+                };
+
+                canvas.Children.Add(_jitterRefLine);
+                canvas.Children.Add(_jitterFillPath);
+                canvas.Children.Add(_jitterLinePath);
+            }
+
             if (history.Count < 2) return;
 
-            // Dotted reference line for 1.00 ms (1000Hz target)
             double targetY = h * 0.55;
-            var refLine = new Line
-            {
-                X1 = 0,
-                X2 = w,
-                Y1 = targetY,
-                Y2 = targetY,
-                Stroke = new SolidColorBrush(Color.FromArgb(80, 0, 245, 212)),
-                StrokeDashArray = new DoubleCollection { 3, 3 }
-            };
-            canvas.Children.Add(refLine);
+            _jitterRefLine.X1 = 0;
+            _jitterRefLine.X2 = w;
+            _jitterRefLine.Y1 = targetY;
+            _jitterRefLine.Y2 = targetY;
 
             var polyGeom = new StreamGeometry();
             var fillGeom = new StreamGeometry();
@@ -518,29 +610,8 @@ namespace OpenDualHub
             polyGeom.Freeze();
             fillGeom.Freeze();
 
-            var fillPath = new Path
-            {
-                Data = fillGeom,
-                Fill = new LinearGradientBrush
-                {
-                    StartPoint = new Point(0, 0),
-                    EndPoint = new Point(0, 1),
-                    GradientStops = new GradientStopCollection
-                    {
-                        new(Color.FromArgb(40, 0, 245, 212), 0.0),
-                        new(Color.FromArgb(0, 0, 245, 212), 1.0)
-                    }
-                }
-            };
-            canvas.Children.Add(fillPath);
-
-            var linePath = new Path
-            {
-                Data = polyGeom,
-                Stroke = new SolidColorBrush(Color.FromRgb(0x00, 0xF5, 0xD4)),
-                StrokeThickness = 1.8
-            };
-            canvas.Children.Add(linePath);
+            _jitterFillPath.Data = fillGeom;
+            _jitterLinePath.Data = polyGeom;
         }
 
         private double MapLatencyToY(double lat, double h)

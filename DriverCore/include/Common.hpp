@@ -106,6 +106,18 @@ struct ControllerConfig {
     int8_t zeroShiftRX = 0;
     int8_t zeroShiftRY = 0;
 
+    // 10 Deep DualSense Hardware Features
+    bool dualStageTriggers = false;     // 1. Dual-Stage Trigger Soft/Full Press Split (Half-pull ADS, Full-pull Fire)
+    bool hairTriggerRelease = false;    // 2. Dynamic Rapid-Trigger Instant Reset (<1.2mm release resets trigger)
+    bool sprintShelfL3 = false;         // 3. Thumbstick Outer-Ring Sprint Shelf (96%+ L-Stick auto-engages L3 Sprint)
+    bool gyroRatcheting = false;        // 4. Touchpad-Touch Gyro Ratcheting (Touch pad to pause gyro for recentering)
+    bool hapticDetent = false;          // 5. Capacitive Touchpad Physical Voice-Coil Detent Clicks
+    bool gShockGuard = false;           // 6. IMU 3-Axis G-Shock Impact & Recoil Stabilizer (>1.8G damps stick spike)
+    bool playerLedTelemetry = false;    // 7. 5-LED Sub-Touchpad Live Hardware Bargraph (Audio VU / Speed / Battery)
+    bool micBeamforming = false;        // 8. Dual-Mic Hardware Preamp Gain & Noise Gate Boost
+    bool recoilAssist = false;          // 9. Smart Adaptive Vertical Recoil Counter-Tension
+    bool thermalGuard = false;          // 10. Worm-Gear Motor Thermal Protection & Anti-Stall Guard
+
     // Output Mode
     bool emulateXbox360 = true; // ViGEmBus XInput emulation
 };
@@ -182,6 +194,10 @@ struct ControllerState {
     // Audio-Reactive Haptics live output levels (0..255)
     uint8_t hapticMotorL = 0;
     uint8_t hapticMotorR = 0;
+
+    // Deep Hardware Telemetry Metrics
+    float motorTempC = 26.4f;
+    float impactGForce = 1.00f;
 
     // Active Audio endpoints
     std::string renderAudioDev;

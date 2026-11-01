@@ -382,6 +382,45 @@
                                     </StackPanel>
                                 </Border>
 
+                                <!-- Interactive Gesture Action Mapper -->
+                                <Border Background="#121A2A" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,8">
+                                    <StackPanel>
+                                        <TextBlock Text="CUSTOMIZE GESTURE ACTION MAPPING" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,6"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox x:Name="CmbGestureSelect" Grid.Column="0" SelectedIndex="0" SelectionChanged="CmbGestureSelect_SelectionChanged">
+                                                <ComboBoxItem Content="Draw 'C' (Circle Arc)" Tag="LetterC"/>
+                                                <ComboBoxItem Content="Draw 'V' (Checkmark)" Tag="LetterV"/>
+                                                <ComboBoxItem Content="Draw 'O' (Full Loop)" Tag="LetterO"/>
+                                                <ComboBoxItem Content="Draw 'Z' (Zig-Zag)" Tag="LetterZ"/>
+                                                <ComboBoxItem Content="Draw 'S' (Curve)" Tag="LetterS"/>
+                                                <ComboBoxItem Content="Swipe Left" Tag="SwipeLeft"/>
+                                                <ComboBoxItem Content="Swipe Right" Tag="SwipeRight"/>
+                                                <ComboBoxItem Content="Swipe Up" Tag="SwipeUp"/>
+                                                <ComboBoxItem Content="Swipe Down" Tag="SwipeDown"/>
+                                            </ComboBox>
+                                            <TextBlock Grid.Column="1" Text="  ➔  " FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" VerticalAlignment="Center"/>
+                                            <ComboBox x:Name="CmbGestureAction" Grid.Column="2" SelectedIndex="1" SelectionChanged="CmbGestureAction_SelectionChanged">
+                                                <ComboBoxItem Content="Disabled (None)" Tag="None"/>
+                                                <ComboBoxItem Content="Take Screenshot (Win+Shift+S)" Tag="TakeScreenshot"/>
+                                                <ComboBoxItem Content="Save 30s Clip (Win+Alt+G)" Tag="SaveReplayClip"/>
+                                                <ComboBoxItem Content="Toggle Microphone Mute" Tag="ToggleMicMute"/>
+                                                <ComboBoxItem Content="Play / Pause Media" Tag="PlayPauseMedia"/>
+                                                <ComboBoxItem Content="Next Music Track" Tag="NextTrack"/>
+                                                <ComboBoxItem Content="Previous Music Track" Tag="PreviousTrack"/>
+                                                <ComboBoxItem Content="Open Quick Control HUD" Tag="OpenQuickHud"/>
+                                                <ComboBoxItem Content="Bring OpenDual Hub to Front" Tag="OpenDualHub"/>
+                                                <ComboBoxItem Content="Open Xbox Game Bar (Win+G)" Tag="OpenGameBar"/>
+                                                <ComboBoxItem Content="Launch Calculator" Tag="LaunchCalculator"/>
+                                            </ComboBox>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
                                 <!-- Gesture Mappings Summary -->
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -389,16 +428,16 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,4,0">
-                                        <TextBlock Text="• Draw 'C'  ›  Screenshot (Win+Shift+S)" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
-                                        <TextBlock Text="• Draw 'V'  ›  30s Replay Clip (Win+Alt+G)" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
-                                        <TextBlock Text="• Draw 'S'  ›  Open PS Quick HUD" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
-                                        <TextBlock Text="• Draw 'O'  ›  Open OpenDual Hub" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapC" Text="• Draw 'C'  ›  Screenshot (Win+Shift+S)" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapV" Text="• Draw 'V'  ›  30s Replay Clip (Win+Alt+G)" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapZ" Text="• Draw 'Z'  ›  Open Xbox Game Bar" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapO" Text="• Draw 'O'  ›  Open OpenDual Hub" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Margin="4,0,0,0">
-                                        <TextBlock Text="• Swipe Left  ›  Previous Music Track" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
-                                        <TextBlock Text="• Swipe Right ›  Next Music Track" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
-                                        <TextBlock Text="• Swipe Up    ›  Play / Pause Media" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
-                                        <TextBlock Text="• Swipe Down  ›  Mute / Unmute Mic" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapLeft" Text="• Swipe Left  ›  Previous Music Track" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapRight" Text="• Swipe Right ›  Next Music Track" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapUp" Text="• Swipe Up    ›  Play / Pause Media" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
+                                        <TextBlock x:Name="TxtMapDown" Text="• Swipe Down  ›  Mute / Unmute Mic" FontSize="9" Foreground="{StaticResource TextSecondary}" Margin="0,2"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
@@ -506,7 +545,7 @@
                             </Grid>
                         </Border>
 
-                        <Border x:Name="CardProfRacing" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Border x:Name="CardProfRacing" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="🏎️ Racing Force Feedback" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
@@ -514,6 +553,36 @@
                                 </StackPanel>
                                 <Button x:Name="BtnActRacing" Content="Activate" Style="{StaticResource XmbOptionBtn}" HorizontalAlignment="Right" Click="BtnActivateProfile_Click" Tag="Racing Force Feedback"/>
                             </Grid>
+                        </Border>
+
+                        <!-- User Custom Profiles Dynamic Container -->
+                        <StackPanel x:Name="PanelCustomProfilesList" Margin="0,0,0,6"/>
+
+                        <!-- Custom Profile Creator & Per-Game EXE Linker -->
+                        <Border x:Name="CardProfCustomCreator" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="➕ SAVE CURRENT SETUP AS CUSTOM PROFILE &amp; LINK GAME (.EXE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Save your current triggers, RGB, gyro, and deep hardware tuning and optionally auto-activate when a game launches." FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="115"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Profile Name:" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="TxtCustomProfileName" Grid.Column="1" Text="My Custom Setup" Background="#121A2A" Foreground="White" BorderBrush="{StaticResource BorderColor}" Padding="8,5" FontSize="11"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="115"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Linked Game (.exe):" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="TxtCustomProfileExe" Grid.Column="1" Text="" ToolTip="Optional comma-separated exe names e.g. Cyberpunk2077.exe, cod.exe" Background="#121A2A" Foreground="White" BorderBrush="{StaticResource BorderColor}" Padding="8,5" FontSize="11" Margin="0,0,6,0"/>
+                                    <Button x:Name="BtnBrowseExe" Grid.Column="2" Content="📂 Browse .exe" Style="{StaticResource XmbOptionBtn}" Click="BtnBrowseExe_Click"/>
+                                </Grid>
+                                <Button x:Name="BtnSaveCustomProfile" Content="💾 Save Current Hardware Config as Profile" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" HorizontalAlignment="Left" Click="BtnSaveCustomProfile_Click"/>
+                            </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>

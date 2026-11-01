@@ -39,6 +39,7 @@ namespace OpenDualHub
         {
             LabControl.IpcClient = ipc;
             CategoryInspector.IpcClient = ipc;
+            NovelControl.IpcClient = ipc;
         }
 
         public MainWindow? MainWindow { get; private set; }
@@ -48,6 +49,7 @@ namespace OpenDualHub
             MainWindow = main;
             CategoryInspector.MainWindow = main;
             ControllerInspector.MainWindow = main;
+            NovelControl.MainWindow = main;
         }
 
         public void SetNerdStatsVisible(bool visible)
@@ -279,8 +281,8 @@ namespace OpenDualHub
             var item = _xmb.ActiveItem;
             string itemId = item?.Id ?? "";
 
-            // 1. Novel Features (Battery Sentinel, Footstep Radar, Hall Stabilizer)
-            if (itemId == "ctrl_battery_sentinel" || itemId == "ctrl_hall_stabilizer" || itemId == "aud_spatial_radar")
+            // 1. Novel Features (Battery Sentinel, Footstep Radar, Hall Stabilizer, 10 Deep Hardware Modifiers)
+            if (itemId == "ctrl_battery_sentinel" || itemId == "ctrl_hall_stabilizer" || itemId == "ctrl_deep_suite" || itemId == "aud_spatial_radar")
             {
                 NovelControl.FocusItem(itemId);
                 InspectorContentHost.Content = NovelControl;
@@ -346,7 +348,7 @@ namespace OpenDualHub
             {
                 InspectorContentHost.Content = LabControl;
             }
-            else if (item.Id == "ctrl_battery_sentinel" || item.Id == "ctrl_hall_stabilizer" || item.Id == "aud_spatial_radar")
+            else if (item.Id == "ctrl_battery_sentinel" || item.Id == "ctrl_hall_stabilizer" || item.Id == "ctrl_deep_suite" || item.Id == "aud_spatial_radar")
             {
                 InspectorContentHost.Content = NovelControl;
             }

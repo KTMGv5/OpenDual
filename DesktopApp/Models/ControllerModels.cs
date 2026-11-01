@@ -50,8 +50,29 @@ namespace OpenDualHub.Models
         [JsonPropertyName("ltMode")]
         public int LtMode { get; set; } = 0;
 
+        [JsonPropertyName("ltStart")]
+        public int LtStart { get; set; } = 30;
+
+        [JsonPropertyName("ltForce")]
+        public int LtForce { get; set; } = 8;
+
+        [JsonPropertyName("ltFreq")]
+        public int LtFreq { get; set; } = 12;
+
         [JsonPropertyName("rtMode")]
         public int RtMode { get; set; } = 0;
+
+        [JsonPropertyName("rtStart")]
+        public int RtStart { get; set; } = 30;
+
+        [JsonPropertyName("rtForce")]
+        public int RtForce { get; set; } = 8;
+
+        [JsonPropertyName("rtFreq")]
+        public int RtFreq { get; set; } = 12;
+
+        [JsonPropertyName("playerLeds")]
+        public int PlayerLeds { get; set; } = 4;
 
         [JsonPropertyName("haptic")]
         public bool Haptic { get; set; } = true;
@@ -127,6 +148,37 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("zeroShiftRY")]
         public int ZeroShiftRY { get; set; } = 0;
+
+        // 10 Deep DualSense Hardware Features
+        [JsonPropertyName("dualStageTriggers")]
+        public bool DualStageTriggers { get; set; } = false;
+
+        [JsonPropertyName("hairTriggerRelease")]
+        public bool HairTriggerRelease { get; set; } = false;
+
+        [JsonPropertyName("sprintShelfL3")]
+        public bool SprintShelfL3 { get; set; } = false;
+
+        [JsonPropertyName("gyroRatcheting")]
+        public bool GyroRatcheting { get; set; } = false;
+
+        [JsonPropertyName("hapticDetent")]
+        public bool HapticDetent { get; set; } = false;
+
+        [JsonPropertyName("gShockGuard")]
+        public bool GShockGuard { get; set; } = false;
+
+        [JsonPropertyName("playerLedTelemetry")]
+        public bool PlayerLedTelemetry { get; set; } = false;
+
+        [JsonPropertyName("micBeamforming")]
+        public bool MicBeamforming { get; set; } = false;
+
+        [JsonPropertyName("recoilAssist")]
+        public bool RecoilAssist { get; set; } = false;
+
+        [JsonPropertyName("thermalGuard")]
+        public bool ThermalGuard { get; set; } = false;
     }
 
     public class ControllerTelemetry
@@ -286,6 +338,12 @@ namespace OpenDualHub.Models
 
         [JsonPropertyName("hapticR")]
         public int HapticR { get; set; }
+
+        [JsonPropertyName("motorTempC")]
+        public float MotorTempC { get; set; } = 26.4f;
+
+        [JsonPropertyName("impactG")]
+        public float ImpactG { get; set; } = 1.0f;
 
         [JsonPropertyName("renderDev")]
         public string? RenderDev { get; set; }

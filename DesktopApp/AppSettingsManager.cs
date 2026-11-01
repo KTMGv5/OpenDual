@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using OpenDualHub.Models;
 
 namespace OpenDualHub
 {
@@ -15,6 +17,12 @@ namespace OpenDualHub
         public bool MinimizeToTray { get; set; } = true;
         public string ActiveProfileId { get; set; } = "builtin-default";
         public double HudScale { get; set; } = 1.0;
+
+        // Live Custom Hardware Config Overrides (persisted whenever user tweaks controls)
+        public ConfigDto? SavedHardwareConfig { get; set; } = null;
+
+        // Custom Touchpad Gesture Action Mappings
+        public Dictionary<string, string> GestureMappings { get; set; } = new();
     }
 
     public static class AppSettingsManager

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:OpenDualHub"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="680">
+             d:DesignHeight="1600" d:DesignWidth="680">
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="AccentSignature" Color="#00F5D4"/>
@@ -60,12 +60,12 @@
                     <StackPanel Grid.Column="0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="✨" FontSize="15" Margin="0,0,8,0"/>
-                            <TextBlock Text="NEXT-GEN HARDWARE ENHANCEMENTS" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                            <TextBlock Text="NEXT-GEN DEEP HARDWARE SUITE" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
                             <Border Background="#2600F5D4" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="10,0,0,0">
-                                <TextBlock Text="INDUSTRY FIRST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                                <TextBlock Text="10 DEEP ENGINE MODS" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Pioneering controller intelligence features not found in any other software." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0"/>
+                        <TextBlock Text="Direct kernel HID hardware modifiers, sensor fusion stabilizers, and physical tactile detents." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="1" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="10,6">
                         <TextBlock Text="HARDWARE SUITE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBlue}"/>
@@ -93,7 +93,6 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Health Gauge -->
                         <Border Grid.Column="0" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="BATTERY HEALTH" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
@@ -102,7 +101,6 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Voltage Storage Metric -->
                         <Border Grid.Column="1" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="3,0,3,0">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="CELL VOLTAGE" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
@@ -111,12 +109,11 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Thermal Sensor -->
                         <Border Grid.Column="2" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="6,0,0,0">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="THERMAL SENSOR" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="TxtThermalTemp" Text="26.4°C" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
-                                <TextBlock Text="Cool &amp; Optimal" FontSize="9" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="WORM-GEAR MOTOR TEMP" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TxtThermalTemp" Text="26.5°C" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="TxtThermalSub" Text="Cool &amp; Optimal" FontSize="9" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -134,7 +131,7 @@
                         <ToggleButton x:Name="ToggleSpatialRadar" Content="Spatial Radar: ON" Style="{StaticResource NovelToggleBtn}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleSpatialRadar_Click"/>
                     </Grid>
 
-                    <TextBlock Text="Filters in-game footsteps and reloads (50Hz - 160Hz) and converts stereo audio panning into physical directional tactile pulses on the left vs right DualSense voice coils." FontSize="11" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <TextBlock Text="Filters in-game footsteps and reloads (50Hz - 160Hz) and converts stereo audio panning into physical directional tactile pulses on the left vs right voice coils." FontSize="11" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,10"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -142,33 +139,29 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Radial Acoustic Sweep Radar Screen -->
                         <Border Grid.Column="0" Width="120" Height="120" Background="#0C101A" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="10" HorizontalAlignment="Left">
                             <Canvas x:Name="CanvasSpatialRadar" Width="120" Height="120" ClipToBounds="True"/>
                         </Border>
 
-                        <!-- Actuator Meters & Tuning -->
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
-                            <!-- Left Grip Rumble Balance -->
                             <Grid Margin="0,0,0,6">
                                 <TextBlock Text="LEFT PALM TACTILE (L GRIP)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                <TextBlock x:Name="TxtTactileLeftPct" Text="78% Pulse" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
+                                <TextBlock x:Name="TxtTactileLeftPct" Text="50% Pulse" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
                             </Grid>
-                            <ProgressBar x:Name="BarTactileLeft" Height="7" Minimum="0" Maximum="100" Value="78" Background="#141B2B" Foreground="{StaticResource AccentSignature}" BorderThickness="0" Margin="0,0,0,10"/>
+                            <ProgressBar x:Name="BarTactileLeft" Height="7" Minimum="0" Maximum="100" Value="50" Background="#141B2B" Foreground="{StaticResource AccentSignature}" BorderThickness="0" Margin="0,0,0,10"/>
 
-                            <!-- Right Grip Rumble Balance -->
                             <Grid Margin="0,0,0,6">
                                 <TextBlock Text="RIGHT PALM TACTILE (R GRIP)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                <TextBlock x:Name="TxtTactileRightPct" Text="22% Pulse" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Right"/>
+                                <TextBlock x:Name="TxtTactileRightPct" Text="50% Pulse" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBlue}" HorizontalAlignment="Right"/>
                             </Grid>
-                            <ProgressBar x:Name="BarTactileRight" Height="7" Minimum="0" Maximum="100" Value="22" Background="#141B2B" Foreground="{StaticResource AccentBlue}" BorderThickness="0"/>
+                            <ProgressBar x:Name="BarTactileRight" Height="7" Minimum="0" Maximum="100" Value="50" Background="#141B2B" Foreground="{StaticResource AccentBlue}" BorderThickness="0"/>
                         </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
 
             <!-- FEATURE 3: VIRTUAL HALL-EFFECT ANTI-JITTER THUMBSTICK STABILIZER -->
-            <Border x:Name="CardHall" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16">
+            <Border x:Name="CardHall" Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
                 <StackPanel>
                     <Grid Margin="0,0,0,10">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -178,9 +171,8 @@
                         <ToggleButton x:Name="ToggleHallFilter" Content="Hall Stabilizer: ON" Style="{StaticResource NovelToggleBtn}" IsChecked="True" HorizontalAlignment="Right" Click="ToggleHallFilter_Click"/>
                     </Grid>
 
-                    <TextBlock Text="DualSense carbon-film potentiometers naturally output microscopic voltage jitter at 1000Hz. This real-time hysteresis filter completely purifies the signal to 100% Hall-Effect purity with 0ms lag." FontSize="11" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <TextBlock Text="Carbon-film potentiometers naturally output microscopic voltage jitter at 1000Hz. This real-time hysteresis filter purifies the signal to 100% Hall-Effect purity with 0ms lag." FontSize="11" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
-                    <!-- Real-Time Signal Jitter Oscilloscope -->
                     <Border Height="70" Background="#0C101A" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
                         <Canvas x:Name="CanvasHallOscilloscope" Height="70" ClipToBounds="True"/>
                     </Border>
@@ -199,6 +191,131 @@
                             <TextBlock Text="0.00 ms (Zero Added Lag)" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" HorizontalAlignment="Right"/>
                         </StackPanel>
                     </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 10 DEEP HARDWARE ARCHITECTURE MODIFIERS -->
+            <Border x:Name="CardDeepHardware" Background="{StaticResource BgCard}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1" CornerRadius="12" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="🔬 10 DEEP HARDWARE ENGINE MODIFIERS (C++20 KERNEL LEVEL)" FontSize="13" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
+                    <TextBlock Text="Unlock low-level actuator, IMU, preamp, and worm-gear capabilities directly inside the 1000Hz C++ driver loop." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                    <!-- 1. Dual-Stage Trigger Split -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="1. DUAL-STAGE TRIGGER SOFT/FULL PRESS SPLIT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Half-pull R2 (18%-80%) engages L2 Aim Down Sights; pulling past the 85% mechanical wall fires R2" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleDualStage" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="dualStageTriggers" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 2. Dynamic Rapid-Trigger Instant Reset -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="2. DYNAMIC RAPID-TRIGGER INSTANT RESET (&lt;1.2MM)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Tracks peak trigger depth and cuts output to 0 the instant you release upward by 1.2mm at any depth" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleRapidTrigger" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="hairTriggerRelease" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 3. Thumbstick Outer-Ring Sprint Shelf -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="3. THUMBSTICK OUTER-RING SPRINT SHELF (96% L3 AUTO-SPRINT)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Pushing Left Stick to ≥96% outer rim automatically engages L3 Sprint—eliminates physical stick click wear" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleSprintShelf" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="sprintShelfL3" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 4. Touchpad-Touch Gyro Ratcheting -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="4. TOUCHPAD-TOUCH GYRO RATCHETING (WRIST RECENTER)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Resting a thumb on the capacitive touchpad pauses gyro aiming so you can recenter your hands like lifting a mouse" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleGyroRatchet" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="gyroRatcheting" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 5. Capacitive Touchpad Physical Voice-Coil Detent Clicks -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="5. CAPACITIVE TOUCHPAD VOICE-COIL MECHANICAL DETENT CLICKS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Fires a 1ms crisp voice-coil micro-pulse whenever your finger crosses virtual touchpad grid detents" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleHapticDetent" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="hapticDetent" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 6. IMU 3-Axis G-Shock Impact & Recoil Stabilizer -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="6. IMU 3-AXIS G-SHOCK IMPACT STABILIZER" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtLiveImpactG" Text="  [1.00 G]" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                                </StackPanel>
+                                <TextBlock Text="Detects >1.85G physical controller jolts or button mash impacts and damps stick/gyro spikes for 25ms" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleGShockGuard" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="gShockGuard" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 7. 5-LED Sub-Touchpad Live Hardware Bargraph -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="7. 5-LED SUB-TOUCHPAD LIVE HARDWARE VU BARGRAPH" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Drives the 5 white Player LEDs (0x04..0x1F) in real time as a physical hardware VU meter for trigger &amp; stick energy" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="TogglePlayerLedBar" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="playerLedTelemetry" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 8. Dual-Mic Hardware Preamp Gain Boost -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="8. DUAL-MIC ARRAY HARDWARE PREAMP GAIN BOOST" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Enables HID output report byte 7/8 internal microphone preamp gain flag (0x40) for clearer voice pickup" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleMicBeamforming" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="micBeamforming" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 9. Smart Adaptive Vertical Recoil Counter-Tension -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <TextBlock Text="9. SMART ADAPTIVE VERTICAL RECOIL COUNTER-TENSION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="Applies subtle downward pitch stabilization scaled to R2 trigger pressure while aiming down sights (L2 + R2)" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleRecoilAssist" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="recoilAssist" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- 10. Worm-Gear Motor Thermal Protection & Anti-Stall Guard -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,120,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="10. WORM-GEAR MOTOR THERMAL &amp; ANTI-STALL GUARD" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtLiveMotorTemp" Text="  [26.5°C]" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                                </StackPanel>
+                                <TextBlock Text="Monitors continuous trigger motor stall duration and steps down holding torque by 35% after 8s to prevent gear wear" FontSize="9.5" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleThermalGuard" Content="OFF" Style="{StaticResource NovelToggleBtn}" Tag="thermalGuard" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ToggleDeepFeature_Click"/>
+                        </Grid>
+                    </Border>
+
                 </StackPanel>
             </Border>
 

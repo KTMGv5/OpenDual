@@ -7,14 +7,12 @@ echo =========================================================
 where cmake >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo [Error] CMake was not found in PATH.
-    pause
     exit /b 1
 )
 
 where dotnet >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo [Error] .NET SDK was not found in PATH.
-    pause
     exit /b 1
 )
 
@@ -27,7 +25,6 @@ if %ERRORLEVEL% neq 0 (
 cmake --build build_core --config Release
 if %ERRORLEVEL% neq 0 (
     echo [Error] Driver Core build failed!
-    pause
     exit /b 1
 )
 
@@ -35,7 +32,6 @@ echo [2/4] Publishing Desktop Controller Hub (OpenDualHub Single-File)...
 dotnet publish DesktopApp\OpenDualHub.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
 if %ERRORLEVEL% neq 0 (
     echo [Error] Desktop Hub build failed!
-    pause
     exit /b 1
 )
 
@@ -43,7 +39,6 @@ echo [3/4] Publishing Installer and Uninstaller Suite (OpenDualSetup Single-File
 dotnet publish Installer\OpenDualSetup.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
 if %ERRORLEVEL% neq 0 (
     echo [Error] Installer build failed!
-    pause
     exit /b 1
 )
 

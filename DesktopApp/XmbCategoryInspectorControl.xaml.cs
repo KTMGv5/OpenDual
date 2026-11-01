@@ -89,7 +89,53 @@ namespace OpenDualHub
                 DrawGyroCrosshair(0, 0, 0);
                 SyncStartupRegistryState();
                 SyncSettingsUi(AppSettingsManager.Current);
+                SyncGestureMapperUi();
+                RefreshCustomProfilesList();
             };
+        }
+
+        private void SaveLiveHardwareConfig()
+        {
+            if (MainWindow == null) return;
+            var cfg = MainWindow.CurrentConfig;
+            cfg.LtMode = _l2Mode;
+            cfg.LtStart = _l2Start;
+            cfg.LtForce = _l2Force;
+            cfg.LtFreq = _l2Freq;
+            cfg.RtMode = _r2Mode;
+            cfg.RtStart = _r2Start;
+            cfg.RtForce = _r2Force;
+            cfg.RtFreq = _r2Freq;
+
+            cfg.Gyro = _gyroEnabled;
+            cfg.GyroMode = _gyroTriggerMode;
+            cfg.GyroOutputMode = _gyroOutputMode;
+            cfg.GyroSpace = _gyroSpace;
+            cfg.GyroSensX = _gyroSensX;
+            cfg.GyroSensY = _gyroSensY;
+            cfg.GyroInvertX = _gyroInvertX;
+            cfg.GyroInvertY = _gyroInvertY;
+            cfg.GyroDeadzone = _gyroDeadzone;
+            cfg.GyroSmooth = _gyroSmooth;
+            cfg.GyroClickMode = _gyroClickMode;
+
+            float scale = _brightness / 255.0f;
+            cfg.R = Math.Clamp((int)(_colorR * scale), 0, 255);
+            cfg.G = Math.Clamp((int)(_colorG * scale), 0, 255);
+            cfg.B = Math.Clamp((int)(_colorB * scale), 0, 255);
+            cfg.Effect = _activeLedEffect;
+            cfg.PlayerLeds = _playerLeds;
+
+            cfg.Mouse = _mouseEnabled;
+            cfg.MouseSens = _touchSens;
+            cfg.VolGesture = _volGesture;
+
+            if (ToggleHaptics != null) cfg.Haptic = ToggleHaptics.IsChecked == true;
+            if (SliderHapticIntensity != null) cfg.HapticIntensity = (float)(SliderHapticIntensity.Value / 100.0);
+            if (ToggleSpeaker != null) cfg.SpeakerEnabled = ToggleSpeaker.IsChecked == true;
+            if (ToggleMicSync != null) cfg.SyncMic = ToggleMicSync.IsChecked == true;
+
+            MainWindow.PersistLiveHardwareConfig();
         }
 
         public void SyncSettingsUi(AppSettings settings)
@@ -255,10 +301,12 @@ namespace OpenDualHub
                 case "users":
                 case "profiles":
                     PanelProfiles.Visibility = Visibility.Visible;
+                    RefreshCustomProfilesList();
                     if (itemId == "prof_default") { CardProfDefault.BorderBrush = glowBorder; CardProfDefault.BringIntoView(); }
                     else if (itemId == "prof_esports") { CardProfEsports.BorderBrush = glowBorder; CardProfEsports.BringIntoView(); }
                     else if (itemId == "prof_fps") { CardProfFps.BorderBrush = glowBorder; CardProfFps.BringIntoView(); }
-                    else if (itemId == "prof_racing" || itemId == "prof_new") { CardProfRacing.BorderBrush = glowBorder; CardProfRacing.BringIntoView(); }
+                    else if (itemId == "prof_racing") { CardProfRacing.BorderBrush = glowBorder; CardProfRacing.BringIntoView(); }
+                    else if (itemId == "prof_new" && CardProfCustomCreator != null) { CardProfCustomCreator.BorderBrush = glowBorder; CardProfCustomCreator.BringIntoView(); }
                     else { CardProfDefault.BringIntoView(); }
                     break;
 
@@ -380,6 +428,7 @@ namespace OpenDualHub
         private void PushAdaptiveTriggers()
         {
             IpcClient?.SetAdaptiveTriggers(_l2Mode, _l2Start, _l2Force, _l2Freq, _r2Mode, _r2Start, _r2Force, _r2Freq);
+            SaveLiveHardwareConfig();
         }
 
         private void EnsureOscilloscopeVisuals()
@@ -679,6 +728,7 @@ namespace OpenDualHub
         private void PushGyroConfig()
         {
             IpcClient?.SetGyro(_gyroEnabled, _gyroTriggerMode, _gyroOutputMode, _gyroSpace, _gyroSensX, _gyroSensY, _gyroInvertX, _gyroInvertY, _gyroDeadzone, _gyroSmooth, _gyroClickMode);
+            SaveLiveHardwareConfig();
         }
 
         private void BtnGyroClick_Click(object sender, RoutedEventArgs e)
@@ -802,6 +852,7 @@ namespace OpenDualHub
             int g = Math.Clamp((int)(_colorG * scale), 0, 255);
             int b = Math.Clamp((int)(_colorB * scale), 0, 255);
             try { IpcClient?.SetRgbColor(r, g, b, _activeLedEffect, _playerLeds, 1.0f); } catch { }
+            SaveLiveHardwareConfig();
         }
         #endregion
 
@@ -853,6 +904,77 @@ namespace OpenDualHub
         private void PushTouchpadConfig()
         {
             IpcClient?.SetTouchpad(_mouseEnabled, _touchSens, 1.0f, _tapClick, _volGesture);
+            SaveLiveHardwareConfig();
+        }
+
+        private bool _updatingGestureCombo = false;
+
+        public void SyncGestureMapperUi()
+        {
+            if (MainWindow == null || CmbGestureSelect == null || CmbGestureAction == null) return;
+            if (CmbGestureSelect.SelectedItem is ComboBoxItem gItem && gItem.Tag is string gTag &&
+                Enum.TryParse<TouchGestureType>(gTag, true, out var gType))
+            {
+                var action = MainWindow.GestureEngine.GetMapping(gType);
+                _updatingGestureCombo = true;
+                foreach (var item in CmbGestureAction.Items.OfType<ComboBoxItem>())
+                {
+                    if (item.Tag is string aTag && string.Equals(aTag, action.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        CmbGestureAction.SelectedItem = item;
+                        break;
+                    }
+                }
+                _updatingGestureCombo = false;
+            }
+            UpdateGestureSummaryLabels();
+        }
+
+        private void UpdateGestureSummaryLabels()
+        {
+            if (MainWindow == null) return;
+            var ge = MainWindow.GestureEngine;
+            if (TxtMapC != null) TxtMapC.Text = $"• Draw 'C'  ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.LetterC))}";
+            if (TxtMapV != null) TxtMapV.Text = $"• Draw 'V'  ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.LetterV))}";
+            if (TxtMapZ != null) TxtMapZ.Text = $"• Draw 'Z'  ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.LetterZ))}";
+            if (TxtMapO != null) TxtMapO.Text = $"• Draw 'O'  ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.LetterO))}";
+            if (TxtMapLeft != null) TxtMapLeft.Text = $"• Swipe Left  ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.SwipeLeft))}";
+            if (TxtMapRight != null) TxtMapRight.Text = $"• Swipe Right ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.SwipeRight))}";
+            if (TxtMapUp != null) TxtMapUp.Text = $"• Swipe Up    ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.SwipeUp))}";
+            if (TxtMapDown != null) TxtMapDown.Text = $"• Swipe Down  ›  {FormatActionLabel(ge.GetMapping(TouchGestureType.SwipeDown))}";
+        }
+
+        private static string FormatActionLabel(GestureAction action) => action switch
+        {
+            GestureAction.TakeScreenshot => "Screenshot (Win+Shift+S)",
+            GestureAction.SaveReplayClip => "30s Replay Clip (Win+Alt+G)",
+            GestureAction.ToggleMicMute => "Mute / Unmute Mic",
+            GestureAction.PlayPauseMedia => "Play / Pause Media",
+            GestureAction.NextTrack => "Next Music Track",
+            GestureAction.PreviousTrack => "Previous Music Track",
+            GestureAction.OpenQuickHud => "Open Quick HUD",
+            GestureAction.OpenDualHub => "Open OpenDual Hub",
+            GestureAction.OpenGameBar => "Open Xbox Game Bar",
+            GestureAction.LaunchCalculator => "Launch Calculator",
+            _ => "Disabled"
+        };
+
+        private void CmbGestureSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SyncGestureMapperUi();
+        }
+
+        private void CmbGestureAction_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_updatingGestureCombo || MainWindow == null || CmbGestureSelect == null || CmbGestureAction == null) return;
+            if (CmbGestureSelect.SelectedItem is ComboBoxItem gItem && gItem.Tag is string gTag &&
+                CmbGestureAction.SelectedItem is ComboBoxItem aItem && aItem.Tag is string aTag &&
+                Enum.TryParse<TouchGestureType>(gTag, true, out var gType) &&
+                Enum.TryParse<GestureAction>(aTag, true, out var gAct))
+            {
+                MainWindow.GestureEngine.SetMapping(gType, gAct);
+                UpdateGestureSummaryLabels();
+            }
         }
 
         private void DrawGestureSandbox(List<Point> pts)
@@ -896,6 +1018,7 @@ namespace OpenDualHub
             bool isOn = ToggleHaptics.IsChecked == true;
             ToggleHaptics.Content = isOn ? "Haptics: ON" : "Haptics: OFF";
             IpcClient?.SetAudioHaptics(isOn, (float)(SliderHapticIntensity.Value / 100.0), 40, true);
+            SaveLiveHardwareConfig();
         }
 
         private void SliderHapticIntensity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -904,6 +1027,7 @@ namespace OpenDualHub
             {
                 TxtHapticIntensity.Text = $"{e.NewValue:F0}%";
                 IpcClient?.SetAudioHaptics(ToggleHaptics.IsChecked == true, (float)(e.NewValue / 100.0), 40, true);
+                SaveLiveHardwareConfig();
             }
         }
 
@@ -912,6 +1036,7 @@ namespace OpenDualHub
             bool isOn = ToggleSpeaker.IsChecked == true;
             ToggleSpeaker.Content = isOn ? "Speaker: ON" : "Speaker: OFF";
             IpcClient?.SetSpeakerOutput(isOn);
+            SaveLiveHardwareConfig();
         }
 
         private void ToggleMicSync_Click(object sender, RoutedEventArgs e)
@@ -919,6 +1044,7 @@ namespace OpenDualHub
             bool isOn = ToggleMicSync.IsChecked == true;
             ToggleMicSync.Content = isOn ? "Mic Sync: ON" : "Mic Sync: OFF";
             IpcClient?.SetMicSync(isOn);
+            SaveLiveHardwareConfig();
         }
 
         private void ToggleVolumeOverlay_Click(object sender, RoutedEventArgs e)
@@ -951,6 +1077,7 @@ namespace OpenDualHub
             if (BtnActEsports != null) BtnActEsports.Content = isEsports ? "✓ Active" : "Activate";
             if (BtnActFps != null) BtnActFps.Content = isFps ? "✓ Active" : "Activate";
             if (BtnActRacing != null) BtnActRacing.Content = isRacing ? "✓ Active" : "Activate";
+            RefreshCustomProfilesList();
         }
 
         private void BtnActivateProfile_Click(object sender, RoutedEventArgs e)
@@ -959,6 +1086,120 @@ namespace OpenDualHub
             {
                 MainWindow.ApplyProfileByName(name);
                 UpdateActiveProfileCard(name);
+            }
+        }
+
+        private void BtnBrowseExe_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog
+            {
+                Title = "Select Game Executable (.exe) to Auto-Link Profile",
+                Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*"
+            };
+            if (dlg.ShowDialog() == true && TxtCustomProfileExe != null)
+            {
+                string exeName = System.IO.Path.GetFileName(dlg.FileName);
+                if (string.IsNullOrWhiteSpace(TxtCustomProfileExe.Text))
+                    TxtCustomProfileExe.Text = exeName;
+                else if (!TxtCustomProfileExe.Text.Contains(exeName, StringComparison.OrdinalIgnoreCase))
+                    TxtCustomProfileExe.Text = $"{TxtCustomProfileExe.Text.Trim()}, {exeName}";
+            }
+        }
+
+        public void BtnSaveCustomProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (MainWindow == null) return;
+            string name = TxtCustomProfileName?.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(name)) name = "Custom Profile";
+            string exe = TxtCustomProfileExe?.Text?.Trim() ?? "";
+
+            SaveLiveHardwareConfig();
+            MainWindow.SaveAndActivateCustomProfile(name, exe);
+            RefreshCustomProfilesList();
+        }
+
+        public void RefreshCustomProfilesList()
+        {
+            if (PanelCustomProfilesList == null || MainWindow == null) return;
+            PanelCustomProfilesList.Children.Clear();
+
+            var customProfiles = MainWindow.GetCustomProfiles();
+            string activeName = MainWindow.ActiveProfileName;
+            var defaultBorder = GetBrush("BorderColor", Color.FromArgb(0x35, 0x29, 0x79, 0xFF));
+            var glowBorder = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4));
+            var slotBg = GetBrush("SlotBg", Color.FromArgb(0xB0, 0x08, 0x0C, 0x14));
+
+            foreach (var prof in customProfiles)
+            {
+                bool isActive = prof.Name.Equals(activeName, StringComparison.OrdinalIgnoreCase);
+                var card = new Border
+                {
+                    Background = slotBg,
+                    BorderBrush = isActive ? glowBorder : defaultBorder,
+                    BorderThickness = new Thickness(isActive ? 1.5 : 1.0),
+                    CornerRadius = new CornerRadius(8),
+                    Padding = new Thickness(14),
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+
+                var grid = new Grid();
+                var textStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                textStack.Children.Add(new TextBlock
+                {
+                    Text = $"⭐ {prof.Name}",
+                    FontSize = 12,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.White
+                });
+                string subText = string.IsNullOrWhiteSpace(prof.ProcessNames)
+                    ? "Custom Hardware Profile (No linked game .exe)"
+                    : $"Auto-Switch Linked Game: {prof.ProcessNames}";
+                textStack.Children.Add(new TextBlock
+                {
+                    Text = subText,
+                    FontSize = 10,
+                    Foreground = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4)),
+                    Margin = new Thickness(0, 2, 0, 0)
+                });
+                grid.Children.Add(textStack);
+
+                var btnStack = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+
+                var btnAct = new Button
+                {
+                    Content = isActive ? "✓ Active" : "Activate",
+                    Style = TryFindResource("XmbOptionBtn") as Style,
+                    Tag = prof.Name,
+                    Margin = new Thickness(0, 0, 6, 0)
+                };
+                btnAct.Click += BtnActivateProfile_Click;
+
+                var btnDel = new Button
+                {
+                    Content = "🗑",
+                    Style = TryFindResource("XmbOptionBtn") as Style,
+                    Tag = prof.Id,
+                    ToolTip = "Delete Custom Profile"
+                };
+                btnDel.Click += (s, ev) =>
+                {
+                    if (s is Button b && b.Tag is string pid)
+                    {
+                        MainWindow.DeleteCustomProfile(pid);
+                        RefreshCustomProfilesList();
+                    }
+                };
+
+                btnStack.Children.Add(btnAct);
+                btnStack.Children.Add(btnDel);
+                grid.Children.Add(btnStack);
+                card.Child = grid;
+                PanelCustomProfilesList.Children.Add(card);
             }
         }
         #endregion

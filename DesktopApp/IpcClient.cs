@@ -201,14 +201,25 @@ namespace OpenDualHub
         public void SendConfig(ConfigDto cfg)
         {
             var inv = System.Globalization.CultureInfo.InvariantCulture;
-            var json = $"{{\"ledR\":{cfg.R},\"ledG\":{cfg.G},\"ledB\":{cfg.B},\"rgbEffect\":{cfg.Effect},\"effectSpeed\":{cfg.Speed.ToString(inv)}," +
+            var json = $"{{\"ledR\":{cfg.R},\"ledG\":{cfg.G},\"ledB\":{cfg.B},\"rgbEffect\":{cfg.Effect},\"playerLeds\":{cfg.PlayerLeds},\"effectSpeed\":{cfg.Speed.ToString(inv)}," +
                        $"\"mouseEnabled\":{(cfg.Mouse ? "true" : "false")},\"mouseSens\":{cfg.MouseSens.ToString(inv)},\"scrollSens\":{cfg.ScrollSens.ToString(inv)},\"touchpadVolumeGesture\":{(cfg.VolGesture ? "true" : "false")},\"syncMicMute\":{(cfg.SyncMic ? "true" : "false")}," +
-                       $"\"ltMode\":{cfg.LtMode},\"rtMode\":{cfg.RtMode}," +
+                       $"\"ltMode\":{cfg.LtMode},\"ltStart\":{cfg.LtStart},\"ltForce\":{cfg.LtForce},\"ltFreq\":{cfg.LtFreq},\"rtMode\":{cfg.RtMode},\"rtStart\":{cfg.RtStart},\"rtForce\":{cfg.RtForce},\"rtFreq\":{cfg.RtFreq}," +
                        $"\"audioHaptics\":{(cfg.Haptic ? "true" : "false")},\"hapticIntensity\":{cfg.HapticIntensity.ToString(inv)},\"hapticCutoff\":{cfg.HapticCutoff},\"hapticStereo\":{(cfg.HapticStereo ? "true" : "false")}," +
                        $"\"audioTriggerKick\":{(cfg.AudioTriggerKick ? "true" : "false")},\"audioTriggerThreshold\":{cfg.AudioTriggerThreshold.ToString(inv)},\"speakerEnabled\":{(cfg.SpeakerEnabled ? "true" : "false")}," +
                        $"\"gyroEnabled\":{(cfg.Gyro ? "true" : "false")},\"gyroMode\":{cfg.GyroMode},\"gyroOutputMode\":{cfg.GyroOutputMode},\"gyroSpace\":{cfg.GyroSpace},\"gyroSensX\":{cfg.GyroSensX.ToString(inv)},\"gyroSensY\":{cfg.GyroSensY.ToString(inv)},\"gyroInvertX\":{(cfg.GyroInvertX ? "true" : "false")},\"gyroInvertY\":{(cfg.GyroInvertY ? "true" : "false")},\"gyroDeadzone\":{cfg.GyroDeadzone},\"gyroSmooth\":{cfg.GyroSmooth.ToString(inv)},\"gyroClickMode\":{cfg.GyroClickMode}," +
                        $"\"idleTimeout\":{cfg.IdleTimeout},\"lowBatteryWarning\":{(cfg.LowBatWarn ? "true" : "false")}," +
+                       $"\"dualStageTriggers\":{(cfg.DualStageTriggers ? "true" : "false")},\"hairTriggerRelease\":{(cfg.HairTriggerRelease ? "true" : "false")}," +
+                       $"\"sprintShelfL3\":{(cfg.SprintShelfL3 ? "true" : "false")},\"gyroRatcheting\":{(cfg.GyroRatcheting ? "true" : "false")}," +
+                       $"\"hapticDetent\":{(cfg.HapticDetent ? "true" : "false")},\"gShockGuard\":{(cfg.GShockGuard ? "true" : "false")}," +
+                       $"\"playerLedTelemetry\":{(cfg.PlayerLedTelemetry ? "true" : "false")},\"micBeamforming\":{(cfg.MicBeamforming ? "true" : "false")}," +
+                       $"\"recoilAssist\":{(cfg.RecoilAssist ? "true" : "false")},\"thermalGuard\":{(cfg.ThermalGuard ? "true" : "false")}," +
                        $"\"zeroShiftLX\":{cfg.ZeroShiftLX},\"zeroShiftLY\":{cfg.ZeroShiftLY},\"zeroShiftRX\":{cfg.ZeroShiftRX},\"zeroShiftRY\":{cfg.ZeroShiftRY}}}";
+            SendCommand(json);
+        }
+
+        public void SetDeepFeature(string featureKey, bool enabled)
+        {
+            var json = $"{{\"{featureKey}\":{(enabled ? "true" : "false")}}}";
             SendCommand(json);
         }
 
