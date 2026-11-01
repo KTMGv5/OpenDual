@@ -1336,10 +1336,10 @@ namespace OpenDualHub
                 }
                 else
                 {
-                    TxtXmbUpdateStatus.Text = "You are on the latest release (v1.6.6).";
+                    TxtXmbUpdateStatus.Text = $"You are on the latest release (v{UpdateChecker.CurrentAppVersion}).";
                     TxtXmbUpdateStatus.Foreground = GetBrush("AccentSignature", Color.FromRgb(0x00, 0xF5, 0xD4));
                     PanelXmbUpdateDetails.Visibility = Visibility.Collapsed;
-                    MessageBox.Show("OpenDual Suite is fully up to date!\n\nCurrent Version: v1.6.6", "Up to Date", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"OpenDual Suite is fully up to date!\n\nCurrent Version: v{UpdateChecker.CurrentAppVersion}", "Up to Date", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             BtnCheckUpdates.IsEnabled = true;

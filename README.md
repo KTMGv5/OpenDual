@@ -1,7 +1,7 @@
 # OpenDual - Controller Driver & Desktop Suite
 
 [![Code Analysis & Build Verification](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml/badge.svg)](https://github.com/KTMGv5/OpenDual/actions/workflows/code-analysis.yml)
-[![Release v1.6.6](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.6.6)
+[![Release v1.7.0](https://img.shields.io/github/v/release/KTMGv5/OpenDual?color=00F5D4)](https://github.com/KTMGv5/OpenDual/releases/tag/v1.7.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Open-source, ultra-low-latency Windows driver service and desktop suite for DualShock 4 and DualSense controllers on Windows 10 & 11.**
