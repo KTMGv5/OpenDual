@@ -92,6 +92,79 @@
                         <TextBlock Text="Real-time 1000Hz HID Bus Polling" FontSize="10" Foreground="{StaticResource AccentGreen}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                     </Grid>
 
+                    <!-- Interactive Full Controller Hardware Schematic -->
+                    <Border Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="185"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" Margin="4,0,4,4">
+                                <TextBlock Text="INTERACTIVE CONTROLLER HARDWARE SCHEMATIC" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                                <TextBlock x:Name="TxtSchematicTouchInfo" Text="Touchpad: Idle • Bumpers &amp; Face Buttons Live" FontSize="9.5" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Viewbox Grid.Row="1" Stretch="Uniform" Width="460" Height="180">
+                                <Canvas Width="460" Height="180">
+                                    <!-- L2 / R2 Adaptive Trigger Silhouettes -->
+                                    <Path x:Name="SvgL2" Data="M 102,22 C 102,10 144,10 144,22 L 148,36 L 98,36 Z" Fill="#162032" Stroke="#352979FF" StrokeThickness="1.5"/>
+                                    <TextBlock Text="L2" Canvas.Left="116" Canvas.Top="14" FontSize="9" FontWeight="Bold" Foreground="#9AACC4"/>
+                                    <Path x:Name="SvgR2" Data="M 316,22 C 316,10 358,10 358,22 L 362,36 L 312,36 Z" Fill="#162032" Stroke="#352979FF" StrokeThickness="1.5"/>
+                                    <TextBlock Text="R2" Canvas.Left="330" Canvas.Top="14" FontSize="9" FontWeight="Bold" Foreground="#9AACC4"/>
+
+                                    <!-- L1 / R1 Shoulder Bumpers -->
+                                    <Path x:Name="SvgL1" Data="M 92,38 C 96,28 152,28 156,38 L 158,48 L 90,48 Z" Fill="#1B263B" Stroke="#452979FF" StrokeThickness="1.5"/>
+                                    <TextBlock Text="L1" Canvas.Left="118" Canvas.Top="33" FontSize="8.5" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                    <Path x:Name="SvgR1" Data="M 304,38 C 308,28 364,28 368,38 L 370,48 L 302,48 Z" Fill="#1B263B" Stroke="#452979FF" StrokeThickness="1.5"/>
+                                    <TextBlock Text="R1" Canvas.Left="330" Canvas.Top="33" FontSize="8.5" FontWeight="Bold" Foreground="#FFFFFF"/>
+
+                                    <!-- Outer Controller Two-Tone Ergonomic Shell -->
+                                    <Path Data="M 95,44 L 162,40 L 298,40 L 365,44 C 392,50 408,85 398,136 C 392,165 372,174 352,164 C 334,154 322,126 302,122 L 158,122 C 138,126 126,154 108,164 C 88,174 68,165 62,136 C 52,85 68,50 95,44 Z"
+                                          Fill="#182235" Stroke="#552979FF" StrokeThickness="2"/>
+
+                                    <!-- Inner Dark Lower Bridge Core -->
+                                    <Path Data="M 140,88 L 320,88 L 340,146 C 328,132 316,122 300,122 L 160,122 C 144,122 132,132 120,146 Z"
+                                          Fill="#0E1420" Stroke="#302979FF" StrokeThickness="1"/>
+
+                                    <!-- Glowing Lightbar Accent Wings -->
+                                    <Path x:Name="SvgLightbarLeft" Data="M 164,43 L 175,82" Stroke="#00F5D4" StrokeThickness="3.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <Path x:Name="SvgLightbarRight" Data="M 296,43 L 285,82" Stroke="#00F5D4" StrokeThickness="3.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+
+                                    <!-- Capacitive Touchpad Trapezoid & Live Touch Dots -->
+                                    <Path x:Name="SvgTouchpad" Data="M 168,42 L 292,42 L 281,82 L 179,82 Z" Fill="#111827" Stroke="#4500F5D4" StrokeThickness="1.2"/>
+                                    <Ellipse x:Name="SvgTouchDot1" Width="8" Height="8" Fill="#00F5D4" Stroke="White" StrokeThickness="1.2" Canvas.Left="226" Canvas.Top="58" Visibility="Collapsed"/>
+                                    <Ellipse x:Name="SvgTouchDot2" Width="8" Height="8" Fill="#FF007F" Stroke="White" StrokeThickness="1.2" Canvas.Left="240" Canvas.Top="58" Visibility="Collapsed"/>
+
+                                    <!-- Create / Options Buttons -->
+                                    <Rectangle x:Name="SvgShareBtn" Canvas.Left="150" Canvas.Top="48" Width="7" Height="13" RadiusX="3" RadiusY="3" Fill="#25324B" Stroke="#50FFFFFF" StrokeThickness="0.8"/>
+                                    <Rectangle x:Name="SvgOptionsBtn" Canvas.Left="303" Canvas.Top="48" Width="7" Height="13" RadiusX="3" RadiusY="3" Fill="#25324B" Stroke="#50FFFFFF" StrokeThickness="0.8"/>
+
+                                    <!-- D-Pad (Left Wing) -->
+                                    <Rectangle x:Name="SvgDpadUp" Canvas.Left="114" Canvas.Top="58" Width="12" Height="13" RadiusX="2" RadiusY="2" Fill="#222E46" Stroke="#40FFFFFF" StrokeThickness="0.8"/>
+                                    <Rectangle x:Name="SvgDpadDown" Canvas.Left="114" Canvas.Top="83" Width="12" Height="13" RadiusX="2" RadiusY="2" Fill="#222E46" Stroke="#40FFFFFF" StrokeThickness="0.8"/>
+                                    <Rectangle x:Name="SvgDpadLeft" Canvas.Left="101" Canvas.Top="71" Width="13" Height="12" RadiusX="2" RadiusY="2" Fill="#222E46" Stroke="#40FFFFFF" StrokeThickness="0.8"/>
+                                    <Rectangle x:Name="SvgDpadRight" Canvas.Left="126" Canvas.Top="71" Width="13" Height="12" RadiusX="2" RadiusY="2" Fill="#222E46" Stroke="#40FFFFFF" StrokeThickness="0.8"/>
+
+                                    <!-- Action Buttons (Right Wing) -->
+                                    <Ellipse x:Name="SvgBtnTriangle" Canvas.Left="332" Canvas.Top="55" Width="15" Height="15" Fill="#222E46" Stroke="#00E676" StrokeThickness="1.2"/>
+                                    <Ellipse x:Name="SvgBtnCross" Canvas.Left="332" Canvas.Top="85" Width="15" Height="15" Fill="#222E46" Stroke="#2979FF" StrokeThickness="1.2"/>
+                                    <Ellipse x:Name="SvgBtnSquare" Canvas.Left="317" Canvas.Top="70" Width="15" Height="15" Fill="#222E46" Stroke="#FF007F" StrokeThickness="1.2"/>
+                                    <Ellipse x:Name="SvgBtnCircle" Canvas.Left="347" Canvas.Top="70" Width="15" Height="15" Fill="#222E46" Stroke="#FF334B" StrokeThickness="1.2"/>
+
+                                    <!-- Symmetrical Thumbstick Rings & Moving Stick Caps (L3 / R3) -->
+                                    <Ellipse Canvas.Left="158" Canvas.Top="86" Width="38" Height="38" Fill="#0A0E17" Stroke="#402979FF" StrokeThickness="1.5"/>
+                                    <Ellipse x:Name="SvgStickCapL" Canvas.Left="165" Canvas.Top="93" Width="24" Height="24" Fill="#1E293B" Stroke="#00F5D4" StrokeThickness="2"/>
+
+                                    <Ellipse Canvas.Left="264" Canvas.Top="86" Width="38" Height="38" Fill="#0A0E17" Stroke="#402979FF" StrokeThickness="1.5"/>
+                                    <Ellipse x:Name="SvgStickCapR" Canvas.Left="271" Canvas.Top="93" Width="24" Height="24" Fill="#1E293B" Stroke="#FF007F" StrokeThickness="2"/>
+
+                                    <!-- Center Home & Mic Mute Buttons -->
+                                    <Ellipse x:Name="SvgHomeBtn" Canvas.Left="223" Canvas.Top="96" Width="14" Height="14" Fill="#222E46" Stroke="#00F5D4" StrokeThickness="1.2"/>
+                                    <Rectangle x:Name="SvgMicBtn" Canvas.Left="224" Canvas.Top="113" Width="12" Height="5" RadiusX="2" RadiusY="2" Fill="#222E46" Stroke="#FFA000" StrokeThickness="0.8"/>
+                                </Canvas>
+                            </Viewbox>
+                        </Grid>
+                    </Border>
+
                     <!-- Analog Thumbsticks (L3 / R3) & Triggers (L2 / R2) -->
                     <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>

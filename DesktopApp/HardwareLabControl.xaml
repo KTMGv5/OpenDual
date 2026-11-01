@@ -93,30 +93,32 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="3D SPATIAL GIMBAL &amp; 6-AXIS IMU" FontSize="13" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
                         </StackPanel>
-                        <Border Grid.Column="1" Background="#1A2979FF" CornerRadius="6" Padding="8,3">
+                        <Border Grid.Column="1" Background="#1A2979FF" CornerRadius="6" Padding="8,3" Margin="0,0,8,0" VerticalAlignment="Center">
                             <TextBlock x:Name="TxtGimbalAngles" Text="Yaw: +0.0°  Pitch: +0.0°  Roll: +0.0°" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentBlue}"/>
                         </Border>
+                        <Button x:Name="BtnRecenterGimbal" Grid.Column="2" Content="Recenter View" Style="{StaticResource LabBtnStyle}" Padding="10,4" FontSize="10" Click="BtnRecenterGimbal_Click"/>
                     </Grid>
 
                     <!-- 3D Viewport Area -->
-                    <Border Height="180" Background="#0A0E17" BorderBrush="#202979FF" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                    <Border Height="200" Background="#0A0E17" BorderBrush="#202979FF" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
                         <Grid>
-                            <Viewport3D x:Name="ViewportController">
+                            <Viewport3D x:Name="ViewportController" IsHitTestVisible="False">
                                 <Viewport3D.Camera>
-                                    <PerspectiveCamera Position="0, 0, 5.2" LookDirection="0, 0, -1" UpDirection="0, 1, 0" FieldOfView="45"/>
+                                    <PerspectiveCamera Position="0, -1.9, 3.8" LookDirection="0, 1.75, -3.8" UpDirection="0, 1, 0" FieldOfView="82"/>
                                 </Viewport3D.Camera>
 
                                 <ModelVisual3D>
                                     <ModelVisual3D.Content>
                                         <Model3DGroup>
-                                            <AmbientLight Color="#707080"/>
-                                            <DirectionalLight Color="#FFFFFF" Direction="-1, -1, -2"/>
-                                            <DirectionalLight Color="#00F5D4" Direction="1, 1, 1"/>
-                                            <DirectionalLight Color="#2979FF" Direction="0, -1, 1"/>
+                                            <AmbientLight Color="#687285"/>
+                                            <DirectionalLight Color="#FFFFFF" Direction="-0.6, 0.8, -1.5"/>
+                                            <DirectionalLight Color="#00F5D4" Direction="1.0, 0.5, 0.8"/>
+                                            <DirectionalLight Color="#2979FF" Direction="-1.0, -0.5, 0.8"/>
                                         </Model3DGroup>
                                     </ModelVisual3D.Content>
                                 </ModelVisual3D>
@@ -124,9 +126,10 @@
                                 <ModelVisual3D x:Name="VisualControllerGroup">
                                     <ModelVisual3D.Transform>
                                         <Transform3DGroup>
+                                            <!-- Extrinsic/Intrinsic 3D Gimbal: Roll (Y forward), Pitch (X right), Yaw (Z up) -->
                                             <RotateTransform3D>
                                                 <RotateTransform3D.Rotation>
-                                                    <AxisAngleRotation3D x:Name="RotYaw" Axis="0, 1, 0" Angle="0"/>
+                                                    <AxisAngleRotation3D x:Name="RotRoll" Axis="0, 1, 0" Angle="0"/>
                                                 </RotateTransform3D.Rotation>
                                             </RotateTransform3D>
                                             <RotateTransform3D>
@@ -136,7 +139,7 @@
                                             </RotateTransform3D>
                                             <RotateTransform3D>
                                                 <RotateTransform3D.Rotation>
-                                                    <AxisAngleRotation3D x:Name="RotRoll" Axis="0, 0, 1" Angle="0"/>
+                                                    <AxisAngleRotation3D x:Name="RotYaw" Axis="0, 0, 1" Angle="0"/>
                                                 </RotateTransform3D.Rotation>
                                             </RotateTransform3D>
                                         </Transform3DGroup>

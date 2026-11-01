@@ -595,12 +595,12 @@ namespace OpenDualHub
             long now = System.Diagnostics.Stopwatch.GetTimestamp();
             double elapsedMs = (now - _lastTelemetryDispatchTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
 
-            // Throttle UI updates to smooth 60 FPS (16ms) so the UI message loop is never starved
-            if (elapsedMs < 16.0) return;
+            // Throttle UI updates to smooth ~40 FPS (25ms) and use Background priority so user mouse clicks, scrolling, and XMB navigation are ALWAYS processed with zero lag
+            if (elapsedMs < 25.0) return;
             if (System.Threading.Interlocked.CompareExchange(ref _telemetryDispatchActive, 1, 0) == 0)
             {
                 _lastTelemetryDispatchTicks = now;
-                Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
                 {
                     try
                     {

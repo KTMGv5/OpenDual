@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,6 +19,14 @@ namespace OpenDualHub
         public static bool GetSmoothScroll(DependencyObject obj) => (bool)obj.GetValue(SmoothScrollProperty);
         public static void SetSmoothScroll(DependencyObject obj, bool value) => obj.SetValue(SmoothScrollProperty, value);
 
+        private sealed class ScrollState
+        {
+            public double TargetOffset;
+            public DispatcherTimer? Timer;
+        }
+
+        private static readonly Dictionary<ScrollViewer, ScrollState> s_states = new();
+
         private static void OnSmoothScrollChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is ScrollViewer sv)
@@ -26,11 +35,23 @@ namespace OpenDualHub
                 {
                     sv.CanContentScroll = false;
                     sv.PreviewMouseWheel += Sv_PreviewMouseWheel;
+                    sv.Unloaded += Sv_Unloaded;
                 }
                 else
                 {
                     sv.PreviewMouseWheel -= Sv_PreviewMouseWheel;
+                    sv.Unloaded -= Sv_Unloaded;
+                    s_states.Remove(sv);
                 }
+            }
+        }
+
+        private static void Sv_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is ScrollViewer sv && s_states.TryGetValue(sv, out var state))
+            {
+                state.Timer?.Stop();
+                s_states.Remove(sv);
             }
         }
 
@@ -39,36 +60,50 @@ namespace OpenDualHub
             if (sender is ScrollViewer sv)
             {
                 e.Handled = true;
-                ScrollSmoothly(sv, -e.Delta * 0.75);
+                ScrollSmoothly(sv, -e.Delta * 0.72);
             }
         }
 
         public static void ScrollSmoothly(ScrollViewer sv, double delta)
         {
-            double current = sv.VerticalOffset;
-            double target = Math.Clamp(current + delta, 0, Math.Max(0, sv.ScrollableHeight));
-            if (Math.Abs(target - current) < 0.5) return;
-
-            var timer = new DispatcherTimer(DispatcherPriority.Render);
-            timer.Interval = TimeSpan.FromMilliseconds(14);
-            int ticks = 0;
-            const int maxTicks = 14;
-
-            timer.Tick += (s, args) =>
+            if (!s_states.TryGetValue(sv, out var state))
             {
-                ticks++;
-                double remaining = target - sv.VerticalOffset;
-                if (Math.Abs(remaining) < 1.0 || ticks >= maxTicks)
+                state = new ScrollState { TargetOffset = sv.VerticalOffset };
+                s_states[sv] = state;
+            }
+
+            if (state.Timer == null || !state.Timer.IsEnabled)
+            {
+                state.TargetOffset = sv.VerticalOffset;
+            }
+
+            state.TargetOffset = Math.Clamp(state.TargetOffset + delta, 0, Math.Max(0, sv.ScrollableHeight));
+
+            if (state.Timer == null)
+            {
+                state.Timer = new DispatcherTimer(DispatcherPriority.Render)
                 {
-                    sv.ScrollToVerticalOffset(target);
-                    timer.Stop();
-                }
-                else
+                    Interval = TimeSpan.FromMilliseconds(12)
+                };
+                state.Timer.Tick += (s, args) =>
                 {
-                    sv.ScrollToVerticalOffset(sv.VerticalOffset + remaining * 0.38);
-                }
-            };
-            timer.Start();
+                    double remaining = state.TargetOffset - sv.VerticalOffset;
+                    if (Math.Abs(remaining) < 0.8)
+                    {
+                        sv.ScrollToVerticalOffset(state.TargetOffset);
+                        state.Timer.Stop();
+                    }
+                    else
+                    {
+                        sv.ScrollToVerticalOffset(sv.VerticalOffset + remaining * 0.42);
+                    }
+                };
+            }
+
+            if (!state.Timer.IsEnabled)
+            {
+                state.Timer.Start();
+            }
         }
     }
 }

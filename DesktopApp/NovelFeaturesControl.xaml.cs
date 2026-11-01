@@ -48,11 +48,20 @@ namespace OpenDualHub
             return b;
         }
 
+        private string _pendingFocusItem = "";
+
         public NovelFeaturesControl()
         {
             InitializeComponent();
             IsVisibleChanged += OnIsVisibleChanged;
-            Loaded += (s, e) => UpdateRenderingSubscription();
+            Loaded += (s, e) =>
+            {
+                UpdateRenderingSubscription();
+                if (!string.IsNullOrEmpty(_pendingFocusItem))
+                {
+                    FocusItem(_pendingFocusItem);
+                }
+            };
             Unloaded += (s, e) => UnhookRendering();
         }
 
@@ -319,6 +328,7 @@ namespace OpenDualHub
 
         public void FocusItem(string itemId)
         {
+            _pendingFocusItem = itemId;
             var defaultBorder = (Brush)FindResource("BorderColor");
             var glowBorder = (Brush)FindResource("AccentSignature");
 
@@ -327,31 +337,31 @@ namespace OpenDualHub
             CardHall.BorderBrush = defaultBorder;
             if (CardDeepHardware != null) CardDeepHardware.BorderBrush = defaultBorder;
 
+            // Only show the section the user selected so every XMB item opens cleanly at the top
+            CardSentinel.Visibility = itemId == "ctrl_battery_sentinel" ? Visibility.Visible : Visibility.Collapsed;
+            CardRadar.Visibility = itemId == "aud_spatial_radar" ? Visibility.Visible : Visibility.Collapsed;
+            CardHall.Visibility = itemId == "ctrl_hall_stabilizer" ? Visibility.Visible : Visibility.Collapsed;
+            if (CardDeepHardware != null)
+            {
+                CardDeepHardware.Visibility = (itemId == "ctrl_deep_suite" || string.IsNullOrEmpty(itemId)) ? Visibility.Visible : Visibility.Collapsed;
+            }
+
             switch (itemId)
             {
                 case "ctrl_battery_sentinel":
                     CardSentinel.BorderBrush = (Brush)FindResource("AccentGreen");
-                    CardSentinel.BringIntoView();
                     break;
                 case "aud_spatial_radar":
                     CardRadar.BorderBrush = glowBorder;
-                    CardRadar.BringIntoView();
                     break;
                 case "ctrl_hall_stabilizer":
                     CardHall.BorderBrush = (Brush)FindResource("AccentAmber");
-                    CardHall.BringIntoView();
                     break;
                 case "ctrl_deep_suite":
-                    if (CardDeepHardware != null)
-                    {
-                        CardDeepHardware.BorderBrush = glowBorder;
-                        CardDeepHardware.BringIntoView();
-                    }
-                    break;
-                default:
-                    CardSentinel.BringIntoView();
+                    if (CardDeepHardware != null) CardDeepHardware.BorderBrush = glowBorder;
                     break;
             }
+            NovelScrollViewer.ScrollToTop();
         }
 
         private void ToggleBatteryGuard_Click(object sender, RoutedEventArgs e)

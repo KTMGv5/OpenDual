@@ -335,24 +335,28 @@ namespace OpenDualHub
                 SyncFromConfig(t.Config);
             }
 
-            // 1. Triggers Depth & Motor Oscilloscope
-            BarL2Inspector.Value = t.L2 * 100.0;
-            BarR2Inspector.Value = t.R2 * 100.0;
-            DrawTriggerOscilloscope(t.L2, t.R2);
-
-            // 2. Gyro Crosshair Motion Reticle
-            DrawGyroCrosshair(t.GyroX, t.GyroY, t.GyroZ);
-
-            // 3. Touchpad Live Stroke Sandbox
-            if (t.Touch1.On)
+            if (PanelTriggers.Visibility == Visibility.Visible)
             {
-                _recentStroke.Add(new Point(t.Touch1.X, t.Touch1.Y));
-                if (_recentStroke.Count > 100) _recentStroke.RemoveAt(0);
-                DrawGestureSandbox(_recentStroke);
+                BarL2Inspector.Value = t.L2 * 100.0;
+                BarR2Inspector.Value = t.R2 * 100.0;
+                DrawTriggerOscilloscope(t.L2, t.R2);
             }
-            else if (_recentStroke.Count > 0)
+            else if (PanelGyro.Visibility == Visibility.Visible)
             {
-                _recentStroke.Clear();
+                DrawGyroCrosshair(t.GyroX, t.GyroY, t.GyroZ);
+            }
+            else if (PanelTouchpad.Visibility == Visibility.Visible)
+            {
+                if (t.Touch1.On)
+                {
+                    _recentStroke.Add(new Point(t.Touch1.X, t.Touch1.Y));
+                    if (_recentStroke.Count > 100) _recentStroke.RemoveAt(0);
+                    DrawGestureSandbox(_recentStroke);
+                }
+                else if (_recentStroke.Count > 0)
+                {
+                    _recentStroke.Clear();
+                }
             }
         }
 

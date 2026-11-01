@@ -16,6 +16,10 @@ namespace OpenDualHub
 
         // Gimbal State
         private double _simulatedYaw = 0;
+        private double _smoothedPitch = 0;
+        private double _smoothedRoll = 0;
+        private double _pitchOffset = 0;
+        private double _rollOffset = 0;
         private DateTime _lastTelemetryTime = DateTime.UtcNow;
 
         // Circularity State
@@ -94,11 +98,20 @@ namespace OpenDualHub
             return g;
         }
 
+        private string _pendingFocusItem = "";
+
         public HardwareLabControl()
         {
             InitializeComponent();
             BuildController3DModel();
             ResetCircularity();
+            Loaded += (s, e) =>
+            {
+                if (!string.IsNullOrEmpty(_pendingFocusItem))
+                {
+                    FocusItem(_pendingFocusItem);
+                }
+            };
         }
 
         #region 3D Controller Model Construction
@@ -106,48 +119,67 @@ namespace OpenDualHub
         {
             var modelGroup = new Model3DGroup();
 
-            // Materials
-            var chassisMaterial = new MaterialGroup();
-            chassisMaterial.Children.Add(new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(0x18, 0x20, 0x30))));
-            chassisMaterial.Children.Add(new SpecularMaterial(new SolidColorBrush(Color.FromRgb(0x60, 0x80, 0xA0)), 25.0));
+            // Two-tone DualSense Materials (Pearl White Outer Shell + Matte Slate Core + Cyan Lightbar + Bumpers)
+            var whiteShellMat = new MaterialGroup();
+            whiteShellMat.Children.Add(new DiffuseMaterial(CreateFrozenBrush(Color.FromRgb(0xDC, 0xE3, 0xEE))));
+            whiteShellMat.Children.Add(new SpecularMaterial(CreateFrozenBrush(Color.FromRgb(0x90, 0xA8, 0xC8)), 35.0));
 
-            var gripMaterial = new MaterialGroup();
-            gripMaterial.Children.Add(new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(0x0E, 0x14, 0x20))));
-            gripMaterial.Children.Add(new SpecularMaterial(new SolidColorBrush(Color.FromRgb(0x40, 0x50, 0x70)), 15.0));
+            var darkCoreMat = new MaterialGroup();
+            darkCoreMat.Children.Add(new DiffuseMaterial(CreateFrozenBrush(Color.FromRgb(0x14, 0x1A, 0x26))));
+            darkCoreMat.Children.Add(new SpecularMaterial(CreateFrozenBrush(Color.FromRgb(0x50, 0x65, 0x85)), 20.0));
 
-            var lightbarMaterial = new MaterialGroup();
-            lightbarMaterial.Children.Add(new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(0x00, 0xF5, 0xD4))));
-            lightbarMaterial.Children.Add(new EmissiveMaterial(new SolidColorBrush(Color.FromArgb(180, 0, 245, 212))));
+            var touchpadMat = new MaterialGroup();
+            touchpadMat.Children.Add(new DiffuseMaterial(CreateFrozenBrush(Color.FromRgb(0x1E, 0x26, 0x38))));
+            touchpadMat.Children.Add(new SpecularMaterial(CreateFrozenBrush(Color.FromRgb(0x70, 0x85, 0xA5)), 30.0));
 
-            var stickMaterial = new MaterialGroup();
-            stickMaterial.Children.Add(new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(0x0A, 0x0E, 0x16))));
-            stickMaterial.Children.Add(new SpecularMaterial(new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80)), 40.0));
+            var lightbarMat = new MaterialGroup();
+            lightbarMat.Children.Add(new DiffuseMaterial(s_cyanBrush));
+            lightbarMat.Children.Add(new EmissiveMaterial(CreateFrozenBrush(Color.FromArgb(220, 0, 245, 212))));
 
-            // 1. Central Body Chassis
-            var bodyMesh = CreateBoxMesh(0, 0.1, 0, 2.2, 0.9, 0.45);
-            modelGroup.Children.Add(new GeometryModel3D(bodyMesh, chassisMaterial));
+            var stickMat = new MaterialGroup();
+            stickMat.Children.Add(new DiffuseMaterial(CreateFrozenBrush(Color.FromRgb(0x0B, 0x0F, 0x17))));
+            stickMat.Children.Add(new SpecularMaterial(CreateFrozenBrush(Color.FromRgb(0x90, 0x90, 0x90)), 45.0));
 
-            // 2. Left and Right Ergonomic Grips
-            var leftGripMesh = CreateTaperedGripMesh(-1.2, -0.6, 0.05, 0.5, 1.3, 0.4, 18.0);
-            modelGroup.Children.Add(new GeometryModel3D(leftGripMesh, gripMaterial));
+            var buttonMat = new MaterialGroup();
+            buttonMat.Children.Add(new DiffuseMaterial(CreateFrozenBrush(Color.FromRgb(0x2A, 0x36, 0x4F))));
+            buttonMat.Children.Add(new EmissiveMaterial(CreateFrozenBrush(Color.FromArgb(60, 41, 121, 255))));
 
-            var rightGripMesh = CreateTaperedGripMesh(1.2, -0.6, 0.05, 0.5, 1.3, 0.4, -18.0);
-            modelGroup.Children.Add(new GeometryModel3D(rightGripMesh, gripMaterial));
+            // 1. Central Bridge & Lower Dark Core
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(0, 0.05, 0.0, 1.95, 0.88, 0.42), darkCoreMat));
 
-            // 3. Touchpad Center Arc
-            var touchMesh = CreateBoxMesh(0, 0.32, 0.15, 1.1, 0.55, 0.08);
-            modelGroup.Children.Add(new GeometryModel3D(touchMesh, gripMaterial));
+            // 2. Sculpted Two-Tone Outer Wing Shells & Ergonomic Grips
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(-1.05, 0.12, 0.04, 0.62, 0.95, 0.46, 12.0), whiteShellMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(1.05, 0.12, 0.04, 0.62, 0.95, 0.46, -12.0), whiteShellMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(-1.26, -0.58, -0.02, 0.48, 1.18, 0.42, 19.0), whiteShellMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(1.26, -0.58, -0.02, 0.48, 1.18, 0.42, -19.0), whiteShellMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(-1.12, -0.64, -0.06, 0.36, 1.05, 0.38, 19.0), darkCoreMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(1.12, -0.64, -0.06, 0.36, 1.05, 0.38, -19.0), darkCoreMat));
 
-            // 4. Glowing DualSense Lightbar Horizon
-            var lightMesh = CreateBoxMesh(0, 0.35, 0.20, 1.18, 0.08, 0.04);
-            modelGroup.Children.Add(new GeometryModel3D(lightMesh, lightbarMaterial));
+            // 3. Capacitive Touchpad Trapezoid & Glowing Left/Right Lightbar Strips
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(0, 0.30, 0.23, 1.16, 0.56, 0.08), touchpadMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(-0.62, 0.30, 0.24, 0.05, 0.56, 0.09, -6.0), lightbarMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateTaperedGripMesh(0.62, 0.30, 0.24, 0.05, 0.56, 0.09, 6.0), lightbarMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(0, 0.01, 0.24, 0.45, 0.03, 0.09), lightbarMat));
 
-            // 5. Thumbstick Domes (L3 & R3)
-            var leftStick = CreateCylinderMesh(-0.48, -0.15, 0.28, 0.24, 0.16);
-            modelGroup.Children.Add(new GeometryModel3D(leftStick, stickMaterial));
+            // 4. Symmetrical Thumbstick Domes & Stems (L3 & R3)
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(-0.46, -0.18, 0.20, 0.11, 0.14), darkCoreMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(-0.46, -0.18, 0.28, 0.23, 0.10), stickMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(0.46, -0.18, 0.20, 0.11, 0.14), darkCoreMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(0.46, -0.18, 0.28, 0.23, 0.10), stickMat));
 
-            var rightStick = CreateCylinderMesh(0.48, -0.15, 0.28, 0.24, 0.16);
-            modelGroup.Children.Add(new GeometryModel3D(rightStick, stickMaterial));
+            // 5. D-Pad (Left Wing) & Action Buttons (Right Wing)
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(-0.98, 0.24, 0.27, 0.32, 0.11, 0.06), buttonMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(-0.98, 0.24, 0.27, 0.11, 0.32, 0.06), buttonMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(0.98, 0.40, 0.25, 0.075, 0.06), buttonMat)); // Triangle
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(0.98, 0.08, 0.25, 0.075, 0.06), buttonMat)); // Cross
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(0.82, 0.24, 0.25, 0.075, 0.06), buttonMat)); // Square
+            modelGroup.Children.Add(new GeometryModel3D(CreateCylinderMesh(1.14, 0.24, 0.25, 0.075, 0.06), buttonMat)); // Circle
+
+            // 6. Shoulder Bumpers (L1/R1) & Adaptive Triggers (L2/R2)
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(-0.88, 0.60, 0.08, 0.46, 0.14, 0.20), darkCoreMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(0.88, 0.60, 0.08, 0.46, 0.14, 0.20), darkCoreMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(-0.88, 0.64, -0.14, 0.40, 0.20, 0.26), darkCoreMat));
+            modelGroup.Children.Add(new GeometryModel3D(CreateBoxMesh(0.88, 0.64, -0.14, 0.40, 0.20, 0.26), darkCoreMat));
 
             VisualControllerGroup.Content = modelGroup;
         }
@@ -259,27 +291,68 @@ namespace OpenDualHub
 
         private void Update3DGimbal(ControllerTelemetry t, double dt)
         {
-            // Gyro rates and Accelerometer G-forces
+            // DualSense BMI260 IMU Frame:
+            // +X = Right, +Y = Up (through touchpad when flat on desk), +Z = Forward/Back
             double ax = t.AccelX / 8192.0;
             double ay = t.AccelY / 8192.0;
             double az = t.AccelZ / 8192.0;
 
-            // Pitch & Roll from gravity vector
-            double pitch = Math.Atan2(ay, Math.Sqrt(ax * ax + az * az)) * (180.0 / Math.PI);
-            double roll = Math.Atan2(-ax, az) * (180.0 / Math.PI);
+            double mag = Math.Sqrt(ax * ax + ay * ay + az * az);
+            double rawPitch = 0;
+            double rawRoll = 0;
 
-            // Yaw smoothly integrates z gyro rate
-            double dpsZ = (t.GyroZ / 16.4);
-            _simulatedYaw += dpsZ * dt * 0.15;
-            if (_simulatedYaw > 180) _simulatedYaw -= 360;
-            if (_simulatedYaw < -180) _simulatedYaw += 360;
+            if (mag > 0.15)
+            {
+                // When flat on desk: ay ≈ +1.0G, ax ≈ 0G, az ≈ 0G -> Pitch = 0°, Roll = 0°
+                double upright = Math.Max(0.15, Math.Abs(ay));
+                rawPitch = Math.Atan2(-az, Math.Sqrt(ax * ax + upright * upright)) * (180.0 / Math.PI) - _pitchOffset;
+                rawRoll = Math.Atan2(ax, upright) * (180.0 / Math.PI) - _rollOffset;
+            }
 
-            RotPitch.Angle = pitch;
-            RotRoll.Angle = roll;
+            // Smooth complementary filter with gyro angular rates (deg/s = raw / 16.4)
+            double dpsX = t.GyroX / 16.4;
+            double dpsY = t.GyroY / 16.4;
+            double dpsZ = t.GyroZ / 16.4;
+
+            _smoothedPitch = (_smoothedPitch + dpsX * dt * 0.5) * 0.82 + rawPitch * 0.18;
+            _smoothedRoll = (_smoothedRoll - dpsZ * dt * 0.5) * 0.82 + rawRoll * 0.18;
+
+            // Yaw integrates GyroY (heading rotation around controller vertical axis) with gentle recenter decay when stationary
+            if (Math.Abs(dpsY) > 1.2)
+            {
+                _simulatedYaw -= dpsY * dt * 0.65;
+            }
+            else
+            {
+                _simulatedYaw *= 0.985;
+            }
+            _simulatedYaw = Math.Clamp(_simulatedYaw, -75.0, 75.0);
+
+            RotPitch.Angle = Math.Clamp(_smoothedPitch, -75.0, 75.0);
+            RotRoll.Angle = Math.Clamp(_smoothedRoll, -75.0, 75.0);
             RotYaw.Angle = _simulatedYaw;
 
-            TxtGimbalAngles.Text = $"Yaw: {_simulatedYaw:+0.0;-0.0;0.0}°  Pitch: {pitch:+0.0;-0.0;0.0}°  Roll: {roll:+0.0;-0.0;0.0}°";
+            TxtGimbalAngles.Text = $"Yaw: {_simulatedYaw:+0.0;-0.0;0.0}°  Pitch: {_smoothedPitch:+0.0;-0.0;0.0}°  Roll: {_smoothedRoll:+0.0;-0.0;0.0}°";
             TxtGForce.Text = $"X: {ax:+0.00;-0.00;0.00}G   Y: {ay:+0.00;-0.00;0.00}G   Z: {az:+0.00;-0.00;0.00}G";
+        }
+
+        private void BtnRecenterGimbal_Click(object sender, RoutedEventArgs e)
+        {
+            _simulatedYaw = 0;
+            _smoothedPitch = 0;
+            _smoothedRoll = 0;
+            if (_lastTelemetry != null)
+            {
+                double ax = _lastTelemetry.AccelX / 8192.0;
+                double ay = _lastTelemetry.AccelY / 8192.0;
+                double az = _lastTelemetry.AccelZ / 8192.0;
+                double upright = Math.Max(0.15, Math.Abs(ay));
+                _pitchOffset = Math.Atan2(-az, Math.Sqrt(ax * ax + upright * upright)) * (180.0 / Math.PI);
+                _rollOffset = Math.Atan2(ax, upright) * (180.0 / Math.PI);
+            }
+            RotPitch.Angle = 0;
+            RotRoll.Angle = 0;
+            RotYaw.Angle = 0;
         }
 
         private void UpdateTriggers(ControllerTelemetry t)

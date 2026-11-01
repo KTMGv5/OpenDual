@@ -63,7 +63,7 @@ namespace OpenDualHub
             catController.Items.Add(new XmbItem { Id = "ctrl_overclock", Title = "1000 Hz USB Overclock Assistant", Subtitle = "SweetLow HIDUSBF kernel filter booster", Icon = "⚡", ValueBadge = "1.0 ms" });
             catController.Items.Add(new XmbItem { Id = "ctrl_battery_sentinel", Title = "Battery Longevity Sentinel", Subtitle = "80% Esports smart charge limit & health", Icon = "🔋", ValueBadge = "98% Pro" });
             catController.Items.Add(new XmbItem { Id = "ctrl_hall_stabilizer", Title = "Virtual Hall-Effect Stabilizer", Subtitle = "Anti-jitter thumbstick noise suppressor", Icon = "🧠", ValueBadge = "Active" });
-            catController.Items.Add(new XmbItem { Id = "ctrl_deep_suite", Title = "10 Deep Hardware Modifiers", Subtitle = "Dual-stage triggers, rapid-reset, sprint shelf & IMU guard", Icon = "🔬", ValueBadge = "10 Mods" });
+            catController.Items.Add(new XmbItem { Id = "ctrl_deep_suite", Title = "Pro Response & Sensor Tuning", Subtitle = "Rapid trigger, auto-sprint, recoil control & thermal guard", Icon = "⚡", ValueBadge = "Pro Suite" });
             Categories.Add(catController);
 
             // 3. LIGHTBAR
