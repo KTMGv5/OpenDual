@@ -8,6 +8,7 @@ namespace OpenDualHub
 {
     public class AppSettings
     {
+        public bool HasCompletedInitialSetup { get; set; } = false;
         public bool ShowNerdStats { get; set; } = false;
         public bool ClockUseMilitaryTime { get; set; } = false;
         public string ClockDateFormat { get; set; } = "ddd dd/MM";

@@ -243,6 +243,7 @@ namespace OpenDualHub
             CardProfFps.BorderBrush = defaultBorder;
             CardProfRacing.BorderBrush = defaultBorder;
 
+            if (CardSetWizard != null) CardSetWizard.BorderBrush = defaultBorder;
             CardSetDriver.BorderBrush = defaultBorder;
             CardSetAutoStart.BorderBrush = defaultBorder;
             CardSetIdle.BorderBrush = defaultBorder;
@@ -312,11 +313,12 @@ namespace OpenDualHub
 
                 case "settings":
                     PanelSettings.Visibility = Visibility.Visible;
-                    if (itemId == "set_driver") { CardSetDriver.BorderBrush = GetBrush("AccentGreen", Color.FromRgb(0x00, 0xE6, 0x76)); CardSetDriver.BringIntoView(); }
+                    if (itemId == "set_wizard" && CardSetWizard != null) { CardSetWizard.BorderBrush = glowBorder; CardSetWizard.BringIntoView(); }
+                    else if (itemId == "set_driver") { CardSetDriver.BorderBrush = GetBrush("AccentGreen", Color.FromRgb(0x00, 0xE6, 0x76)); CardSetDriver.BringIntoView(); }
                     else if (itemId == "set_autostart") { CardSetAutoStart.BorderBrush = glowBorder; CardSetAutoStart.BringIntoView(); }
                     else if (itemId == "set_idle") { CardSetIdle.BorderBrush = GetBrush("AccentAmber", Color.FromRgb(0xFF, 0xB3, 0x00)); CardSetIdle.BringIntoView(); }
                     else if (itemId == "set_update") { CardSetUpdate.BorderBrush = glowBorder; CardSetUpdate.BringIntoView(); }
-                    else { CardSetDriver.BringIntoView(); }
+                    else { CardSetWizard?.BringIntoView(); }
                     break;
 
                 default:
@@ -1209,6 +1211,11 @@ namespace OpenDualHub
         #endregion
 
         #region Settings & Updates Handlers
+        private void BtnLaunchInitialSetup_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow?.LaunchInitialSetupWizard();
+        }
+
         private void BtnRestartDriver_Click(object sender, RoutedEventArgs e)
         {
             MainWindow?.RestartDriverEngine();

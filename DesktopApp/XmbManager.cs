@@ -50,10 +50,11 @@ namespace OpenDualHub
 
             // 1. SETTINGS & SYSTEM
             var catSettings = new XmbCategory { Id = "settings", Title = "SETTINGS", Icon = "⚙️" };
+            catSettings.Items.Add(new XmbItem { Id = "set_wizard", Title = "Initial Setup Wizard", Subtitle = "Guided first-time controller, performance & playstyle setup", Icon = "✨", ValueBadge = "Setup" });
             catSettings.Items.Add(new XmbItem { Id = "set_driver", Title = "Direct HID Driver Service", Subtitle = "Win32 overlapped 1000Hz kernel service", Icon = "⚡", ValueBadge = "1000Hz Active" });
             catSettings.Items.Add(new XmbItem { Id = "set_autostart", Title = "Launch on Windows Startup", Subtitle = "Start minimized in system tray on boot", Icon = "🚀", ValueBadge = "Enabled" });
             catSettings.Items.Add(new XmbItem { Id = "set_idle", Title = "Battery Idle Sleep Timer", Subtitle = "Auto turn off controller when idle", Icon = "💤", ValueBadge = "10 Mins" });
-            catSettings.Items.Add(new XmbItem { Id = "set_update", Title = "OpenDual Software Update", Subtitle = "Check for latest driver and hub releases", Icon = "🔄", ValueBadge = "v1.6.6 Latest" });
+            catSettings.Items.Add(new XmbItem { Id = "set_update", Title = "OpenDual Software Update", Subtitle = "Check for latest driver and hub releases", Icon = "🔄", ValueBadge = "v1.7.0 Latest" });
             Categories.Add(catSettings);
 
             // 2. CONTROLLER (DEFAULT)

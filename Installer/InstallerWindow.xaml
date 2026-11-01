@@ -1,0 +1,242 @@
+<Window x:Class="OpenDualSetup.InstallerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OpenDual Suite Setup"
+        Width="700" Height="565"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="SetupBg" Color="#090D16"/>
+        <SolidColorBrush x:Key="CardBg" Color="#101726"/>
+        <SolidColorBrush x:Key="CardBorder" Color="#1E2B45"/>
+        <SolidColorBrush x:Key="AccentCyan" Color="#00F5D4"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#00E676"/>
+        <SolidColorBrush x:Key="AccentRed" Color="#FF334B"/>
+        <SolidColorBrush x:Key="TextMain" Color="#F0F5FF"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#8A9BB8"/>
+
+        <Style x:Key="InstBtn" TargetType="Button">
+            <Setter Property="Background" Value="#182236"/>
+            <Setter Property="Foreground" Value="#F0F5FF"/>
+            <Setter Property="BorderBrush" Value="#283959"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="18,9"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#00F5D4"/>
+                                <Setter Property="Opacity" Value="0.92"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="InstToggle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="70"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Pill" Background="#162033" BorderBrush="#283856" BorderThickness="1" CornerRadius="13">
+                            <TextBlock x:Name="Lbl" Text="OFF" Foreground="#8A9BB8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Pill" Property="Background" Value="#2200F5D4"/>
+                                <Setter TargetName="Pill" Property="BorderBrush" Value="#00F5D4"/>
+                                <Setter TargetName="Lbl" Property="Text" Value="ON"/>
+                                <Setter TargetName="Lbl" Property="Foreground" Value="#00F5D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{StaticResource SetupBg}" BorderBrush="#243554" BorderThickness="1.5" CornerRadius="16" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="24" ShadowDepth="4" Opacity="0.8"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="74"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="66"/>
+            </Grid.RowDefinitions>
+
+            <!-- HEADER -->
+            <Border Grid.Row="0" Background="#0C121F" CornerRadius="15,15,0,0" BorderBrush="#1A253B" BorderThickness="0,0,0,1" MouseLeftButtonDown="Header_MouseLeftButtonDown" Padding="24,0">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="40" Height="40" CornerRadius="10" Background="#1A00F5D4" BorderBrush="#00F5D4" BorderThickness="1.2" Margin="0,0,14,0">
+                            <TextBlock Text="⚡" FontSize="19" Foreground="#00F5D4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="TxtWindowTitle" Text="OPENDUAL CONTROLLER SUITE INSTALLER" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextMain}"/>
+                                <Border Background="#1A00F5D4" BorderBrush="#00F5D4" BorderThickness="1" CornerRadius="5" Padding="7,1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="v1.7.0 RELEASE" FontSize="9.5" FontWeight="Bold" Foreground="#00F5D4"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtWindowSubtitle" Text="1000Hz C++20 Direct HID Kernel Driver &amp; Cross-Media Bar Desktop Hub" FontSize="11" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Content="✕" Width="28" Height="28" Background="Transparent" Foreground="#8A9BB8" BorderThickness="0" FontSize="13" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Click="BtnCancel_Click"/>
+                </Grid>
+            </Border>
+
+            <!-- MAIN CONTENT -->
+            <Grid Grid.Row="1" Margin="24,16,24,12">
+
+                <!-- PAGE 1: CONFIGURATION -->
+                <StackPanel x:Name="PageConfigure" Visibility="Visible">
+                    <!-- Status Banner -->
+                    <Border x:Name="BannerDetected" Background="#121E33" BorderBrush="#00F5D4" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,0,0,12">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtDetectTitle" Text="Ready to Install OpenDual Controller Suite" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentCyan}"/>
+                                <TextBlock x:Name="TxtDetectSub" Text="Includes signed 1000Hz Direct HID Driver, Desktop Hub, and automatic Windows integration." FontSize="10.5" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <Border Background="#1B2B46" CornerRadius="6" Padding="8,4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock Text="Authenticode Signed" FontSize="9.5" FontWeight="Bold" Foreground="#00E676"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Target Directory Picker -->
+                    <TextBlock Text="INSTALLATION DIRECTORY" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,5"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="{StaticResource CardBg}" BorderBrush="{StaticResource CardBorder}" BorderThickness="1" CornerRadius="8" Padding="12,7">
+                            <TextBox x:Name="TxtInstallDir" Background="Transparent" Foreground="{StaticResource TextMain}" BorderThickness="0" FontSize="11.5" VerticalAlignment="Center"/>
+                        </Border>
+                        <Button Grid.Column="2" Content="📂 Reset Default" Style="{StaticResource InstBtn}" Padding="12,7" FontSize="11" Click="BtnResetDir_Click"/>
+                    </Grid>
+
+                    <!-- Component Toggles -->
+                    <TextBlock Text="SUITE COMPONENTS &amp; SYSTEM OPTIONS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,6"/>
+
+                    <Border Background="{StaticResource CardBg}" BorderBrush="{StaticResource CardBorder}" BorderThickness="1" CornerRadius="9" Padding="13,8" Margin="0,0,0,7">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="1000Hz Direct HID Driver &amp; Windows Startup Service" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextMain}"/>
+                                <TextBlock Text="Automatically starts OpenDualDriver.exe in the background when signing into Windows" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleAutoStart" Style="{StaticResource InstToggle}" IsChecked="True" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Background="{StaticResource CardBg}" BorderBrush="{StaticResource CardBorder}" BorderThickness="1" CornerRadius="9" Padding="13,8" Margin="0,0,0,7">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="ViGEmBus Virtual Gamepad Bus Verification" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextMain}"/>
+                                <TextBlock Text="Ensures virtual Xbox 360 / DualShock controller emulation is ready for all PC games" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleViGEm" Style="{StaticResource InstToggle}" IsChecked="True" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Background="{StaticResource CardBg}" BorderBrush="{StaticResource CardBorder}" BorderThickness="1" CornerRadius="9" Padding="13,8" Margin="0,0,0,7">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Create Desktop &amp; Start Menu Shortcuts" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextMain}"/>
+                                <TextBlock Text="Adds quick-launch icons and registers OpenDual in Windows Installed Apps" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleShortcuts" Style="{StaticResource InstToggle}" IsChecked="True" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Background="{StaticResource CardBg}" BorderBrush="{StaticResource CardBorder}" BorderThickness="1" CornerRadius="9" Padding="13,8">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Launch OpenDual Hub &amp; Initial Setup After Installation" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextMain}"/>
+                                <TextBlock Text="Immediately starts the driver engine and opens the controller hub when finished" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                            <ToggleButton x:Name="ToggleLaunchAfter" Style="{StaticResource InstToggle}" IsChecked="True" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- PAGE 2: LIVE INSTALLATION PROGRESS -->
+                <StackPanel x:Name="PageProgress" Visibility="Collapsed" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtProgressHeadline" Text="Installing OpenDual Controller Suite..." FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentCyan}" Margin="0,0,0,6"/>
+                    <TextBlock x:Name="TxtProgressStep" Text="Preparing target directory and stopping running instances..." FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,0,0,16"/>
+
+                    <Grid Margin="0,0,0,6">
+                        <TextBlock Text="DEPLOYMENT PROGRESS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMuted}"/>
+                        <TextBlock x:Name="TxtProgressPct" Text="0%" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentCyan}" HorizontalAlignment="Right"/>
+                    </Grid>
+                    <ProgressBar x:Name="BarInstallProgress" Height="10" Minimum="0" Maximum="100" Value="0" Background="#121A2B" Foreground="#00F5D4" BorderThickness="0" Margin="0,0,0,18"/>
+
+                    <Border Background="{StaticResource CardBg}" BorderBrush="{StaticResource CardBorder}" BorderThickness="1" CornerRadius="10" Padding="16,12" Height="210">
+                        <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="PanelStepLogs"/>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+
+                <!-- PAGE 3: COMPLETED -->
+                <StackPanel x:Name="PageFinished" Visibility="Collapsed" VerticalAlignment="Center">
+                    <Border Background="#112624" BorderBrush="#00E676" BorderThickness="1.5" CornerRadius="14" Padding="24,22" Margin="0,0,0,16">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <Border Width="36" Height="36" CornerRadius="18" Background="#2400E676" BorderBrush="#00E676" BorderThickness="1.2" Margin="0,0,12,0">
+                                    <TextBlock Text="✓" FontSize="18" FontWeight="Bold" Foreground="#00E676" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtFinishTitle" Text="OpenDual v1.7.0 Installed Successfully!" FontSize="16" FontWeight="Bold" Foreground="#00E676"/>
+                                    <TextBlock x:Name="TxtFinishSub" Text="All kernel driver services, desktop hub binaries, and shortcuts are ready." FontSize="11.5" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <TextBlock x:Name="TxtFinishSummary" Text="• Installed 1000Hz Direct HID Engine (OpenDualDriver.exe)&#x0a;• Installed Cross-Media Bar Desktop Hub (OpenDualHub.exe)&#x0a;• Registered Windows Startup &amp; Installed Apps entry" FontSize="11.5" Foreground="{StaticResource TextMain}" Margin="48,6,0,0" LineHeight="20"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+            </Grid>
+
+            <!-- FOOTER -->
+            <Border Grid.Row="2" Background="#0C121F" CornerRadius="0,0,15,15" BorderBrush="#1A253B" BorderThickness="0,1,0,0" Padding="24,0">
+                <Grid>
+                    <Button x:Name="BtnUninstallExisting" Content="🗑 Uninstall Suite" Style="{StaticResource InstBtn}" BorderBrush="#FF334B" Foreground="#FF334B" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed" Click="BtnUninstall_Click"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button x:Name="BtnCancel" Content="Cancel" Style="{StaticResource InstBtn}" Margin="0,0,10,0" Click="BtnCancel_Click"/>
+                        <Button x:Name="BtnPrimaryAction" Content="Install OpenDual Suite →" Style="{StaticResource InstBtn}" Background="#00F5D4" Foreground="#080B13" BorderBrush="#00F5D4" Click="BtnPrimaryAction_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

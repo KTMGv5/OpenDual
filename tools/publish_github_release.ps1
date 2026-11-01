@@ -1,6 +1,6 @@
 param(
-    [string]$TagName = "v1.6.6",
-    [string]$ReleaseName = "OpenDual v1.6.6 - Interactive Gyro Calibrator & Touchpad Volume Slider HUD",
+    [string]$TagName = "v1.7.0",
+    [string]$ReleaseName = "OpenDual v1.7.0 - Pro Response Suite, 3D Hardware Lab, Modern Installer & Initial Setup Wizard",
     [string]$DistDir = "dist"
 )
 
@@ -46,43 +46,42 @@ $headers = @{
 
 # 2. Release Notes
 $body = @"
-## Highlights in OpenDual v1.6.6
+## Highlights in OpenDual v1.7.0
 
-OpenDual v1.6.6 introduces two major new features: the **Interactive Gyro Aiming Calibrator** (a physical aim-and-shoot calibration wizard using the Cross button) and the **Touchpad Edge Volume Gesture with Floating Neon HUD** for seamless on-controller master audio control, along with full Windows volume synchronization and headphone hotplug stabilization.
+OpenDual v1.7.0 is a major desktop & kernel release featuring a **Modern Dark-Glass Installer Suite**, a **Guided First-Run Initial Setup Wizard**, the **Pro Response & Sensor Tuning Suite** (10 kernel-level DualSense hardware modifiers), an **Interactive 2D Controller Schematic**, and an overhauled **3D Spatial Gimbal & Hardware Diagnostic Lab**.
 
 ---
 
-### What's New and Improved in v1.6.6
+### What's New in v1.7.0
 
-* **Feature 1: Interactive Gyro Aiming Calibrator ("Aim & Press Cross Target Wizard")**:
-  * An interactive target aiming arena window (`GyroCalibratorWindow`) designed to calibrate your gyroscope for any monitor or TV resolution (1080p, 1440p, 4K).
-  * Prompts the player to physically point the controller crosshair at 5 on-screen bullseye targets (Center, Far Right, Far Left, High, Low) and press Cross (X) to lock each point.
-  * Measures baseline zero-rate resting drift, axis alignment, and physical angular range of motion.
-  * Automatically calculates and applies optimal horizontal sensitivity, vertical sensitivity, and anti-jitter deadzone directly to your active controller profile.
-
-* **Feature 2: Touchpad Edge Volume Slider & Floating Neon Master Volume HUD**:
-  * Slide your finger vertically along the right edge of the DualSense touchpad to smoothly adjust Windows Master Volume up or down on the fly without pausing your game.
-  * A custom floating dark-glass volume HUD pill (`VolumeHudWindow`) with an animated neon cyan progress bar and speaker glyph appears on screen whenever volume changes.
-  * Focus-independent overlay (`WS_EX_NOACTIVATE`) that never steals window or game focus.
-
-* **Windows Master Volume Hardware DAC Synchronization**:
-  * DualSense hardware audio volume is synchronized directly with Windows master volume via CoreAudio WASAPI `IAudioEndpointVolume`.
-  * Adjusting volume via the Windows taskbar slider, multimedia keyboard keys, system mixer, or touchpad gesture scales the hardware DAC for both internal speaker and 3.5mm headphones.
-
-* **Headphone Hotplug Detection & Gain Stabilization**:
-  * Live 3.5mm headphone detection using DualSense status report byte 54 (`DS_STATUS1_HP_DETECT`).
-  * Mutes the analog headphone stage when controller speaker mode is active, preventing current draw on the shared power rails and eliminating the volume jump when unplugging headphones.
-
-* **Pristine Stereo Headphone Audio**:
-  * Bit-accurate stereo headphone routing mode (0x00 `L_R_X`) when controller speaker output is turned off.
+* **Modern Dark-Glass Installer & Uninstaller (`OpenDualSetup.exe`)**:
+  * Redesigned WPF installer wizard with live progress tracking, component toggles (1000Hz Direct HID Startup Service, ViGEmBus verification, Desktop/Start Menu shortcuts), automatic update/repair detection, and built-in clean uninstaller.
+* **Guided Initial Setup Wizard (`InitialSetupWindow`)**:
+  * 3-step onboarding assistant on first launch (and accessible anytime from `Settings -> Initial Setup Wizard`) to configure UI rendering performance (`Dynamic 60 FPS Wave Art` vs `Lightweight Low-Spec Mode`), starting playstyle preset (`Standard Balanced`, `Esports Pro Response`, `FPS Gyro & Recoil Assist`, `Sim Racing`), Audio-to-Haptics, and header clock/telemetry display.
+* **Pro Response & Sensor Tuning Suite (1000Hz C++20 Kernel Engine)**:
+  * **Dual-Stage Trigger**: Half-pull R2 aims down sights (L2); full pull past the 85% tactile wall fires R2.
+  * **Rapid Trigger Instant Reset (`<1.2mm`)**: Dynamically tracks peak trigger depth and resets the moment you release upward by 1.2mm.
+  * **Outer-Ring Auto-Sprint (`L3 at 96%`)**: Automatically engages L3 sprint at outer stick deflection without clicking the physical switch.
+  * **Touchpad Gyro Pause**: Touching the capacitive touchpad pauses gyro aiming so you can recenter your wrists like lifting a mouse.
+  * **Touchpad Haptic Scroll Detents**: Pulses the palm voice coils for 1ms as your finger crosses virtual touchpad scroll notches.
+  * **G-Shock Impact Stabilizer**: Detects `>1.85G` physical controller jolts and damps stick/gyro spikes for 25ms.
+  * **Player LED Live Telemetry Meter**: Uses the 5 under-touchpad Player LEDs as a real-time trigger pressure or audio peak meter.
+  * **Microphone Hardware Preamp Boost**: Optimizes the internal DualSense microphone array gain and noise gate.
+  * **Adaptive Vertical Recoil Assist**: Applies subtle downward pitch stabilization while firing R2 with Gyro Aim active.
+  * **Trigger Motor Thermal Protection**: Tracks L2/R2 actuator coil duty cycle and prevents overheating during sustained resistance.
+* **3D Spatial Gimbal & Interactive Controller Schematic**:
+  * Authentic two-tone 3D DualSense model in the **Hardware Lab** with accurate BMI260 6-axis IMU orientation (`Pitch`, `Roll`, `Yaw`, `G-Force`) and one-click **Recenter View**.
+  * Live 2D vector schematic in **Live Input Visualizer** highlighting every pressed button, bumper, trigger, analog stick position, and multi-touch finger coordinate in real time.
+* **Zero-Allocation UI Responsiveness**:
+  * Cached XMB visual trees, active-only inspector telemetry rendering, and single-timer smooth scrolling for zero UI lag even on low-end hardware.
 
 ---
 
 ### Included Signed Assets
-* OpenDualSetup.exe - Complete standalone installer and uninstaller suite (Recommended)
-* OpenDualHub.exe - Standalone GUI Controller Hub executable
-* OpenDualDriver.exe - Standalone 1000Hz C++20 Direct HID Driver engine
-* OpenDual-v1.6.6.zip - Portable bundle including all binaries and tools
+* `OpenDualSetup.exe` - Complete standalone GUI installer, updater, and uninstaller suite (Recommended)
+* `OpenDualHub.exe` - Standalone Cross-Media Bar Controller Hub executable
+* `OpenDualDriver.exe` - Standalone 1000Hz C++20 Direct HID Driver engine
+* `OpenDual-v1.7.0.zip` - Portable bundle including all signed binaries and assets
 "@
 
 # 3. Check if release already exists

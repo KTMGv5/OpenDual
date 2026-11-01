@@ -206,7 +206,7 @@
                 </StackPanel>
 
                 <!-- Right: OpenDual Version -->
-                <TextBlock Grid.Column="2" Text="v1.6.6" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="v1.7.0" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
     </Grid>

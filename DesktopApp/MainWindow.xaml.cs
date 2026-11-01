@@ -178,12 +178,14 @@ namespace OpenDualHub
             string[] args = Environment.GetCommandLineArgs();
             int targetCat = -1;
             int targetItem = -1;
+            int targetSetupStep = 0;
             string? screenshotPath = null;
             bool targetQuickHud = false;
             for (int i = 0; i < args.Length; i++)
             {
                 if ((args[i] == "--category" || args[i] == "--cat") && i + 1 < args.Length && int.TryParse(args[i + 1], out int c)) targetCat = c;
                 if ((args[i] == "--item" || args[i] == "--itm") && i + 1 < args.Length && int.TryParse(args[i + 1], out int itm)) targetItem = itm;
+                if (args[i] == "--setup-step" && i + 1 < args.Length && int.TryParse(args[i + 1], out int stp)) targetSetupStep = stp;
                 if (args[i] == "--screenshot" && i + 1 < args.Length) screenshotPath = args[i + 1];
                 if (args[i] == "--quickhud") targetQuickHud = true;
             }
@@ -393,7 +395,17 @@ namespace OpenDualHub
                 {
                     try
                     {
-                        if (targetQuickHud && _quickHud != null)
+                        if (targetSetupStep > 0)
+                        {
+                            var setupWin = new InitialSetupWindow(this, _ipc) { Owner = this };
+                            setupWin.SetStep(targetSetupStep);
+                            setupWin.Show();
+                            setupWin.UpdateLayout();
+                            await Task.Delay(300);
+                            setupWin.CaptureToPng(screenshotPath);
+                            setupWin.Close();
+                        }
+                        else if (targetQuickHud && _quickHud != null)
                         {
                             _quickHud.ShowHud();
                             _quickHud.HudRoot.Opacity = 1.0;
@@ -419,6 +431,32 @@ namespace OpenDualHub
                     Environment.Exit(0);
                 }));
                 return;
+            }
+
+            // 8. First-Run Initial Setup Wizard
+            if (!settings.HasCompletedInitialSetup || args.Contains("--setup-wizard"))
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+                {
+                    LaunchInitialSetupWizard();
+                }));
+            }
+        }
+
+        public void LaunchInitialSetupWizard()
+        {
+            var setupWin = new InitialSetupWindow(this, _ipc)
+            {
+                Owner = this
+            };
+            setupWin.ShowDialog();
+        }
+
+        public void SetLightweightBackground(bool isLightweight)
+        {
+            if (WaveBackground != null)
+            {
+                WaveBackground.LightweightMode = isLightweight;
             }
         }
 

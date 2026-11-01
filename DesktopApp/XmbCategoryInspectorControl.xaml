@@ -595,6 +595,16 @@
                         <TextBlock Text="⚙️ SYSTEM &amp; DRIVER ENGINE SETTINGS" FontSize="14" FontWeight="Bold" Foreground="{StaticResource AccentSignature}" Margin="0,0,0,4"/>
                         <TextBlock Text="Direct Win32 kernel HID service configuration, auto-start, and automatic software updates." FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
 
+                        <Border x:Name="CardSetWizard" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource AccentSignature}" BorderThickness="1.2" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                            <Grid>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="GUIDED INITIAL SETUP WIZARD" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentSignature}"/>
+                                    <TextBlock Text="Re-run the 3-step hardware, performance mode, and playstyle onboarding assistant" FontSize="10" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button x:Name="BtnLaunchInitialSetup" Content="Launch Setup Wizard" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentSignature}" Foreground="#080B13" HorizontalAlignment="Right" Click="BtnLaunchInitialSetup_Click"/>
+                            </Grid>
+                        </Border>
+
                         <Border x:Name="CardSetDriver" Background="{StaticResource SlotBg}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
                             <Grid>
                                 <StackPanel VerticalAlignment="Center">
@@ -678,7 +688,7 @@
                                 <Grid Margin="0,0,0,8">
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="SOFTWARE RELEASE VERSION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                        <TextBlock x:Name="TxtXmbUpdateStatus" Text="OpenDual Suite v1.6.6 (Click Check for Updates to query GitHub releases)" FontSize="10" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
+                                        <TextBlock x:Name="TxtXmbUpdateStatus" Text="OpenDual Suite v1.7.0 (Click Check for Updates to query GitHub releases)" FontSize="10" Foreground="{StaticResource AccentSignature}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <Button x:Name="BtnCheckUpdates" Content="Check for Updates" Style="{StaticResource XmbOptionBtn}" Background="{StaticResource AccentBlue}" HorizontalAlignment="Right" Click="BtnCheckUpdates_Click"/>
                                 </Grid>
